@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Add click handler for donation button
     document.getElementById('donate-btn').onclick = () => {
-      chrome.tabs.create({ url: 'https://buymeacoffee.com/soufienne?status=1' });
+      chrome.tabs.create({ url: 'https://coff.ee/soufienne' });
     };
     
     // Add elegant hover effects

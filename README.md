@@ -217,7 +217,7 @@ Commercial licensing is available upon request — contact [ramailorakou@gmail.c
 If you find SpicySwipe helpful, consider:
 - ⭐ **Star the repository** on GitHub
 - 🐛 **Report bugs** and suggest features
-- ☕ **Buy me a coffee** - [Support the developer](https://buymeacoffee.com/soufienne?status=1)
+- ☕ **Buy me a coffee** - [Support the developer](https://coff.ee/soufienne)
 - 💼 **Commercial licensing** for business use
 - 📧 **Contact** for custom development services
 
