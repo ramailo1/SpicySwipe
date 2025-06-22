@@ -1,0 +1,5 @@
+[
+  { "id": 1, "type": "flirty", "text": "Create a flirty Tinder reply: [context]" },
+  { "id": 2, "type": "friendly", "text": "Write a friendly opening message for Tinder: [context]" },
+  { "id": 3, "type": "bold", "text": "Send a bold, attention-grabbing Tinder opener: [context]" }
+] 
