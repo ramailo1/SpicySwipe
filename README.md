@@ -92,12 +92,20 @@ SpicySwipe is a sophisticated Chrome extension that revolutionizes your Tinder e
 
 ### Required API Keys
 
-| AI Provider | Model | API Key Location | Pricing |
-|-------------|-------|------------------|---------|
-| **OpenAI** | gpt-4o | [OpenAI Platform](https://platform.openai.com/api-keys) | Pay-per-use |
-| **Google** | gemini-2.0-flash | [Google AI Studio](https://makersuite.google.com/app/apikey) | Free tier available |
-| **DeepSeek** | deepseek-chat | [DeepSeek Platform](https://platform.deepseek.com/) | Pay-per-use |
-| **Anthropic** | claude-3-opus-20240229 | [Anthropic Console](https://console.anthropic.com/) | Pay-per-use |
+| AI Provider | Model | API Key Location | Pricing | Testing Status |
+|-------------|-------|------------------|---------|----------------|
+| **OpenAI** | gpt-4o | [OpenAI Platform](https://platform.openai.com/api-keys) | Pay-per-use | ⚠️ Not tested (requires paid API) |
+| **Google** | gemini-2.0-flash | [Google AI Studio](https://makersuite.google.com/app/apikey) | Free tier available | ✅ Tested with free tier |
+| **DeepSeek** | deepseek-chat | [DeepSeek Platform](https://platform.deepseek.com/) | Pay-per-use | ⚠️ Not tested (requires paid API) |
+| **Anthropic** | claude-3-opus-20240229 | [Anthropic Console](https://console.anthropic.com/) | Pay-per-use | ⚠️ Not tested (requires paid API) |
+
+### ⚠️ Testing Status Note
+
+**Current Testing**: Only Google Gemini (free tier) has been fully tested and verified to work with SpicySwipe.
+
+**Other AI Models**: The extension is designed to work with all listed AI providers, but due to API costs, only Gemini has been tested. Theoretically, all other AI models (OpenAI, DeepSeek, Anthropic) should work with their respective paid API keys, but this has not been verified in practice.
+
+**Recommendation**: Start with Google Gemini (free tier) for testing, then upgrade to paid APIs as needed.
 
 ### Security Best Practices
 
