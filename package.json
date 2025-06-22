@@ -1,0 +1,17 @@
+{
+  "name": "tinder-ai-extension",
+  "version": "1.0.0",
+  "description": "Tinder AI Automator Chrome Extension (Educational Only)",
+  "scripts": {
+    "build:css": "npx tailwindcss -c popup/tailwind.config.js -i popup/styles.css -o popup/styles.css --minify",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.14",
+    "esbuild": "^0.25.5",
+    "jest": "^29.6.1",
+    "postcss": "^8.4.21",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.2.2"
+  }
+}
