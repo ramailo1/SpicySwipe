@@ -196,7 +196,7 @@ SpicySwipe/
 ## 📄 License
 
 SpicySwipe is licensed for **personal and non-commercial use only**.  
-Commercial licensing is available upon request — contact [soufienne.rahali.dev@gmail.com](mailto:ramailorakou@gmail.com).
+Commercial licensing is available upon request — contact [ramailorakou@gmail.com)](mailto:ramailorakou@gmail.com).
 
 ### License Terms
 
