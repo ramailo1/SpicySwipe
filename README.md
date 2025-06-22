@@ -12,7 +12,7 @@ SpicySwipe is a sophisticated Chrome extension that revolutionizes your Tinder e
 
 ### 🤖 Multi-AI Model Integration
 - **OpenAI ChatGPT** - Advanced conversational AI with context awareness
-- **Google Gemini** - Fast, reliable responses with real-time processing
+- **Google Gemini** - Fast, reliable responses with real-time processing free Geminie api version works with this extension 
 - **DeepSeek** - Specialized creative content generation
 - **Anthropic Claude** - Sophisticated reasoning and analysis
 
