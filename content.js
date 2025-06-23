@@ -3653,7 +3653,7 @@ function renderSidebarAITab(enabled) {
             <option value="claude" ${selectedAI === 'claude' ? 'selected' : ''}>Anthropic Claude</option>
           </select>
         </div>
-        <div id="gemini-key-row" class="settings-row" style="align-items: center; margin-bottom: 10px; display: ${selectedAI === 'gemini' ? 'flex' : 'none'};">
+        <div id="gemini-key-row" class="settings-row" style="align-items: center; margin-bottom: 10px; display: ${selectedAI === 'gemini' || selectedAI === 'gemini-pro' ? 'flex' : 'none'};">
           <label for="gemini-api-key" class="settings-label" style="min-width: 120px;">Gemini API Key</label>
           <input type="password" id="gemini-api-key" class="settings-input" placeholder="Enter Gemini API Key" style="flex-grow: 1;">
         </div>
