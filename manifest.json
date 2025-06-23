@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SpicySwipe",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "SpicySwipe - AI-powered Tinder automation with multi-model support (ChatGPT, Gemini, DeepSeek, Claude). Features intelligent messaging, profile analysis, and conversation management.",
   "author": "Soufienne Rahali",
   "homepage_url": "https://github.com/soufienne-rahali/tinder-ai-extension",
