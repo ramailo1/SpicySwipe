@@ -4,6 +4,8 @@
 [![Chrome Extension](https://img.shields.io/badge/Chrome%20Extension-Manifest%20V3-green.svg)](https://developer.chrome.com/docs/extensions/mv3/)
 [![AI Powered](https://img.shields.io/badge/AI%20Powered-Multi%20Model-orange.svg)](https://openai.com/)
 
+👉 **[View Full Changelog](CHANGELOG.md)**
+
 ## 📝 Changelog
 
 ### v1.1.0
