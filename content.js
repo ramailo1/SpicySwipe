@@ -2349,7 +2349,7 @@ function injectWandButtons(matches) {
     
   injectSidebar();
   setupSidebarTabs();
-  setupSidebarConsent();
+  // setupSidebarConsent(); // Remove this line - consent is handled in sidebar setup
 
   // Initialize modules
   await ANTI_DETECTION.init();
@@ -2384,18 +2384,32 @@ function injectWandButtons(matches) {
     console.log(`[Tinder AI] Debug: Found ${allMatchesOnPage.length} elements matching the match list item selector on this page.`);
 
     // --- Task 1: Inject Wand Buttons in Match List ---
-    // The selector is specific enough that we no longer need to check the URL path.
-    const newMatches = document.querySelectorAll(window.SELECTORS.matchListItemSelector + ':not(.wand-injected)');
-    if (newMatches.length > 0) {
+    // Check for matches that don't have wand buttons (either new or lost them)
+    const matchesWithoutWands = document.querySelectorAll(window.SELECTORS.matchListItemSelector + ':not(.wand-injected)');
+    if (matchesWithoutWands.length > 0) {
       if (sidebarConsentGiven) {
-        console.log(`[Tinder AI][DEBUG] Injecting wand buttons on ${newMatches.length} new matches (consent given).`);
-        injectWandButtons(newMatches);
+        console.log(`[Tinder AI][DEBUG] Injecting wand buttons on ${matchesWithoutWands.length} matches (consent given).`);
+        injectWandButtons(matchesWithoutWands);
       } else {
         console.log('[Tinder AI][DEBUG] Consent not given, wand buttons not injected');
       }
     }
     
-    // --- Task 2: Check for New Matches for Auto-Messaging ---
+    // --- Task 2: Re-inject wand buttons for matches that lost them ---
+    // This handles cases where wand buttons disappear after conversation switches
+    const matchesWithWands = document.querySelectorAll(window.SELECTORS.matchListItemSelector + '.wand-injected');
+    const missingWandButtons = Array.from(matchesWithWands).filter(match => 
+      !match.querySelector('.tinder-ai-wand-button')
+    );
+    
+    if (missingWandButtons.length > 0 && sidebarConsentGiven) {
+      console.log(`[Tinder AI][DEBUG] Re-injecting wand buttons on ${missingWandButtons.length} matches that lost their buttons.`);
+      // Remove the wand-injected class so they can be re-injected
+      missingWandButtons.forEach(match => match.classList.remove('wand-injected'));
+      injectWandButtons(missingWandButtons);
+    }
+    
+    // --- Task 3: Check for New Matches for Auto-Messaging ---
     if (typeof MESSAGING !== 'undefined' && MESSAGING) {
         MESSAGING.checkNewMatches();
     }
@@ -3632,7 +3646,8 @@ function renderSidebarAITab(enabled) {
         <div class="settings-row" style="align-items: center; margin-bottom: 16px;">
           <label for="ai-model-select" class="settings-label" style="min-width: 120px;">AI Model</label>
           <select id="ai-model-select" style="width: 160px; padding: 4px; background: #181a2e; color: #e0e7ff; border: 1px solid #818cf8; border-radius: 4px;">
-            <option value="gemini" ${selectedAI === 'gemini' ? 'selected' : ''}>Google Gemini</option>
+            <option value="gemini" ${selectedAI === 'gemini' ? 'selected' : ''}>Google Gemini (Free)</option>
+            <option value="gemini-pro" ${selectedAI === 'gemini-pro' ? 'selected' : ''}>Google Gemini Pro (Paid)</option>
             <option value="chatgpt" ${selectedAI === 'chatgpt' ? 'selected' : ''}>OpenAI ChatGPT</option>
             <option value="deepseek" ${selectedAI === 'deepseek' ? 'selected' : ''}>DeepSeek</option>
             <option value="claude" ${selectedAI === 'claude' ? 'selected' : ''}>Anthropic Claude</option>
@@ -3857,25 +3872,22 @@ function setupAIEventListeners() {
       const autoSend = document.getElementById('auto-send').checked;
       const autoMessageOnMatch = document.getElementById('auto-message-on-match').checked;
       const selectedLanguages = Array.from(document.querySelectorAll('.language-checkbox:checked')).map(cb => cb.value);
-      
-      const messagingConfig = {
-        tone: tone,
-        language: language,
-        autoSend: autoSend,
-        autoMessageOnMatch: autoMessageOnMatch
-      };
-
-      chrome.storage.local.set({
-        activeAI: activeAI,
-        messagingConfig: messagingConfig,
-        selectedLanguages: selectedLanguages
-      }, () => {
-        console.log('[Tinder AI] AI settings saved:', { activeAI, messagingConfig, selectedLanguages });
+      // API keys
+      const geminiKey = document.getElementById('gemini-api-key').value.trim();
+      const openaiKey = document.getElementById('openai-api-key').value.trim();
+      const deepseekKey = document.getElementById('deepseek-api-key').value.trim();
+      const anthropicKey = document.getElementById('anthropic-api-key').value.trim();
+      let toSave = { activeAI, messagingConfig: { tone, language, autoSend, autoMessageOnMatch }, selectedLanguages };
+      if (activeAI === 'gemini' || activeAI === 'gemini-pro') toSave.geminiApiKey = geminiKey;
+      if (activeAI === 'chatgpt') toSave.openaiApiKey = openaiKey;
+      if (activeAI === 'deepseek') toSave.deepseekApiKey = deepseekKey;
+      if (activeAI === 'claude') toSave.anthropicApiKey = anthropicKey;
+      chrome.storage.local.set(toSave, () => {
+        console.log('[Tinder AI] AI settings and API key saved:', toSave);
         const statusEl = document.getElementById('ai-settings-status');
-        statusEl.textContent = 'AI settings saved successfully!';
+        statusEl.textContent = 'AI settings and API key saved successfully!';
         statusEl.style.color = '#48bb78';
         setTimeout(() => { statusEl.textContent = ''; }, 3000);
-        
         // Update global variables
         MESSAGING.tone = tone;
         MESSAGING.language = language;
