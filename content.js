@@ -3773,7 +3773,7 @@ function renderSidebarAITab(enabled) {
     // --- Show/hide API key fields based on model ---
     function updateKeyVisibility() {
       const model = document.getElementById('ai-model-select').value;
-      document.getElementById('gemini-key-row').style.display = (model === 'gemini') ? 'flex' : 'none';
+      document.getElementById('gemini-key-row').style.display = (model === 'gemini' || model === 'gemini-pro') ? 'flex' : 'none';
       document.getElementById('openai-key-row').style.display = (model === 'chatgpt') ? 'flex' : 'none';
       document.getElementById('deepseek-key-row').style.display = (model === 'deepseek') ? 'flex' : 'none';
       document.getElementById('anthropic-key-row').style.display = (model === 'claude') ? 'flex' : 'none';
