@@ -755,62 +755,52 @@ function renderSidebarActiveTab() {
 function renderSidebarStatusTab(enabled) {
   const statusPanel = document.getElementById('sidebar-tab-status');
   if (!statusPanel) return;
+  statusPanel.style.overflowY = 'auto';
+  statusPanel.style.maxHeight = 'calc(100vh - 60px)';
 
-  const profile = extractProfileInfo();
-  const profilePreview = profile ? `
-    <div style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-        ${profile.photo ? 
-          `<img src="${profile.photo}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;">` : 
-          '<div style="width: 60px; height: 60px; border-radius: 8px; background: #818cf8; display: flex; align-items: center; justify-content: center; color: #232946;">No Photo</div>'
-        }
-        <div>
-          <div style="font-weight: 600; font-size: 16px; color: #e0e7ff;">${profile.name || 'Unknown'}</div>
-          ${profile.age ? `<div style="color: #a5b4fc; font-size: 14px;">${profile.age} years old</div>` : ''}
-        </div>
-      </div>
-      ${profile.interests && profile.interests.length > 0 ? 
-        `<div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
-          ${profile.interests.map(interest => 
-            `<span style="background: #818cf8; color: #232946; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${interest}</span>`
-          ).join('')}
-        </div>` : ''
-      }
-    </div>` : 
-    `<div style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 18px; text-align: center; color: #a5b4fc;">
-      No profile currently visible
-    </div>`;
-
-  if (!chrome.runtime?.id) return;
-  chrome.storage.local.get(['activeAI', 'analytics', 'swipeConfig', 'geminiApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey', 'messagingConfig'], ({ activeAI, analytics: storedAnalytics, swipeConfig, geminiApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey, messagingConfig }) => {
-    if (!chrome.runtime?.id) return;
-    if (storedAnalytics) analytics = storedAnalytics;
-    
-    // AI Status - check the appropriate API key based on activeAI
-    let aiStatus = '🔴 No AI Model Selected';
-    const selectedAI = activeAI || 'gemini';
-    
-    if (selectedAI === 'gemini' || selectedAI === 'gemini-pro') {
-      aiStatus = geminiApiKey && geminiApiKey.trim() !== '' ? '🟢 Gemini API' : '🔴 No Gemini API Key';
-    } else if (selectedAI === 'chatgpt') {
-      aiStatus = openaiApiKey && openaiApiKey.trim() !== '' ? '🟢 ChatGPT API' : '🔴 No OpenAI API Key';
-    } else if (selectedAI === 'deepseek') {
-      aiStatus = deepseekApiKey && deepseekApiKey.trim() !== '' ? '🟢 DeepSeek API' : '🔴 No DeepSeek API Key';
-    } else if (selectedAI === 'claude') {
-      aiStatus = anthropicApiKey && anthropicApiKey.trim() !== '' ? '🟢 Claude API' : '🔴 No Anthropic API Key';
-    }
-    
-    // Status Content
-    const statusContent = `
+  chrome.storage.local.get(['sessionAnalytics', 'activeAI', 'swipeConfig', 'geminiApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey', 'messagingConfig'], ({ sessionAnalytics, activeAI, swipeConfig, geminiApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey, messagingConfig }) => {
+    const analytics = sessionAnalytics || { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0 };
+    const profile = extractProfileInfo();
+    const profilePreview = profile ? `
       <div style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
-        <div class="status-line" style="margin-bottom: 8px;">Tinder: 🟢 | AI: ${aiStatus}</div>
-        <div class="status-line" style="margin-bottom: 8px;">Swipes: <span class="status-highlight">${analytics?.swipes || 0}</span>, Matches: <span class="status-highlight">${analytics?.matches || 0}</span></div>
-        <div class="status-line" style="margin-bottom: 8px;">Likes: <span class="status-highlight">${analytics?.likes || 0}</span>, Nopes: <span class="status-highlight">${analytics?.nopes || 0}</span></div>
-        <div class="status-line" style="margin-bottom: 8px;">Messages: <span class="status-highlight">${analytics?.messages || 0}</span></div>
-        <div class="status-line">Current Like Ratio: <span class="status-highlight">${(swipeConfig?.likeRatio * 100 || 70).toFixed(0)}%</span></div>
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+          ${profile.photo ? 
+            `<img src="${profile.photo}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;">` : 
+            '<div style="width: 60px; height: 60px; border-radius: 8px; background: #818cf8; display: flex; align-items: center; justify-content: center; color: #232946;">No Photo</div>'
+          }
+          <div>
+            <div style="font-weight: 600; font-size: 16px; color: #e0e7ff;">${profile.name || 'Unknown'}</div>
+            ${profile.age ? `<div style="color: #a5b4fc; font-size: 14px;">${profile.age} years old</div>` : ''}
+          </div>
+        </div>
+        ${profile.interests && profile.interests.length > 0 ? 
+          `<div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+            ${profile.interests.map(interest => 
+              `<span style="background: #818cf8; color: #232946; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${interest}</span>`
+            ).join('')}
+          </div>` : ''
+        }
+      </div>` : 
+      `<div style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 18px; text-align: center; color: #a5b4fc;">
+        No profile currently visible
       </div>`;
 
-    // Stealth Mode Control
+    // Session stats
+    const likeRatio = analytics.swipes > 0 ? ((analytics.likes / analytics.swipes) * 100).toFixed(1) : '0.0';
+    const statusContent = `
+      <div style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
+        <div style="font-weight: 600; color: #e0e7ff; margin-bottom: 10px;">Current Session</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
+          <div style="color: #a5b4fc;">Swipes:</div><div style="color: #e0e7ff;">${analytics.swipes}</div>
+          <div style="color: #a5b4fc;">Likes:</div><div style="color: #22c55e;">${analytics.likes}</div>
+          <div style="color: #a5b4fc;">Nopes:</div><div style="color: #ef4444;">${analytics.nopes}</div>
+          <div style="color: #a5b4fc;">Matches:</div><div style="color: #f59e0b;">${analytics.matches}</div>
+          <div style="color: #a5b4fc;">Messages:</div><div style="color: #8b5cf6;">${analytics.messages}</div>
+          <div style="color: #a5b4fc;">Like Ratio:</div><div style="color: #e0e7ff;">${likeRatio}%</div>
+        </div>
+      </div>`;
+
+    // Stealth mode toggle
     const stealthModeHTML = `
       <div style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
         <div style="font-weight: 600; color: #e0e7ff; margin-bottom: 10px;">Stealth Mode</div>
@@ -823,7 +813,7 @@ function renderSidebarStatusTab(enabled) {
         <div style="font-size: 12px; color: #a0aec0;">Reduces detection risk by adding random delays and human-like behavior</div>
       </div>`;
 
-    // Extension Context Recovery
+    // Extension context status
     const contextStatus = chrome.runtime?.id ? '🟢 Valid' : '🔴 Invalid';
     const recoveryHTML = `
       <div style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
@@ -839,27 +829,23 @@ function renderSidebarStatusTab(enabled) {
         ` : ''}
       </div>`;
 
-    // Settings Summary
+    // Current settings summary
     const settingsContent = `
       <div style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
         <div style="font-weight: 600; color: #e0e7ff; margin-bottom: 10px;">Current Settings</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
           <div style="color: #a5b4fc;">Max Swipes:</div>
           <div style="color: #e0e7ff;">${swipeConfig?.maxSwipes || 30}</div>
+          <div style="color: #a5b4fc;">Like Ratio:</div>
+          <div style="color: #e0e7ff;">${Math.round((swipeConfig?.likeRatio || 0.7) * 100)}%</div>
           <div style="color: #a5b4fc;">Message Tone:</div>
           <div style="color: #e0e7ff;">${messagingConfig?.tone || 'friendly'}</div>
           <div style="color: #a5b4fc;">Auto Send:</div>
           <div style="color: #e0e7ff;">${messagingConfig?.autoSend ? 'Yes' : 'No'}</div>
-          <div style="color: #a5b4fc;">Languages:</div>
-          <div style="color: #e0e7ff;">${messagingConfig?.selectedLanguages?.length || DEFAULT_SELECTED_LANGUAGES.length} selected</div>
         </div>
       </div>`;
 
-    const controlsDisabled = !enabled;
-    const startDisabled = controlsDisabled || sessionActive;
-    const stopDisabled = controlsDisabled || !sessionActive;
-    
-    // Check if we're on a swiping page for the start button
+    // Page status indicator
     const currentPath = window.location.pathname;
     const isOnSwipingPage = currentPath.includes('/app/recs') || 
                            currentPath.includes('/app/explore') || 
@@ -867,52 +853,49 @@ function renderSidebarStatusTab(enabled) {
                            currentPath.includes('/app/matches') ||
                            currentPath === '/app' ||
                            currentPath === '/';
-    
-    const startDisabledForPage = !isOnSwipingPage;
-    const startBtnStyle = startDisabled || startDisabledForPage ? 'opacity:0.5;cursor:not-allowed;' : '';
-    const startBtnDisabled = startDisabled || startDisabledForPage;
-    
-    const btnRow1 = `
-      <div style="display:flex; gap:18px; justify-content:center; margin: 18px 0;">
-        <button id="sidebar-start-btn" class="main-btn" style="background:#22c55e;color:#fff;${startBtnStyle}" ${startBtnDisabled ? 'disabled' : ''}>Start</button>
-        <button id="sidebar-stop-btn" class="main-btn" style="background:#ef4444;color:#fff;${stopDisabled ? 'opacity:0.5;cursor:not-allowed;' : ''}" ${stopDisabled ? 'disabled' : ''}>Stop</button>
-      </div>`;
-    const btnRow2 = `
-      <div style="display:flex; gap:18px; justify-content:center;">
-        <button id="sidebar-like-btn" class="swipe-btn" style="background:#2563eb;color:#fff;${controlsDisabled ? 'opacity:0.5;cursor:not-allowed;' : ''}" ${controlsDisabled ? 'disabled' : ''}>Like</button>
-        <button id="sidebar-dislike-btn" class="swipe-btn" style="background:#64748b;color:#fff;${controlsDisabled ? 'opacity:0.5;cursor:not-allowed;' : ''}" ${controlsDisabled ? 'disabled' : ''}>Nope</button>
-      </div>`;
-    
-    // Add page status indicator
     const pageStatusHTML = !isOnSwipingPage ? `
       <div style="background: #f59e0b; border: 1px solid #f59e0b; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
         <div style="font-weight: 600; color: #fff; margin-bottom: 8px;">⚠️ Page Notice</div>
         <div style="color: #fff; font-size: 14px;">Auto-swiping works on the Discover/Explore page. Navigate there to use the Start button.</div>
       </div>
     ` : '';
-    
-    let fullContent = profilePreview + statusContent + stealthModeHTML + recoveryHTML + settingsContent + pageStatusHTML + btnRow1 + btnRow2;
-    
+
+    // Control buttons
+    const controlsDisabled = !enabled;
+    const startDisabled = controlsDisabled || sessionActive;
+    const stopDisabled = controlsDisabled || !sessionActive;
+    const startBtnStyle = startDisabled ? 'opacity:0.5;cursor:not-allowed;' : '';
+    const stopBtnStyle = stopDisabled ? 'opacity:0.5;cursor:not-allowed;' : '';
+    const btnRow1 = `
+      <div style="display:flex; gap:18px; justify-content:center; margin: 18px 0;">
+        <button id="sidebar-start-btn" class="main-btn" style="background:#22c55e;color:#fff;${startBtnStyle}" ${startDisabled ? 'disabled' : ''}>Start</button>
+        <button id="sidebar-stop-btn" class="main-btn" style="background:#ef4444;color:#fff;${stopBtnStyle}" ${stopDisabled ? 'disabled' : ''}>Stop</button>
+      </div>`;
+    const btnRow2 = `
+      <div style="display:flex; gap:18px; justify-content:center;">
+        <button id="sidebar-like-btn" class="swipe-btn" style="background:#2563eb;color:#fff;${controlsDisabled ? 'opacity:0.5;cursor:not-allowed;' : ''}" ${controlsDisabled ? 'disabled' : ''}>Like</button>
+        <button id="sidebar-dislike-btn" class="swipe-btn" style="background:#64748b;color:#fff;${controlsDisabled ? 'opacity:0.5;cursor:not-allowed;' : ''}" ${controlsDisabled ? 'disabled' : ''}>Nope</button>
+      </div>`;
+
+    // Only show recoveryHTML if context is invalid
+    let fullContent = profilePreview + statusContent + stealthModeHTML + settingsContent + pageStatusHTML + btnRow1 + btnRow2;
+    if (!chrome.runtime?.id) {
+      fullContent += recoveryHTML;
+    }
     statusPanel.innerHTML = fullContent;
-    
+
+    // Event handlers
     const startBtn = document.getElementById('sidebar-start-btn');
     const stopBtn = document.getElementById('sidebar-stop-btn');
     const likeBtn = document.getElementById('sidebar-like-btn');
     const dislikeBtn = document.getElementById('sidebar-dislike-btn');
-    
-    if (startBtn && !startBtnDisabled) {
+    if (startBtn && !startDisabled) {
       startBtn.onclick = () => {
-        console.log('[Tinder AI] Start button clicked');
         handleStartSwiping();
         setTimeout(() => renderSidebarStatusTab(enabled), 100);
       };
-    } else if (startBtn && startDisabledForPage) {
-      startBtn.onclick = () => {
-        console.log('[Tinder AI] Start button clicked but on wrong page');
-        showErrorNotification('Please navigate to the Discover/Explore page to start auto-swiping.');
-      };
     }
-    if (stopBtn) {
+    if (stopBtn && !stopDisabled) {
       stopBtn.onclick = () => {
         handleStopSwiping();
         setTimeout(() => renderSidebarStatusTab(enabled), 100);
@@ -924,7 +907,6 @@ function renderSidebarStatusTab(enabled) {
     if (dislikeBtn && !controlsDisabled) {
       dislikeBtn.onclick = () => handleManualNope();
     }
-
     // Stealth mode checkbox event handler
     const stealthCheckbox = document.getElementById('stealth-mode');
     if (stealthCheckbox) {
@@ -932,7 +914,6 @@ function renderSidebarStatusTab(enabled) {
         ANTI_DETECTION.toggleStealthMode(e.target.checked);
       });
     }
-
     // Context recovery button event handler
     const recoveryBtn = document.getElementById('context-recovery-btn');
     if (recoveryBtn) {
@@ -991,12 +972,18 @@ function renderSidebarSettingsTab(enabled) {
           <option value="de" ${msgConfig.language === 'de' ? 'selected' : ''}>German</option>
           </select>
         </div>
-      <div class="settings-row" style="align-items: center; margin-bottom: 20px;">
+      <div class="settings-row" style="align-items: center; margin-bottom: 12px;">
         <label style="display: flex; align-items: center; color: #a5b4fc;">
           <input type="checkbox" id="auto-send" ${msgConfig.autoSend ? 'checked' : ''} style="margin-right: 8px;">
           Auto-send messages
         </label>
-        </div>
+      </div>
+      <div class="settings-row" style="align-items: center; margin-bottom: 20px;">
+        <label style="display: flex; align-items: center; color: #a5b4fc;">
+          <input type="checkbox" id="auto-message-on-match" ${msgConfig.autoMessageOnMatch ? 'checked' : ''} style="margin-right: 8px;">
+          Auto-message new matches
+        </label>
+      </div>
     `;
 
     // Language Preferences Section
@@ -1158,6 +1145,7 @@ function setupSettingsEventListeners() {
         tone: document.getElementById('message-tone').value,
         language: document.getElementById('message-language').value,
         autoSend: document.getElementById('auto-send').checked,
+        autoMessageOnMatch: document.getElementById('auto-message-on-match').checked,
         selectedLanguages: selectedLanguages,
       };
 
@@ -1179,12 +1167,10 @@ function renderSidebarAnalyticsTab(enabled) {
   const analyticsPanel = document.getElementById('sidebar-tab-analytics');
   if(!analyticsPanel) return;
   if (!chrome.runtime?.id) return;
-  
-  chrome.storage.local.get(['activeAI', 'allTimeAnalytics', 'aiPerformance', 'sessionAnalytics', 'messagingStats', 'geminiApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey'], ({ activeAI, allTimeAnalytics, aiPerformance, sessionAnalytics, messagingStats, geminiApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey }) => {
+  chrome.storage.local.get(['activeAI', 'allTimeAnalytics', 'aiPerformance', 'messagingStats', 'geminiApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey'], ({ activeAI, allTimeAnalytics, aiPerformance, messagingStats, geminiApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey }) => {
     if (!chrome.runtime?.id) return;
     
     const allTimeStats = { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0, ...allTimeAnalytics };
-    const sessionStats = { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0, ...sessionAnalytics };
     const aiStats = AI_INTEGRATION.performance;
     const messagingData = MESSAGING.messagingStats; // Get from MESSAGING object directly
     
@@ -1209,37 +1195,13 @@ function renderSidebarAnalyticsTab(enabled) {
     
     // Calculate derived metrics
     const allTimeLikeRatio = allTimeStats.swipes > 0 ? ((allTimeStats.likes / allTimeStats.swipes) * 100).toFixed(1) : '0.0';
-    const sessionLikeRatio = sessionStats.swipes > 0 ? ((sessionStats.likes / sessionStats.swipes) * 100).toFixed(1) : '0.0';
     const matchRate = allTimeStats.likes > 0 ? ((allTimeStats.matches / allTimeStats.likes) * 100).toFixed(1) : '0.0';
-    const sessionMatchRate = sessionStats.likes > 0 ? ((sessionStats.matches / sessionStats.likes) * 100).toFixed(1) : '0.0';
     
     // Calculate AI success rate (use the appropriate AI model stats)
     const aiModelStats = aiStats[selectedAI] || aiStats.gemini || { responses: 0, success: 0, avgRating: 0 };
     const aiSuccessRate = aiModelStats.responses ? ((aiModelStats.success / aiModelStats.responses) * 100).toFixed(1) : '0.0';
     
     analyticsPanel.innerHTML = `
-      <div style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
-        <div style="font-weight: 600; color: #e0e7ff; margin-bottom: 12px; font-size: 16px;">📊 Current Session</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; margin-bottom: 12px;">
-          <div style="color: #a5b4fc;">Swipes:</div>
-          <div style="color: #e0e7ff;">${sessionStats.swipes}</div>
-          <div style="color: #a5b4fc;">Likes:</div>
-          <div style="color: #22c55e;">${sessionStats.likes}</div>
-          <div style="color: #a5b4fc;">Nopes:</div>
-          <div style="color: #ef4444;">${sessionStats.nopes}</div>
-          <div style="color: #a5b4fc;">Matches:</div>
-          <div style="color: #f59e0b;">${sessionStats.matches}</div>
-          <div style="color: #a5b4fc;">Like Ratio:</div>
-          <div style="color: #e0e7ff;">${sessionLikeRatio}%</div>
-          <div style="color: #a5b4fc;">Match Rate:</div>
-          <div style="color: #e0e7ff;">${sessionMatchRate}%</div>
-        </div>
-        <div style="display: flex; gap: 8px; margin-top: 8px;">
-          <button id="reset-session-stats" class="main-btn" style="background: #dc2626; color: #fff; padding: 6px 12px; font-size: 12px; flex: 1;">Reset Session</button>
-          <button id="export-session-data" class="main-btn" style="background: #059669; color: #fff; padding: 6px 12px; font-size: 12px; flex: 1;">Export Data</button>
-        </div>
-      </div>
-
       <div style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
         <div style="font-weight: 600; color: #e0e7ff; margin-bottom: 12px; font-size: 16px;">🏆 All-Time Statistics</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; margin-bottom: 12px;">
@@ -1486,19 +1448,6 @@ function setupSidebarTabs() {
   });
 }
 
-function setupSidebarConsent() {
-  const consentBox = document.getElementById('sidebar-consent');
-  const blurOverlay = document.getElementById('sidebar-blur-overlay');
-  if (!consentBox || !blurOverlay) return;
-  sidebarConsentGiven = consentBox.checked;
-  blurOverlay.classList.toggle('hidden', sidebarConsentGiven);
-  consentBox.addEventListener('change', () => {
-    sidebarConsentGiven = consentBox.checked;
-    blurOverlay.classList.toggle('hidden', sidebarConsentGiven);
-    renderSidebarActiveTab();
-  });
-}
-
 function injectSidebar() {
   console.log('[Tinder AI] injectSidebar called');
   if (document.getElementById('tinder-ai-sidebar')) {
@@ -1521,17 +1470,11 @@ function injectSidebar() {
       #tinder-ai-sidebar .settings-label, #tinder-ai-sidebar .settings-value, #tinder-ai-sidebar .analytics-label, #tinder-ai-sidebar .analytics-value, #tinder-ai-sidebar .settings-header, #tinder-ai-sidebar .analytics-header, #tinder-ai-sidebar .status-line, #tinder-ai-sidebar .status-highlight { color: #a5b4fc; }
       #tinder-ai-sidebar .sidebar-tab-btn.active { border-bottom: 2px solid #6366f1; color: #e0e7ff; background: #232946; }
       #tinder-ai-sidebar .sidebar-tab-btn { background: none; border: none; outline: none; color: #a5b4fc; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-      #tinder-ai-sidebar .sidebar-blur-overlay { position: absolute; top: 70px; left: 0; width: 100%; height: calc(100% - 70px); background: rgba(35,41,70,0.82); backdrop-filter: blur(4px); z-index: 10001; display: flex; align-items: center; justify-content: center; pointer-events: all; transition: opacity 0.2s; }
+      #tinder-ai-sidebar .sidebar-blur-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(35,41,70,0.92); backdrop-filter: blur(6px); z-index: 10002; display: flex; align-items: center; justify-content: center; pointer-events: all; transition: opacity 0.2s; }
       #tinder-ai-sidebar .sidebar-blur-overlay.hidden { display: none; }
     </style>
     <div style="padding: 18px 18px 0 18px; display: flex; align-items: center; justify-content: space-between;">
       <div style="font-size: 20px; font-weight: 700; color: #a5b4fc;">SpicySwipe</div>
-    </div>
-    <div style="padding: 10px 18px 0 18px; position: relative; z-index: 10002;">
-      <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #e0e7ff;">
-        <input type="checkbox" id="sidebar-consent" style="accent-color: #6366f1; width: 16px; height: 16px;" />
-        I consent to automated actions.
-      </label>
     </div>
     <div style="margin: 18px 0 0 0; display: flex; border-bottom: 1px solid #818cf8;">
       <button class="sidebar-tab-btn active" data-tab="status" style="flex:1;padding:10px 0;">Status</button>
@@ -1544,7 +1487,13 @@ function injectSidebar() {
       <div id="sidebar-tab-ai" class="sidebar-tab-panel" style="display:none;padding:18px;"></div>
       <div id="sidebar-tab-swiping" class="sidebar-tab-panel" style="display:none;padding:18px;"></div>
       <div id="sidebar-tab-analytics" class="sidebar-tab-panel" style="display:none;padding:18px;"></div>
-      <div id="sidebar-blur-overlay" class="sidebar-blur-overlay"><span style='color:#a5b4fc;font-size:17px;font-weight:600;'>Please provide consent.</span></div>
+      <div id="sidebar-blur-overlay" class="sidebar-blur-overlay">
+        <div style="text-align:center;max-width:340px;padding:32px 24px;background:rgba(30,32,60,0.98);border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.18);">
+          <div style="font-size:22px;font-weight:700;color:#a5b4fc;margin-bottom:16px;">Consent Required</div>
+          <div style="font-size:15px;color:#e0e7ff;margin-bottom:18px;">This extension uses automation to interact with Tinder. <b>Tinder does not allow automated actions</b> and using this tool may violate their terms of service. By continuing, you accept full responsibility for your use of this extension.</div>
+          <button id="sidebar-consent-btn" style="background:#22c55e;color:#fff;font-weight:600;padding:12px 32px;border:none;border-radius:8px;font-size:17px;cursor:pointer;box-shadow:0 2px 8px rgba(34,197,94,0.18);">Accept & Continue</button>
+        </div>
+      </div>
     </div>
   `;
   console.log('[Tinder AI] Setting sidebar styles...');
@@ -1578,10 +1527,19 @@ function injectSidebar() {
     toggleBtn.querySelector('#tinder-ai-sidebar-arrow').innerHTML = hidden ? '&#x25B6;' : '&#x25C0;';
   };
 
+  // Modern consent logic
+  const blurOverlay = sidebar.querySelector('#sidebar-blur-overlay');
+  const consentBtn = sidebar.querySelector('#sidebar-consent-btn');
+  sidebarConsentGiven = false;
+  blurOverlay.classList.toggle('hidden', sidebarConsentGiven);
+  consentBtn.addEventListener('click', () => {
+    sidebarConsentGiven = true;
+    blurOverlay.classList.add('hidden');
+    renderSidebarActiveTab();
+  });
+
   console.log('[Tinder AI] Setting up sidebar tabs...');
   setupSidebarTabs();
-  console.log('[Tinder AI] Setting up sidebar consent...');
-  setupSidebarConsent();
   console.log('[Tinder AI] Rendering sidebar active tab...');
   renderSidebarActiveTab();
   console.log('[Tinder AI] Sidebar setup complete');
@@ -1728,6 +1686,9 @@ const MESSAGING = {
 
           // Queue initial message
           this.queueMessage(matchId, 'opener');
+
+          // --- Call the global hook for auto-message pause/resume ---
+          if (window.onNewMatchDetected) window.onNewMatchDetected(matchId);
         }
       }
 
@@ -1835,7 +1796,8 @@ const MESSAGING = {
     try {
       const response = await this.generateAIResponse(message, conversation);
       if (response) {
-        if (this.autoSend) {
+        // Only auto-send opener if autoMessageOnMatch is enabled, otherwise require approval
+        if ((message.type === 'opener' && this.autoMessageOnMatch) || (message.type !== 'opener' && this.autoSend)) {
           await this.sendMessage(message.matchId, response);
           message.status = 'sent';
           this.messageQueue.shift();
@@ -2109,7 +2071,12 @@ const MESSAGING = {
     }
     
     this.saveMessagingStats();
-  }
+  },
+
+  setAutoMessageOnMatch(val) {
+    this.autoMessageOnMatch = val;
+    chrome.storage.local.set({ 'messageSettings.autoMessageOnMatch': val });
+  },
 };
 
 // Initialize messaging when the script loads
@@ -3634,130 +3601,148 @@ function getAllLanguageOptions() {
 function renderSidebarAITab(enabled) {
   const aiPanel = document.getElementById('sidebar-tab-ai');
   if (!aiPanel) return;
-
-  // Clear the panel before rendering
+  aiPanel.style.overflowY = 'auto';
+  aiPanel.style.maxHeight = 'calc(100vh - 60px)';
   aiPanel.innerHTML = '';
 
-  // Load existing settings
   chrome.storage.local.get(['activeAI', 'geminiApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey', 'messagingConfig'], ({ activeAI, geminiApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey, messagingConfig }) => {
-    const msgConfig = messagingConfig || { tone: 'friendly', language: 'en', autoSend: false };
+    const msgConfig = messagingConfig || { tone: 'friendly', language: 'en', autoSend: false, autoMessageOnMatch: false };
     const selectedAI = activeAI || 'gemini';
 
-    // AI Model Dropdown
-    const aiModelHTML = `
-      <div class="settings-header" style="font-size: 1.1em; font-weight: bold; margin-bottom: 15px;">AI Model</div>
-      <div class="settings-row" style="align-items: center; margin-bottom: 12px;">
-        <label for="ai-model-select" class="settings-label" style="min-width: 120px;">Model</label>
-        <select id="ai-model-select" style="width: 180px; padding: 4px; background: #181a2e; color: #e0e7ff; border: 1px solid #818cf8; border-radius: 4px;">
-          <option value="gemini" ${selectedAI === 'gemini' ? 'selected' : ''}>Gemini (Google)</option>
-          <option value="gemini-pro" ${selectedAI === 'gemini-pro' ? 'selected' : ''}>Gemini Pro (Google)</option>
-          <option value="chatgpt" ${selectedAI === 'chatgpt' ? 'selected' : ''}>ChatGPT (OpenAI)</option>
-          <option value="deepseek" ${selectedAI === 'deepseek' ? 'selected' : ''}>DeepSeek</option>
-          <option value="claude" ${selectedAI === 'claude' ? 'selected' : ''}>Claude (Anthropic)</option>
-        </select>
-      </div>
-    `;
-
-    // Messaging Configuration
-    const messagingSettingsHTML = `
-      <div class="settings-header" style="font-size: 1.1em; font-weight: bold; margin-bottom: 15px;">Message Configuration</div>
-      <div class="settings-row" style="align-items: center; margin-bottom: 12px;">
-        <label for="message-tone" class="settings-label" style="min-width: 120px;">Message Tone</label>
-        <select id="message-tone" style="width: 120px; padding: 4px; background: #181a2e; color: #e0e7ff; border: 1px solid #818cf8; border-radius: 4px;">
-          <option value="playful" ${msgConfig.tone === 'playful' ? 'selected' : ''}>Playful</option>
-          <option value="friendly" ${msgConfig.tone === 'friendly' ? 'selected' : ''}>Friendly</option>
-          <option value="flirty" ${msgConfig.tone === 'flirty' ? 'selected' : ''}>Flirty</option>
-          <option value="witty" ${msgConfig.tone === 'witty' ? 'selected' : ''}>Witty</option>
-        </select>
-      </div>
-      <div class="settings-row" style="align-items: center; margin-bottom: 12px;">
-        <label for="message-language" class="settings-label" style="min-width: 120px;">Language</label>
-        <select id="message-language" style="width: 120px; padding: 4px; background: #181a2e; color: #e0e7ff; border: 1px solid #818cf8; border-radius: 4px;">
-          <option value="en" ${msgConfig.language === 'en' ? 'selected' : ''}>English</option>
-          <option value="es" ${msgConfig.language === 'es' ? 'selected' : ''}>Spanish</option>
-          <option value="fr" ${msgConfig.language === 'fr' ? 'selected' : ''}>French</option>
-          <option value="de" ${msgConfig.language === 'de' ? 'selected' : ''}>German</option>
-        </select>
-      </div>
-      <div class="settings-row" style="align-items: center; margin-bottom: 20px;">
-        <label style="display: flex; align-items: center; color: #a5b4fc;">
-          <input type="checkbox" id="auto-send" ${msgConfig.autoSend ? 'checked' : ''} style="margin-right: 8px;">
-          Auto-send messages
-        </label>
-      </div>
-    `;
-
-    // Language Preferences Section (unchanged)
-    const selectedLanguages = msgConfig.selectedLanguages || DEFAULT_SELECTED_LANGUAGES;
-    const languagePreferencesHTML = `
-      <div class="settings-divider" style="margin-top: 20px; border-top: 1px solid #4a5568; padding-top: 20px;"></div>
-      <div class="settings-header" style="font-size: 1.1em; font-weight: bold; margin-bottom: 15px;">Language Preferences</div>
-      <p style="font-size: 0.9em; color: #a0aec0; margin-bottom: 15px;">Select which languages appear in your translation dropdowns:</p>
-      <div id="language-selection-container" style="max-height: 300px; overflow-y: auto; border: 1px solid #4a5568; border-radius: 8px; padding: 12px; background: #1a202c;">
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px;">
-          ${getAllLanguageOptions().map(lang => `
-            <label style="display: flex; align-items: center; color: #e0e7ff; font-size: 13px; cursor: pointer;">
-              <input type="checkbox" class="language-checkbox" value="${lang.value}" ${selectedLanguages.includes(lang.value) ? 'checked' : ''} style="margin-right: 8px;">
-              ${lang.text}
-            </label>
-          `).join('')}
+    // --- AI Model & API Key Section ---
+    const aiModelSection = `
+      <div style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; padding: 18px; margin-bottom: 22px;">
+        <div style="font-size: 1.1em; font-weight: bold; margin-bottom: 15px;">AI Model & API Key</div>
+        <div class="settings-row" style="align-items: center; margin-bottom: 16px;">
+          <label for="ai-model-select" class="settings-label" style="min-width: 120px;">AI Model</label>
+          <select id="ai-model-select" style="width: 160px; padding: 4px; background: #181a2e; color: #e0e7ff; border: 1px solid #818cf8; border-radius: 4px;">
+            <option value="gemini" ${selectedAI === 'gemini' ? 'selected' : ''}>Google Gemini</option>
+            <option value="chatgpt" ${selectedAI === 'chatgpt' ? 'selected' : ''}>OpenAI ChatGPT</option>
+            <option value="deepseek" ${selectedAI === 'deepseek' ? 'selected' : ''}>DeepSeek</option>
+            <option value="claude" ${selectedAI === 'claude' ? 'selected' : ''}>Anthropic Claude</option>
+          </select>
         </div>
-      </div>
-      <div style="margin-top: 12px; display: flex; gap: 8px;">
-        <button id="select-all-languages" class="main-btn" style="background: #4299e1; color: #fff; padding: 6px 12px; font-size: 12px;">Select All</button>
-        <button id="deselect-all-languages" class="main-btn" style="background: #e53e3e; color: #fff; padding: 6px 12px; font-size: 12px;">Deselect All</button>
-        <button id="reset-languages" class="main-btn" style="background: #d69e2e; color: #fff; padding: 6px 12px; font-size: 12px;">Reset to Default</button>
-      </div>
-      <div style="margin-top: 8px; font-size: 12px; color: #a0aec0;">
-        Selected: <span id="selected-count">${selectedLanguages.length}</span> languages
-      </div>
-    `;
-
-    // API Key Inputs (all hidden by default, shown by JS)
-    const apiSettingsHTML = `
-      <div class="settings-divider" style="margin-top: 20px; border-top: 1px solid #4a5568; padding-top: 20px;"></div>
-      <div class="settings-header" style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">API Configuration</div>
-      <div id="api-keys-container">
-        <div class="settings-row" id="gemini-key-row" style="align-items: center; display: none;">
+        <div id="gemini-key-row" class="settings-row" style="align-items: center; margin-bottom: 10px; display: ${selectedAI === 'gemini' ? 'flex' : 'none'};">
           <label for="gemini-api-key" class="settings-label" style="min-width: 120px;">Gemini API Key</label>
           <input type="password" id="gemini-api-key" class="settings-input" placeholder="Enter Gemini API Key" style="flex-grow: 1;">
         </div>
-        <div class="settings-row" id="openai-key-row" style="align-items: center; display: none;">
+        <div id="openai-key-row" class="settings-row" style="align-items: center; margin-bottom: 10px; display: ${selectedAI === 'chatgpt' ? 'flex' : 'none'};">
           <label for="openai-api-key" class="settings-label" style="min-width: 120px;">OpenAI API Key</label>
           <input type="password" id="openai-api-key" class="settings-input" placeholder="Enter OpenAI API Key" style="flex-grow: 1;">
         </div>
-        <div class="settings-row" id="deepseek-key-row" style="align-items: center; display: none;">
+        <div id="deepseek-key-row" class="settings-row" style="align-items: center; margin-bottom: 10px; display: ${selectedAI === 'deepseek' ? 'flex' : 'none'};">
           <label for="deepseek-api-key" class="settings-label" style="min-width: 120px;">DeepSeek API Key</label>
           <input type="password" id="deepseek-api-key" class="settings-input" placeholder="Enter DeepSeek API Key" style="flex-grow: 1;">
         </div>
-        <div class="settings-row" id="anthropic-key-row" style="align-items: center; display: none;">
+        <div id="anthropic-key-row" class="settings-row" style="align-items: center; margin-bottom: 10px; display: ${selectedAI === 'claude' ? 'flex' : 'none'};">
           <label for="anthropic-api-key" class="settings-label" style="min-width: 120px;">Anthropic API Key</label>
           <input type="password" id="anthropic-api-key" class="settings-input" placeholder="Enter Anthropic API Key" style="flex-grow: 1;">
         </div>
+        <div id="api-key-status" style="font-size: 0.8em; margin-top: 8px; height: 18px; text-align: left; font-weight: bold;"></div>
       </div>
-      <div id="api-key-status" style="font-size: 0.8em; margin-top: 8px; height: 18px; text-align: left; font-weight: bold;"></div>
-      <button id="save-api-keys-btn" class="main-btn" style="background: #4299e1; color: #fff; margin-top: 10px; width: 100%; text-align: center; padding: 10px;">Save API Key</button>
     `;
 
-    // Save Settings Button
+    // --- Messaging Configuration Section ---
+    const messagingSettingsHTML = `
+      <div style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; padding: 18px; margin-bottom: 22px;">
+        <div style="font-size: 1.1em; font-weight: bold; margin-bottom: 15px;">Messaging Configuration</div>
+        <div class="settings-row" style="align-items: center; margin-bottom: 12px;">
+          <label for="message-tone" class="settings-label" style="min-width: 120px;">Message Tone</label>
+          <select id="message-tone" style="width: 120px; padding: 4px; background: #181a2e; color: #e0e7ff; border: 1px solid #818cf8; border-radius: 4px;">
+            <option value="playful" ${msgConfig.tone === 'playful' ? 'selected' : ''}>Playful</option>
+            <option value="friendly" ${msgConfig.tone === 'friendly' ? 'selected' : ''}>Friendly</option>
+            <option value="flirty" ${msgConfig.tone === 'flirty' ? 'selected' : ''}>Flirty</option>
+            <option value="witty" ${msgConfig.tone === 'witty' ? 'selected' : ''}>Witty</option>
+          </select>
+        </div>
+        <div class="settings-row" style="align-items: center; margin-bottom: 12px;">
+          <label for="message-language" class="settings-label" style="min-width: 120px;">Language</label>
+          <select id="message-language" style="width: 120px; padding: 4px; background: #181a2e; color: #e0e7ff; border: 1px solid #818cf8; border-radius: 4px;">
+            <option value="en" ${msgConfig.language === 'en' ? 'selected' : ''}>English</option>
+            <option value="es" ${msgConfig.language === 'es' ? 'selected' : ''}>Spanish</option>
+            <option value="fr" ${msgConfig.language === 'fr' ? 'selected' : ''}>French</option>
+            <option value="de" ${msgConfig.language === 'de' ? 'selected' : ''}>German</option>
+          </select>
+        </div>
+        <div class="settings-row" style="align-items: center; margin-bottom: 12px;">
+          <label style="display: flex; align-items: center; color: #a5b4fc;">
+            <input type="checkbox" id="auto-send" ${msgConfig.autoSend ? 'checked' : ''} style="margin-right: 8px;">
+            Auto-send messages
+          </label>
+        </div>
+        <div class="settings-row" style="align-items: center; margin-bottom: 12px;">
+          <label style="display: flex; align-items: center; color: #a5b4fc;">
+            <input type="checkbox" id="auto-message-on-match" ${msgConfig.autoMessageOnMatch ? 'checked' : ''} style="margin-right: 8px;">
+            Auto-message new matches
+          </label>
+        </div>
+      </div>
+    `;
+
+    // --- Collapsible Language Preferences Section ---
+    const selectedLanguages = msgConfig.selectedLanguages || DEFAULT_SELECTED_LANGUAGES;
+    const languagePreferencesHTML = `
+      <div id="lang-pref-card" style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; margin-bottom: 18px;">
+        <div id="lang-pref-header" style="font-size: 1.1em; font-weight: bold; padding: 18px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
+          <span>Language Preferences</span>
+          <span id="lang-pref-toggle" style="font-size: 1.3em;">&#x25BC;</span>
+        </div>
+        <div id="lang-pref-body" style="display: none; padding: 0 18px 18px 18px;">
+          <p style="font-size: 0.9em; color: #a0aec0; margin-bottom: 15px;">Select which languages appear in your translation dropdowns:</p>
+          <div id="language-selection-container" style="max-height: 300px; overflow-y: auto; border: 1px solid #4a5568; border-radius: 8px; padding: 12px; background: #1a202c;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px;">
+              ${getAllLanguageOptions().map(lang => `
+                <label style="display: flex; align-items: center; color: #e0e7ff; font-size: 13px; cursor: pointer;">
+                  <input type="checkbox" class="language-checkbox" value="${lang.value}" ${selectedLanguages.includes(lang.value) ? 'checked' : ''} style="margin-right: 8px;">
+                  ${lang.text}
+                </label>
+              `).join('')}
+            </div>
+          </div>
+          <div style="margin-top: 12px; display: flex; gap: 8px;">
+            <button id="select-all-languages" class="main-btn" style="background: #4299e1; color: #fff; padding: 6px 12px; font-size: 12px;">Select All</button>
+            <button id="deselect-all-languages" class="main-btn" style="background: #e53e3e; color: #fff; padding: 6px 12px; font-size: 12px;">Deselect All</button>
+            <button id="reset-languages" class="main-btn" style="background: #d69e2e; color: #fff; padding: 6px 12px; font-size: 12px;">Reset to Default</button>
+          </div>
+          <div style="margin-top: 8px; font-size: 12px; color: #a0aec0;">
+            Selected: <span id="selected-count">${selectedLanguages.length}</span> languages
+          </div>
+        </div>
+      </div>
+    `;
+
+    // --- Save Button ---
     const saveSettingsHTML = `
-      <div class="settings-divider" style="margin-top: 20px; border-top: 1px solid #4a5568; padding-top: 20px;"></div>
-      <button id="save-ai-settings" class="main-btn" style="background: #22c55e; color: #fff; width: 100%; text-align: center; padding: 12px; font-weight: 600;">Save AI Settings</button>
-      <div id="ai-settings-status" style="font-size: 0.8em; margin-top: 8px; height: 18px; text-align: center; font-weight: bold;"></div>
+      <div style="margin-top: 20px;">
+        <button id="save-ai-settings" class="main-btn" style="background: #22c55e; color: #fff; width: 100%; text-align: center; padding: 14px; font-weight: 600; font-size: 16px;">Save All Settings</button>
+        <div id="ai-settings-status" style="font-size: 0.8em; margin-top: 8px; height: 18px; text-align: center; font-weight: bold;"></div>
+      </div>
     `;
 
-    aiPanel.innerHTML = aiModelHTML + messagingSettingsHTML + languagePreferencesHTML + apiSettingsHTML + saveSettingsHTML;
+    aiPanel.innerHTML = aiModelSection + messagingSettingsHTML + languagePreferencesHTML + saveSettingsHTML;
 
-    // Set key values
+    // --- Collapsible logic for Language Preferences ---
+    const langPrefHeader = document.getElementById('lang-pref-header');
+    const langPrefBody = document.getElementById('lang-pref-body');
+    const langPrefToggle = document.getElementById('lang-pref-toggle');
+    if (langPrefHeader && langPrefBody && langPrefToggle) {
+      langPrefHeader.onclick = () => {
+        const isOpen = langPrefBody.style.display === 'block';
+        langPrefBody.style.display = isOpen ? 'none' : 'block';
+        langPrefToggle.innerHTML = isOpen ? '&#x25BC;' : '&#x25B2;';
+      };
+    }
+
+    // --- Set initial values for API keys ---
     if (geminiApiKey) document.getElementById('gemini-api-key').value = geminiApiKey;
     if (openaiApiKey) document.getElementById('openai-api-key').value = openaiApiKey;
     if (deepseekApiKey) document.getElementById('deepseek-api-key').value = deepseekApiKey;
     if (anthropicApiKey) document.getElementById('anthropic-api-key').value = anthropicApiKey;
 
-    // Show/hide key fields based on model
+    // --- Show/hide API key fields based on model ---
     function updateKeyVisibility() {
       const model = document.getElementById('ai-model-select').value;
-      document.getElementById('gemini-key-row').style.display = (model === 'gemini' || model === 'gemini-pro') ? 'flex' : 'none';
+      document.getElementById('gemini-key-row').style.display = (model === 'gemini') ? 'flex' : 'none';
       document.getElementById('openai-key-row').style.display = (model === 'chatgpt') ? 'flex' : 'none';
       document.getElementById('deepseek-key-row').style.display = (model === 'deepseek') ? 'flex' : 'none';
       document.getElementById('anthropic-key-row').style.display = (model === 'claude') ? 'flex' : 'none';
@@ -3765,7 +3750,7 @@ function renderSidebarAITab(enabled) {
     updateKeyVisibility();
     document.getElementById('ai-model-select').addEventListener('change', updateKeyVisibility);
 
-    // Add event listeners
+    // --- Add event listeners ---
     setupAIEventListeners();
   });
 }
@@ -3854,12 +3839,14 @@ function setupAIEventListeners() {
       const tone = document.getElementById('message-tone').value;
       const language = document.getElementById('message-language').value;
       const autoSend = document.getElementById('auto-send').checked;
+      const autoMessageOnMatch = document.getElementById('auto-message-on-match').checked;
       const selectedLanguages = Array.from(document.querySelectorAll('.language-checkbox:checked')).map(cb => cb.value);
       
       const messagingConfig = {
         tone: tone,
         language: language,
-        autoSend: autoSend
+        autoSend: autoSend,
+        autoMessageOnMatch: autoMessageOnMatch
       };
 
       chrome.storage.local.set({
@@ -3877,6 +3864,7 @@ function setupAIEventListeners() {
         MESSAGING.tone = tone;
         MESSAGING.language = language;
         MESSAGING.autoSend = autoSend;
+        MESSAGING.autoMessageOnMatch = autoMessageOnMatch;
       });
     });
   }
@@ -3885,8 +3873,9 @@ function setupAIEventListeners() {
 function renderSidebarSwipingTab(enabled) {
   const swipingPanel = document.getElementById('sidebar-tab-swiping');
   if (!swipingPanel) return;
-
-  // Clear the panel before rendering
+  swipingPanel.style.overflowY = 'auto';
+  swipingPanel.style.maxHeight = 'calc(100vh - 60px)';
+  // ... existing code ...
   swipingPanel.innerHTML = '';
 
   // Load existing settings
@@ -4079,6 +4068,7 @@ function setupSettingsEventListeners() {
         tone: document.getElementById('message-tone').value,
         language: document.getElementById('message-language').value,
         autoSend: document.getElementById('auto-send').checked,
+        autoMessageOnMatch: document.getElementById('auto-message-on-match').checked,
         selectedLanguages: selectedLanguages,
       };
 
@@ -4204,4 +4194,61 @@ function manualContextRecovery() {
   }
 }
 
-// Helper function to show error notifications
+// --- Auto-message on new match: global hook ---
+window.onNewMatchDetected = async function(matchId) {
+  // Pause swiping
+  sessionActive = false;
+  swipingGloballyStopped = true;
+  console.log('[Tinder AI] Auto-message: Paused swiping for new match', matchId);
+
+  // Retry logic for opening chat
+  let chatReady = false;
+  let matchItem = null;
+  let attempts = 0;
+  const maxAttempts = 3;
+  while (!chatReady && attempts < maxAttempts) {
+    // Try to find and click the match item to open chat
+    matchItem = document.querySelector(`[data-id='${matchId}']`);
+    if (!matchItem) {
+      // Fallback: try to find by href
+      matchItem = Array.from(document.querySelectorAll("a[href*='/app/messages/']")).find(a => a.href.includes(matchId));
+    }
+    if (matchItem) {
+      matchItem.click();
+      console.log(`[Tinder AI] Auto-message: Clicked match item to open chat for ${matchId} (attempt ${attempts + 1})`);
+      // Wait for chat window (textarea) to appear
+      for (let i = 0; i < 20; i++) { // up to 10 seconds
+        if (document.querySelector('textarea[placeholder*="message"], textarea[placeholder*="Type"], textarea[placeholder*="Type a message"]')) {
+          chatReady = true;
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      if (chatReady) break;
+    } else {
+      console.warn(`[Tinder AI] Auto-message: Could not find match item in DOM for ${matchId} (attempt ${attempts + 1})`);
+    }
+    attempts++;
+  }
+  if (!chatReady) {
+    console.warn(`[Tinder AI] Auto-message: Chat window did not appear for match ${matchId} after ${maxAttempts} attempts. Skipping auto-message for this match.`);
+    // Resume swiping even if chat could not be opened
+    sessionActive = true;
+    swipingGloballyStopped = false;
+    automateSwiping();
+    return;
+  }
+
+  // Wait for the message to be sent (poll the message queue)
+  let maxWait = 30; // seconds
+  while (MESSAGING.messageQueue.some(m => m.matchId === matchId && m.status !== 'sent') && maxWait > 0) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    maxWait--;
+  }
+
+  // Resume swiping
+  sessionActive = true;
+  swipingGloballyStopped = false;
+  console.log('[Tinder AI] Auto-message: Resuming swiping after messaging new match', matchId);
+  automateSwiping();
+};

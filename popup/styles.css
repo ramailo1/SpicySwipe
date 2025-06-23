@@ -177,6 +177,8 @@ html.dark .tab-btn:hover:not(.active) {
 .tab-panel {
   display: none;
   padding: 16px 0 0 0;
+  overflow-y: auto;
+  max-height: calc(100vh - 60px);
 }
 .tab-panel.active {
   display: block;
@@ -520,4 +522,9 @@ html.dark #save-settings.main-btn {
 html.dark #save-settings.main-btn:hover, html.dark #save-settings.main-btn:focus {
   background: #818cf8;
   color: #fff;
+}
+
+.sidebar-tab-panel, .tab-panel {
+  overflow-y: auto;
+  max-height: calc(100vh - 60px);
 }
