@@ -758,7 +758,7 @@ function renderSidebarStatusTab(enabled) {
   statusPanel.style.overflowY = 'auto';
   statusPanel.style.maxHeight = 'calc(100vh - 60px)';
 
-  chrome.storage.local.get(['sessionAnalytics', 'activeAI', 'swipeConfig', 'geminiApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey', 'messagingConfig'], ({ sessionAnalytics, activeAI, swipeConfig, geminiApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey, messagingConfig }) => {
+  chrome.storage.local.get(['sessionAnalytics', 'activeAI', 'swipeConfig', 'geminiFreeApiKey', 'geminiProApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey', 'messagingConfig'], ({ sessionAnalytics, activeAI, swipeConfig, geminiFreeApiKey, geminiProApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey, messagingConfig }) => {
     const analytics = sessionAnalytics || { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0 };
     const profile = extractProfileInfo();
     const profilePreview = profile ? `
@@ -932,7 +932,7 @@ function renderSidebarSettingsTab(enabled) {
   settingsPanel.innerHTML = '';
 
   // Load existing settings
-  chrome.storage.local.get(['geminiApiKey', 'filterConfig', 'messagingConfig'], ({ geminiApiKey, filterConfig, messagingConfig }) => {
+  chrome.storage.local.get(['geminiFreeApiKey', 'geminiProApiKey', 'filterConfig', 'messagingConfig'], ({ geminiFreeApiKey, geminiProApiKey, filterConfig, messagingConfig }) => {
     const config = filterConfig || { likeRatio: 0.7, maxSwipes: 100 };
     const msgConfig = messagingConfig || { tone: 'friendly', language: 'en', autoSend: false };
 
@@ -1018,8 +1018,8 @@ function renderSidebarSettingsTab(enabled) {
       <div class="settings-header" style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">API Settings</div>
       <p style="font-size: 0.9em; color: #a0aec0; margin-bottom: 15px;">Using an API is faster and more reliable. Get your key from Google AI Studio.</p>
       <div class="settings-row" style="align-items: center;">
-          <label for="gemini-api-key" class="settings-label" style="min-width: 120px;">Gemini API Key</label>
-          <input type="password" id="gemini-api-key" class="settings-input" placeholder="Enter Gemini API Key" style="flex-grow: 1;">
+          <label for="gemini-free-api-key" class="settings-label" style="min-width: 120px;">Gemini Free API Key</label>
+          <input type="password" id="gemini-free-api-key" class="settings-input" placeholder="Enter Gemini Free API Key" style="flex-grow: 1;">
         </div>
       <div id="api-key-status" style="font-size: 0.8em; margin-top: 8px; height: 18px; text-align: left; font-weight: bold;"></div>
       <button id="save-api-keys-btn" class="main-btn" style="background: #4299e1; color: #fff; margin-top: 10px; width: 100%; text-align: center; padding: 10px;">Save API Key</button>
@@ -1035,9 +1035,9 @@ function renderSidebarSettingsTab(enabled) {
     settingsPanel.innerHTML = swipingSettingsHTML + messagingSettingsHTML + languagePreferencesHTML + apiSettingsHTML + saveSettingsHTML;
 
     // Load existing API key
-    const keyInput = document.getElementById('gemini-api-key');
-    if (keyInput && geminiApiKey) {
-      keyInput.value = geminiApiKey;
+    const keyInput = document.getElementById('gemini-free-api-key');
+    if (keyInput && geminiFreeApiKey) {
+      keyInput.value = geminiFreeApiKey;
     }
 
     // Add event listeners
@@ -1109,18 +1109,18 @@ function setupSettingsEventListeners() {
   const saveApiBtn = document.getElementById('save-api-keys-btn');
   if (saveApiBtn) {
     saveApiBtn.addEventListener('click', () => {
-      const geminiKey = document.getElementById('gemini-api-key').value.trim();
+      const geminiKey = document.getElementById('gemini-free-api-key').value.trim();
       const statusEl = document.getElementById('api-key-status');
       
       if (geminiKey) {
-        chrome.storage.local.set({ geminiApiKey: geminiKey }, () => {
+        chrome.storage.local.set({ geminiFreeApiKey: geminiKey }, () => {
           console.log('[Tinder AI] Gemini API Key saved.');
           statusEl.textContent = 'Gemini API Key saved successfully!';
           statusEl.style.color = '#48bb78';
           setTimeout(() => { statusEl.textContent = ''; }, 3000);
         });
       } else {
-        chrome.storage.local.remove('geminiApiKey', () => {
+        chrome.storage.local.remove('geminiFreeApiKey', () => {
           console.log('[Tinder AI] Gemini API Key removed.');
           statusEl.textContent = 'Gemini API Key removed.';
           statusEl.style.color = '#f59e0b';
@@ -1167,7 +1167,7 @@ function renderSidebarAnalyticsTab(enabled) {
   const analyticsPanel = document.getElementById('sidebar-tab-analytics');
   if(!analyticsPanel) return;
   if (!chrome.runtime?.id) return;
-  chrome.storage.local.get(['activeAI', 'allTimeAnalytics', 'aiPerformance', 'messagingStats', 'geminiApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey'], ({ activeAI, allTimeAnalytics, aiPerformance, messagingStats, geminiApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey }) => {
+  chrome.storage.local.get(['activeAI', 'allTimeAnalytics', 'aiPerformance', 'messagingStats', 'geminiFreeApiKey', 'geminiProApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey'], ({ activeAI, allTimeAnalytics, aiPerformance, messagingStats, geminiFreeApiKey, geminiProApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey }) => {
     if (!chrome.runtime?.id) return;
     
     const allTimeStats = { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0, ...allTimeAnalytics };
@@ -1181,7 +1181,7 @@ function renderSidebarAnalyticsTab(enabled) {
     
     if (selectedAI === 'gemini' || selectedAI === 'gemini-pro') {
       currentAIDisplay = selectedAI === 'gemini-pro' ? 'Gemini Pro' : 'Gemini';
-      apiKeyStatus = geminiApiKey && geminiApiKey.trim() !== '' ? '🟢 API Key Set' : '🔴 No API Key';
+      apiKeyStatus = geminiFreeApiKey && geminiFreeApiKey.trim() !== '' ? '🟢 API Key Set' : '🔴 No API Key';
     } else if (selectedAI === 'chatgpt') {
       currentAIDisplay = 'ChatGPT';
       apiKeyStatus = openaiApiKey && openaiApiKey.trim() !== '' ? '🟢 API Key Set' : '🔴 No API Key';
@@ -2544,7 +2544,7 @@ async function getAIResponse(prompt) {
 
   return new Promise(resolve => {
     try {
-      chrome.storage.local.get(['activeAI', 'geminiApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey'], ({ activeAI, geminiApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey }) => {
+      chrome.storage.local.get(['activeAI', 'geminiFreeApiKey', 'geminiProApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey'], ({ activeAI, geminiFreeApiKey, geminiProApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey }) => {
         const model = activeAI || 'gemini';
         // Helper to show error in status panel
         function showError(msg) {
@@ -2574,7 +2574,7 @@ async function getAIResponse(prompt) {
 
         // --- Gemini (Flash/Pro) ---
         if (model === 'gemini' || model === 'gemini-pro') {
-          if (!geminiApiKey || geminiApiKey.trim() === '') {
+          if (!geminiFreeApiKey || geminiFreeApiKey.trim() === '') {
             showError('No Gemini API key found. Please add your key in Settings.');
             resolve({ error: 'No Gemini API key found.' });
             return;
@@ -3635,7 +3635,7 @@ function renderSidebarAITab(enabled) {
   aiPanel.style.maxHeight = 'calc(100vh - 60px)';
   aiPanel.innerHTML = '';
 
-  chrome.storage.local.get(['activeAI', 'geminiApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey', 'messagingConfig'], ({ activeAI, geminiApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey, messagingConfig }) => {
+  chrome.storage.local.get(['activeAI', 'geminiFreeApiKey', 'geminiProApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey', 'messagingConfig'], ({ activeAI, geminiFreeApiKey, geminiProApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey, messagingConfig }) => {
     const msgConfig = messagingConfig || { tone: 'friendly', language: 'en', autoSend: false, autoMessageOnMatch: false };
     const selectedAI = activeAI || 'gemini';
 
@@ -3653,9 +3653,13 @@ function renderSidebarAITab(enabled) {
             <option value="claude" ${selectedAI === 'claude' ? 'selected' : ''}>Anthropic Claude</option>
           </select>
         </div>
-        <div id="gemini-key-row" class="settings-row" style="align-items: center; margin-bottom: 10px; display: ${selectedAI === 'gemini' || selectedAI === 'gemini-pro' ? 'flex' : 'none'};">
-          <label for="gemini-api-key" class="settings-label" style="min-width: 120px;">Gemini API Key</label>
-          <input type="password" id="gemini-api-key" class="settings-input" placeholder="Enter Gemini API Key" style="flex-grow: 1;">
+        <div id="gemini-free-key-row" class="settings-row" style="align-items: center; margin-bottom: 10px; display: ${selectedAI === 'gemini' ? 'flex' : 'none'};">
+          <label for="gemini-free-api-key" class="settings-label" style="min-width: 120px;">Gemini Free API Key</label>
+          <input type="password" id="gemini-free-api-key" class="settings-input" placeholder="Enter Gemini Free API Key" style="flex-grow: 1;">
+        </div>
+        <div id="gemini-pro-key-row" class="settings-row" style="align-items: center; margin-bottom: 10px; display: ${selectedAI === 'gemini-pro' ? 'flex' : 'none'};">
+          <label for="gemini-pro-api-key" class="settings-label" style="min-width: 120px;">Gemini Pro API Key</label>
+          <input type="password" id="gemini-pro-api-key" class="settings-input" placeholder="Enter Gemini Pro API Key" style="flex-grow: 1;">
         </div>
         <div id="openai-key-row" class="settings-row" style="align-items: center; margin-bottom: 10px; display: ${selectedAI === 'chatgpt' ? 'flex' : 'none'};">
           <label for="openai-api-key" class="settings-label" style="min-width: 120px;">OpenAI API Key</label>
@@ -3765,7 +3769,8 @@ function renderSidebarAITab(enabled) {
     }
 
     // --- Set initial values for API keys ---
-    if (geminiApiKey) document.getElementById('gemini-api-key').value = geminiApiKey;
+    if (geminiFreeApiKey) document.getElementById('gemini-free-api-key').value = geminiFreeApiKey;
+    if (geminiProApiKey) document.getElementById('gemini-pro-api-key').value = geminiProApiKey;
     if (openaiApiKey) document.getElementById('openai-api-key').value = openaiApiKey;
     if (deepseekApiKey) document.getElementById('deepseek-api-key').value = deepseekApiKey;
     if (anthropicApiKey) document.getElementById('anthropic-api-key').value = anthropicApiKey;
@@ -3773,7 +3778,8 @@ function renderSidebarAITab(enabled) {
     // --- Show/hide API key fields based on model ---
     function updateKeyVisibility() {
       const model = document.getElementById('ai-model-select').value;
-      document.getElementById('gemini-key-row').style.display = (model === 'gemini' || model === 'gemini-pro') ? 'flex' : 'none';
+      document.getElementById('gemini-free-key-row').style.display = (model === 'gemini') ? 'flex' : 'none';
+      document.getElementById('gemini-pro-key-row').style.display = (model === 'gemini-pro') ? 'flex' : 'none';
       document.getElementById('openai-key-row').style.display = (model === 'chatgpt') ? 'flex' : 'none';
       document.getElementById('deepseek-key-row').style.display = (model === 'deepseek') ? 'flex' : 'none';
       document.getElementById('anthropic-key-row').style.display = (model === 'claude') ? 'flex' : 'none';
@@ -3844,13 +3850,15 @@ function setupAIEventListeners() {
   if (saveApiBtn) {
     saveApiBtn.addEventListener('click', () => {
       const model = document.getElementById('ai-model-select').value;
-      const geminiKey = document.getElementById('gemini-api-key').value.trim();
+      const geminiKey = document.getElementById('gemini-free-api-key').value.trim();
+      const geminiProKey = document.getElementById('gemini-pro-api-key').value.trim();
       const openaiKey = document.getElementById('openai-api-key').value.trim();
       const deepseekKey = document.getElementById('deepseek-api-key').value.trim();
       const anthropicKey = document.getElementById('anthropic-api-key').value.trim();
       const statusEl = document.getElementById('api-key-status');
       let toSave = { activeAI: model };
-      if (model === 'gemini' || model === 'gemini-pro') toSave.geminiApiKey = geminiKey;
+      if (model === 'gemini') toSave.geminiFreeApiKey = geminiKey;
+      if (model === 'gemini-pro') toSave.geminiProApiKey = geminiProKey;
       if (model === 'chatgpt') toSave.openaiApiKey = openaiKey;
       if (model === 'deepseek') toSave.deepseekApiKey = deepseekKey;
       if (model === 'claude') toSave.anthropicApiKey = anthropicKey;
@@ -3873,12 +3881,14 @@ function setupAIEventListeners() {
       const autoMessageOnMatch = document.getElementById('auto-message-on-match').checked;
       const selectedLanguages = Array.from(document.querySelectorAll('.language-checkbox:checked')).map(cb => cb.value);
       // API keys
-      const geminiKey = document.getElementById('gemini-api-key').value.trim();
+      const geminiKey = document.getElementById('gemini-free-api-key').value.trim();
+      const geminiProKey = document.getElementById('gemini-pro-api-key').value.trim();
       const openaiKey = document.getElementById('openai-api-key').value.trim();
       const deepseekKey = document.getElementById('deepseek-api-key').value.trim();
       const anthropicKey = document.getElementById('anthropic-api-key').value.trim();
       let toSave = { activeAI, messagingConfig: { tone, language, autoSend, autoMessageOnMatch }, selectedLanguages };
-      if (activeAI === 'gemini' || activeAI === 'gemini-pro') toSave.geminiApiKey = geminiKey;
+      if (activeAI === 'gemini') toSave.geminiFreeApiKey = geminiKey;
+      if (activeAI === 'gemini-pro') toSave.geminiProApiKey = geminiProKey;
       if (activeAI === 'chatgpt') toSave.openaiApiKey = openaiKey;
       if (activeAI === 'deepseek') toSave.deepseekApiKey = deepseekKey;
       if (activeAI === 'claude') toSave.anthropicApiKey = anthropicKey;
@@ -4060,24 +4070,23 @@ function setupSettingsEventListeners() {
   const saveApiBtn = document.getElementById('save-api-keys-btn');
   if (saveApiBtn) {
     saveApiBtn.addEventListener('click', () => {
-      const geminiKey = document.getElementById('gemini-api-key').value.trim();
+      const geminiKey = document.getElementById('gemini-free-api-key').value.trim();
+      const geminiProKey = document.getElementById('gemini-pro-api-key').value.trim();
+      const openaiKey = document.getElementById('openai-api-key').value.trim();
+      const deepseekKey = document.getElementById('deepseek-api-key').value.trim();
+      const anthropicKey = document.getElementById('anthropic-api-key').value.trim();
       const statusEl = document.getElementById('api-key-status');
-      
-      if (geminiKey) {
-        chrome.storage.local.set({ geminiApiKey: geminiKey }, () => {
-          console.log('[Tinder AI] Gemini API Key saved.');
-          statusEl.textContent = 'Gemini API Key saved successfully!';
-          statusEl.style.color = '#48bb78';
-          setTimeout(() => { statusEl.textContent = ''; }, 3000);
-        });
-      } else {
-        chrome.storage.local.remove('geminiApiKey', () => {
-          console.log('[Tinder AI] Gemini API Key removed.');
-          statusEl.textContent = 'Gemini API Key removed.';
-          statusEl.style.color = '#f59e0b';
-          setTimeout(() => { statusEl.textContent = ''; }, 3000);
-        });
-      }
+      let toSave = { activeAI: document.getElementById('ai-model-select').value };
+      if (document.getElementById('ai-model-select').value === 'gemini') toSave.geminiFreeApiKey = geminiKey;
+      if (document.getElementById('ai-model-select').value === 'gemini-pro') toSave.geminiProApiKey = geminiProKey;
+      if (document.getElementById('ai-model-select').value === 'chatgpt') toSave.openaiApiKey = openaiKey;
+      if (document.getElementById('ai-model-select').value === 'deepseek') toSave.deepseekApiKey = deepseekKey;
+      if (document.getElementById('ai-model-select').value === 'claude') toSave.anthropicApiKey = anthropicKey;
+      chrome.storage.local.set(toSave, () => {
+        statusEl.textContent = 'API Key(s) saved successfully!';
+        statusEl.style.color = '#48bb78';
+        setTimeout(() => { statusEl.textContent = ''; }, 3000);
+      });
     });
   }
 
