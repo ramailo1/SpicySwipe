@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "SpicySwipe",
   "version": "1.2.0",
-  "description": "AI-powered Tinder tool with smart messaging, profile analysis, and support for multiple AI models. Privacy policy and logs updated for store compliance.",
+  "description": "AI-powered Tinder tool with smart messaging, profile analysis, and support for multiple AI models",
   "author": "Soufienne Rahali",
   "homepage_url": "https://github.com/ramailo1/SpicySwipe",
   "icons": {
@@ -46,5 +46,8 @@
       "matches": ["<all_urls>"]
     }
   ],
-  "options_page": "friend/friend.html"
+  "options_page": "friend/friend.html",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://api.openai.com https://generativelanguage.googleapis.com https://api.deepseek.com https://api.anthropic.com; img-src 'self' data:; style-src 'self' 'unsafe-inline';"
+  }
 } 
