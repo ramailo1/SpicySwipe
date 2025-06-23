@@ -4,6 +4,13 @@
 [![Chrome Extension](https://img.shields.io/badge/Chrome%20Extension-Manifest%20V3-green.svg)](https://developer.chrome.com/docs/extensions/mv3/)
 [![AI Powered](https://img.shields.io/badge/AI%20Powered-Multi%20Model-orange.svg)](https://openai.com/)
 
+## 📝 Changelog
+
+### v1.1.0
+- Dynamic swipe speed: Swiping now adapts speed and includes human-like breaks.
+- Robust error handling: Retries, exponential backoff, and user notifications for persistent errors.
+- Improved logging: All errors and important events are logged for diagnostics and user review.
+
 ## Overview
 
 SpicySwipe is a sophisticated Chrome extension that revolutionizes your Tinder experience through advanced AI-powered automation. Built with cutting-edge artificial intelligence, it provides intelligent messaging, comprehensive profile analysis, and seamless conversation management using multiple state-of-the-art AI models.
