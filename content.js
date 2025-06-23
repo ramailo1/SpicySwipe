@@ -1536,6 +1536,13 @@ function injectSidebar() {
     sidebarConsentGiven = true;
     blurOverlay.classList.add('hidden');
     renderSidebarActiveTab();
+    // Show AI and wand buttons immediately after consent
+    console.log('[Tinder AI][DEBUG] Consent given, showing AI icon and injecting wand buttons');
+    createPersistentAIIcon();
+    const newMatches = document.querySelectorAll(window.SELECTORS.matchListItemSelector + ':not(.wand-injected)');
+    if (newMatches.length > 0) {
+      injectWandButtons(newMatches);
+    }
   });
 
   console.log('[Tinder AI] Setting up sidebar tabs...');
@@ -2350,7 +2357,12 @@ function injectWandButtons(matches) {
   await MESSAGING.init();
 
   // Create persistent AI icon during initialization
-  createPersistentAIIcon();
+  if (sidebarConsentGiven) {
+    console.log('[Tinder AI][DEBUG] Calling createPersistentAIIcon() during initialization (consent given)');
+    createPersistentAIIcon();
+  } else {
+    console.log('[Tinder AI][DEBUG] Consent not given, AI icon not shown');
+  }
 
   // --- Centralized DOM Mutation Handler ---
   // To avoid performance crashes from multiple, aggressive MutationObservers,
@@ -2375,8 +2387,12 @@ function injectWandButtons(matches) {
     // The selector is specific enough that we no longer need to check the URL path.
     const newMatches = document.querySelectorAll(window.SELECTORS.matchListItemSelector + ':not(.wand-injected)');
     if (newMatches.length > 0) {
-      console.log(`[Tinder AI] Injecting wand buttons on ${newMatches.length} new matches.`);
-      injectWandButtons(newMatches);
+      if (sidebarConsentGiven) {
+        console.log(`[Tinder AI][DEBUG] Injecting wand buttons on ${newMatches.length} new matches (consent given).`);
+        injectWandButtons(newMatches);
+      } else {
+        console.log('[Tinder AI][DEBUG] Consent not given, wand buttons not injected');
+      }
     }
     
     // --- Task 2: Check for New Matches for Auto-Messaging ---
