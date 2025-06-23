@@ -458,81 +458,130 @@ const AI_INTEGRATION = {
 // Initialize AI integration
 AI_INTEGRATION.init();
 
+// Centralized error handler for swiping
+async function handleSwipeError(error, retryCount, backoff, isFatal = false) {
+  const message = `[${new Date().toLocaleTimeString()}] Error: ${error.message} (retry ${retryCount})`;
+  ANTI_DETECTION.addDiagnosticLog(message);
+  showErrorNotification(message);
+  if (isFatal) {
+    sessionActive = false;
+    swipingGloballyStopped = true;
+    showErrorNotification('Swiping paused due to repeated errors. Please refresh or check your connection.');
+    renderSidebarActiveTab();
+  } else {
+    await new Promise(resolve => setTimeout(resolve, backoff));
+  }
+}
+
 // Update performSwipe to use enhanced anti-detection
 async function performSwipe() {
   let profile = null;
   let retries = 0;
   const maxRetries = 5;
-  
+  let backoff = 1000;
+
   while (!profile && retries < maxRetries) {
-    profile = extractProfileInfo();
-    if (!profile) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      profile = extractProfileInfo();
+      if (!profile) throw new Error('Profile not found');
+    } catch (err) {
+      await handleSwipeError(err, retries, backoff);
       retries++;
+      backoff *= 2; // Exponential backoff
     }
   }
-  
+
   if (!profile) {
-    ANTI_DETECTION.addDiagnosticLog('Failed to extract profile info');
+    await handleSwipeError(new Error('Failed to extract profile info after retries'), maxRetries, backoff, true);
     return false;
   }
-  
+
   const decision = makeDecision(profile);
-    let button = null;
-  
-        if (decision === 'like') {
-    for (const selector of window.SELECTORS.LIKE_BUTTON) {
-      const buttons = document.querySelectorAll(selector);
-      for (const btn of buttons) {
-        if (!btn.disabled && 
-            btn.offsetParent !== null && 
-            !btn.className.includes('super') &&
-            !btn.className.includes('Bgc($c-ds-background-gamepad-sparks-super-like-default)') &&
-            btn.className.includes('Bgc($c-ds-background-gamepad-sparks-like-default)') &&
-            btn.querySelector('.gamepad-icon-wrapper') &&
-            !btn.querySelector('.gamepad-icon-wrapper svg path[d*="M11.27.948"]')) {
-          button = btn;
-            break;
+  let button = null;
+  retries = 0;
+  backoff = 1000;
+  // Try to find the button with retries
+  while (!button && retries < maxRetries) {
+    try {
+      if (decision === 'like') {
+        for (const selector of window.SELECTORS.LIKE_BUTTON) {
+          const buttons = document.querySelectorAll(selector);
+          for (const btn of buttons) {
+            if (!btn.disabled && 
+                btn.offsetParent !== null && 
+                !btn.className.includes('super') &&
+                !btn.className.includes('Bgc($c-ds-background-gamepad-sparks-super-like-default)') &&
+                btn.className.includes('Bgc($c-ds-background-gamepad-sparks-like-default)') &&
+                btn.querySelector('.gamepad-icon-wrapper') &&
+                !btn.querySelector('.gamepad-icon-wrapper svg path[d*="M11.27.948"]')) {
+              button = btn;
+              break;
+            }
+          }
+          if (button) break;
         }
-    }
-      if (button) break;
-    }
-  } else if (decision === 'nope') {
-    for (const selector of window.SELECTORS.NOPE_BUTTON) {
-      const buttons = document.querySelectorAll(selector);
-      for (const btn of buttons) {
-        if (!btn.disabled && 
-            btn.offsetParent !== null && 
-            (btn.className.includes('nope') || btn.className.includes('Bgc($c-ds-background-gamepad-sparks-nope-default)'))) {
-          button = btn;
-          break;
+      } else if (decision === 'nope') {
+        for (const selector of window.SELECTORS.NOPE_BUTTON) {
+          const buttons = document.querySelectorAll(selector);
+          for (const btn of buttons) {
+            if (!btn.disabled && 
+                btn.offsetParent !== null && 
+                (btn.className.includes('nope') || btn.className.includes('Bgc($c-ds-background-gamepad-sparks-nope-default)'))) {
+              button = btn;
+              break;
+            }
+          }
+          if (button) break;
         }
       }
-      if (button) break;
+      if (!button) throw new Error('Swipe button not found');
+    } catch (err) {
+      await handleSwipeError(err, retries, backoff);
+      retries++;
+      backoff *= 2;
     }
   }
-  
-  if (button) {
+
+  if (!button) {
+    await handleSwipeError(new Error('Failed to find swipe button after retries'), maxRetries, backoff, true);
+    return false;
+  }
+
+  try {
     await ANTI_DETECTION.simulateHumanBehavior(button, 'click');
     swipeCount++;
-    
-        if (decision === 'like') {
+    if (decision === 'like') {
       analytics.likes = (analytics.likes || 0) + 1;
-        } else {
+    } else {
       analytics.nopes = (analytics.nopes || 0) + 1;
     }
     analytics.swipes = (analytics.swipes || 0) + 1;
     await chrome.storage.local.set({ analytics });
-    
     // Check rate limit after each swipe
     if (await ANTI_DETECTION.checkRateLimit()) {
       ANTI_DETECTION.addDiagnosticLog('Rate limit reached. Pausing...');
       return false;
     }
-    
     return true;
+  } catch (err) {
+    await handleSwipeError(err, 0, 1000, true);
+    return false;
   }
-  return false;
+}
+
+function getDynamicSwipeDelay() {
+  // Start with the configured range
+  let [min, max] = SWIPE_DELAY_RANGE;
+  // As swipeCount increases, slow down swipes
+  const progress = swipeCount / MAX_SESSION_SWIPES;
+  // Increase delay by up to 2x as session progresses
+  min = min * (1 + progress);
+  max = max * (1 + progress * 1.5);
+  // Occasionally insert a longer break every 7-12 swipes
+  if (swipeCount > 0 && swipeCount % (7 + Math.floor(Math.random() * 6)) === 0) {
+    return 8000 + Math.random() * 7000; // 8-15 seconds break
+  }
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function automateSwiping() {
@@ -576,7 +625,7 @@ function automateSwiping() {
 
   performSwipe().then(() => {
     if (sessionActive && !swipingGloballyStopped && !isStopping) {
-      window.swipeTimeout = setTimeout(automateSwiping, randomDelay(...SWIPE_DELAY_RANGE));
+      window.swipeTimeout = setTimeout(automateSwiping, getDynamicSwipeDelay());
     } else {
       sessionActive = false;
       swipingGloballyStopped = true;
