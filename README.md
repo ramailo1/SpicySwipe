@@ -8,6 +8,9 @@
 
 ## 📝 Changelog
 
+### v1.1.1
+- Auto-swiping now stops and shows a clear message in the sidebar when you are out of likes (no like button found).
+
 ### v1.1.0
 - Dynamic swipe speed: Swiping now adapts speed and includes human-like breaks.
 - Robust error handling: Retries, exponential backoff, and user notifications for persistent errors.

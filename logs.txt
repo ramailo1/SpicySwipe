@@ -1,0 +1,307 @@
+sessions.bugsnag.com/:1   Failed to load resource: net::ERR_BLOCKED_BY_CLIENT
+ [Tinder AI] Tinder.com detected, setting up sidebar...
+ [Tinder AI] Content script loaded, initializing...
+ [Tinder AI] Message monitor is ready. New match checks will be triggered by the central DOM observer.
+ [Tinder AI] injectSidebar called
+ [Tinder AI] Creating sidebar element...
+ [Tinder AI] Setting sidebar HTML...
+ [Tinder AI] Setting sidebar styles...
+ [Tinder AI] Appending sidebar to body...
+ [Tinder AI] Sidebar appended to body
+ [Tinder AI] Creating toggle button...
+ [Tinder AI] Toggle button created
+ [Tinder AI] Setting up sidebar tabs...
+ [Tinder AI] Rendering sidebar active tab...
+ [Tinder AI] Sidebar setup complete
+ Extracting profile info...
+ No card stack found
+ [Tinder AI] Message monitor is ready. New match checks will be triggered by the central DOM observer.
+ [Tinder AI][DEBUG] Consent not given, AI icon not shown
+ [Tinder AI] Initialization complete. Central DOM observer is active.
+ [Tinder AI] Injecting sidebar...
+ [Tinder AI] injectSidebar called
+ [Tinder AI] Sidebar already exists, skipping injection
+ [Tinder AI] Sidebar injection complete
+ [Tinder AI] DOM change detected on path: /app/matches
+ [Tinder AI] Debug: Found 0 elements matching the match list item selector on this page.
+matches:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+ [Tinder AI] DOM change detected on path: /app/matches
+ [Tinder AI] Debug: Found 11 elements matching the match list item selector on this page.
+ [Tinder AI][DEBUG] Consent not given, wand buttons not injected
+ [Tinder AI] DOM change detected on path: /app/matches
+ [Tinder AI] Debug: Found 11 elements matching the match list item selector on this page.
+ [Tinder AI][DEBUG] Consent not given, wand buttons not injected
+ [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+ [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+ [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+ [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+ [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+ [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+ [Tinder AI][DEBUG] Consent given, showing AI icon and injecting wand buttons
+ Extracting profile info...
+ CARD HTML: <div class="Pos(r)" style="height: calc(100% - 75px);"><section class="Expand D(f) Pos(r) tappable-view Cur(p)" aria-label="Nefla's photos" aria-roledescription="carousel"><div class="CenterAlign D(f) Fxd(r) W(100%) Px(8px) Pos(a) Iso(i) Z(1) Bdrs(28px)::b Cnt(cq)::b Pos(a)::b W(100%)::b H(7px)::b Bgc($c-ds-opacity-black-60)::b Z(-1)::b" aria-label="Photos" role="tablist"><button class="Py(10.5px) W(100%) Mx(2px) Cur(p) tab-button" aria-label="Photo 1" aria-controls="carousel-item-0" type="button" role="tab" tabindex="0" aria-selected="true"><span class="H(3px) P(0) W(100%) Bdrs(28px) Bgc($c-ds-foreground-secondary-static-light) D(b) Bdw(1px) Bds(s) Bdc($c-ds-foreground-primary-static-dark) Bxz(cb) Bgc($c-ds-foreground-primary-static-light)!"></span></button><button class="Py(10.5px) W(100%) Mx(2px) Cur(p) tab-button" aria-label="Photo 2" aria-controls="carousel-item-1" type="button" role="tab" tabindex="-1" aria-selected="false"><span class="H(3px) P(0) W(100%) Bdrs(28px) Bgc($c-ds-foreground-secondary-static-light) D(b) Bdw(1px) Bds(s) Bdc($c-ds-foreground-primary-static-dark) Bxz(cb) tab-button:h>Oc(white)! tab-button:h>Os(s)! tab-button:h>Ow(2px)! tab-button:fv>Oc(white)! tab-button:fv>Os(s)! tab-button:fv>Ow(2px)!"></span></button><button class="Py(10.5px) W(100%) Mx(2px) Cur(p) tab-button" aria-label="Photo 3" aria-controls="carousel-item-2" type="button" role="tab" tabindex="-1" aria-selected="false"><span class="H(3px) P(0) W(100%) Bdrs(28px) Bgc($c-ds-foreground-secondary-static-light) D(b) Bdw(1px) Bds(s) Bdc($c-ds-foreground-primary-static-dark) Bxz(cb) tab-button:h>Oc(white)! tab-button:h>Os(s)! tab-button:h>Ow(2px)! tab-button:fv>Oc(white)! tab-button:fv>Os(s)! tab-button:fv>Ow(2px)!"></span></button><button class="Py(10.5px) W(100%) Mx(2px) Cur(p) tab-button" aria-label="Photo 4" aria-controls="carousel-item-3" type="button" role="tab" tabindex="-1" aria-selected="false"><span class="H(3px) P(0) W(100%) Bdrs(28px) Bgc($c-ds-foreground-secondary-static-light) D(b) Bdw(1px) Bds(s) Bdc($c-ds-foreground-primary-static-dark) Bxz(cb) tab-button:h>Oc(white)! tab-button:h>Os(s)! tab-button:h>Ow(2px)! tab-button:fv>Oc(white)! tab-button:fv>Os(s)! tab-button:fv>Ow(2px)!"></span></button></div><div class="Expand Pos(a) D(f) Ov(h) Us(n) keen-slider" dir="ltr" aria-live="polite" id=":ra:"><div class="keen-slider__slide Wc($transform) Fxg(1)" aria-hidden="false" id="carousel-item-0" aria-label="1 of 4" aria-roledescription="slide" role="tabpanel" style="min-width: calc(100% + 0px); max-width: calc(100% + 0px); transform: translate3d(0px, 0px, 0px);"><div class="Bdrs(8px) Bgz(cv) Bgp(c) StretchedBox" aria-hidden="false" role="img" aria-label="Profile Photo 1" style="background-image: url(&quot;https://images-ssl.gotinder.com/u/hUrXxYcKweAfpopW8McaMW/b9nb2mkH3Lx4oc69KNtUpU.webp?Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6IiovdS9oVXJYeFljS3dlQWZwb3BXOE1jYU1XLyoiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3NTEzMTQwOTJ9fX1dfQ__&amp;Signature=y6FJF~2LEEIAjmythAHq0VAw-O8aWOk3HsWSJ7Zup6TWFE8NLLS5wLLniH-Hfq6qH5jJ1plNcIq9thIIj9xIkgiMG8XvkQPx1~IIk8Kj4VxjrEH5ffbZqjlhBW1Y43T0yqdNL618YjgvFzCV6U78grqECZ91tUghP3ZFBS07szpBi~WH3ijqUw0p0d-0tI~4aalSxPCWLDzn6JN-BUUMejq5MFBbr6DKjXdLk~0Wq0ORK9kkx0HTXbyttPiNVa6EjbHLU9lM3Hu4UcSsj3J8cxkdBTOL4KD1ieKjuoeqw25-Oi5l4pYHbu3jojnt4wWSda3wB8tx78~yKlWBYLuKLw__&amp;Key-Pair-Id=K368TLDEUPA6OI&quot;); background-position: 50.3759% 30.7532%; background-size: 126.233%;"></div></div><div class="keen-slider__slide Wc($transform) Fxg(1)" aria-hidden="true" id="carousel-item-1" aria-label="2 of 4" aria-roledescription="slide" role="tabpanel" style="min-width: calc(100% + 0px); max-width: calc(100% + 0px); transform: translate3d(0px, 0px, 0px);"></div><div class="keen-slider__slide Wc($transform) Fxg(1)" aria-hidden="true" id="carousel-item-2" aria-label="3 of 4" aria-roledescription="slide" role="tabpanel" style="min-width: calc(100% + 0px); max-width: calc(100% + 0px); transform: translate3d(0px, 0px, 0px);"></div><div class="keen-slider__slide Wc($transform) Fxg(1)" aria-hidden="true" id="carousel-item-3" aria-label="4 of 4" aria-roledescription="slide" role="tabpanel" style="min-width: calc(100% + 0px); max-width: calc(100% + 0px); transform: translate3d(0px, 0px, 0px);"></div></div><button class="Pos(a) Z(1) T(50%) Mx(10px) D(n)--s C($c-ds-icon-secondary) Op(0) tappable-view:h_Op(1) Op(1):f Trsdu($fast) Bgc($c-ds-background-secondary) Bdrs(50%) H(24px) W(24px) P(4px) Bxz(cb) D(f) Ai(c) Jc(c) Cur(p) Os(s):f Ow(2px):f Os(s):f Ow(4px):f Bgc($c-ds-background-tappy-indicator-active):f Oc($c-ds-border-tappy-indicator-active):f" aria-label="Previous Photo" disabled="" type="button" aria-controls=":ra:"><svg focusable="false" aria-hidden="true" role="presentation" viewBox="0 0 24 24" width="24px" height="24px"><path class="Fill($c-ds-icon-secondary)" d="M13.98 20.717a1.79 1.79 0 0 0 2.685 0 1.79 1.79 0 0 0 0-2.684l-7.158-6.62 7.158-6.8a1.79 1.79 0 0 0 0-2.684 1.79 1.79 0 0 0-2.684 0L5.92
+ Name span: <span class="Typs(display-1-strong)" itemprop="name">Nefla</span>
+ Age span: <span class="As(b)" itemprop="age">28</span>
+ Photo background div: <div class="Bdrs(8px) Bgz(cv) Bgp(c) StretchedBox" aria-hidden="false" role="img" aria-label="Profile Photo 1" style="background-image: url(&quot;https://images-ssl.gotinder.com/u/hUrXxYcKweAfpopW8McaMW/b9nb2mkH3Lx4oc69KNtUpU.webp?Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6IiovdS9oVXJYeFljS3dlQWZwb3BXOE1jYU1XLyoiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3NTEzMTQwOTJ9fX1dfQ__&amp;Signature=y6FJF~2LEEIAjmythAHq0VAw-O8aWOk3HsWSJ7Zup6TWFE8NLLS5wLLniH-Hfq6qH5jJ1plNcIq9thIIj9xIkgiMG8XvkQPx1~IIk8Kj4VxjrEH5ffbZqjlhBW1Y43T0yqdNL618YjgvFzCV6U78grqECZ91tUghP3ZFBS07szpBi~WH3ijqUw0p0d-0tI~4aalSxPCWLDzn6JN-BUUMejq5MFBbr6DKjXdLk~0Wq0ORK9kkx0HTXbyttPiNVa6EjbHLU9lM3Hu4UcSsj3J8cxkdBTOL4KD1ieKjuoeqw25-Oi5l4pYHbu3jojnt4wWSda3wB8tx78~yKlWBYLuKLw__&amp;Key-Pair-Id=K368TLDEUPA6OI&quot;); background-position: 50.3759% 30.7532%; background-size: 126.233%;"></div> Extracted photo URL: https://images-ssl.gotinder.com/u/hUrXxYcKweAfpopW8McaMW/b9nb2mkH3Lx4oc69KNtUpU.webp?Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6IiovdS9oVXJYeFljS3dlQWZwb3BXOE1jYU1XLyoiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3NTEzMTQwOTJ9fX1dfQ__&Signature=y6FJF~2LEEIAjmythAHq0VAw-O8aWOk3HsWSJ7Zup6TWFE8NLLS5wLLniH-Hfq6qH5jJ1plNcIq9thIIj9xIkgiMG8XvkQPx1~IIk8Kj4VxjrEH5ffbZqjlhBW1Y43T0yqdNL618YjgvFzCV6U78grqECZ91tUghP3ZFBS07szpBi~WH3ijqUw0p0d-0tI~4aalSxPCWLDzn6JN-BUUMejq5MFBbr6DKjXdLk~0Wq0ORK9kkx0HTXbyttPiNVa6EjbHLU9lM3Hu4UcSsj3J8cxkdBTOL4KD1ieKjuoeqw25-Oi5l4pYHbu3jojnt4wWSda3wB8tx78~yKlWBYLuKLw__&Key-Pair-Id=K368TLDEUPA6OI
+ Tag elements found: 1
+ Tag element: <div class="Sq(8px) Bdrs(50%) Mend(4px) My(4px) Bgc($c-ds-background-badge-online-now-default)"></div> Tag: 
+ Extracted card data: Object
+ [Tinder AI] DOM change detected on path: /app/matches
+ [Tinder AI] Debug: Found 11 elements matching the match list item selector on this page.
+ [Tinder AI][DEBUG] Re-injecting wand buttons on 11 matches that lost their buttons.
+ [Tinder AI] DOM change detected on path: /app/matches
+ [Tinder AI] Debug: Found 11 elements matching the match list item selector on this page.
+ [Tinder AI][DEBUG] Injecting wand buttons on 11 matches (consent given).
+ [Tinder AI] DOM change detected on path: /app/matches
+ [Tinder AI] Debug: Found 11 elements matching the match list item selector on this page.
+ [Tinder AI][DEBUG] Injecting wand buttons on 11 matches (consent given).
+ [Tinder AI] DOM change detected on path: /app/matches
+ [Tinder AI] Debug: Found 11 elements matching the match list item selector on this page.
+ [Tinder AI][DEBUG] Injecting wand buttons on 11 matches (consent given).
+ [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+ [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+ [Tinder AI] DOM change detected on path: /app/matches
+ [Tinder AI] Debug: Found 60 elements matching the match list item selector on this page.
+ [Tinder AI][DEBUG] Injecting wand buttons on 60 matches (consent given).
+ [Tinder AI][DEBUG] Re-injecting wand buttons on 60 matches that lost their buttons.
+sessions.bugsnag.com/:1   Failed to load resource: net::ERR_BLOCKED_BY_CLIENT
+  The source list for the Content Security Policy directive 'connect-src' contains an invalid source: 'https://*.*.braintree-api.com'. It will be ignored.
+cl @ vendor-15558e1….js:2
+  The source list for the Content Security Policy directive 'connect-src' contains an invalid source: 'https://*.*.paypal.com'. It will be ignored.
+cl @ vendor-15558e1….js:2
+  The source list for the Content Security Policy directive 'frame-src' contains an invalid source: 'https://*.*.paypal.com'. It will be ignored.
+cl @ vendor-15558e1….js:2
+  The source list for the Content Security Policy directive 'img-src' contains an invalid source: 'https://*.*.paypal.com'. It will be ignored.
+cl @ vendor-15558e1….js:2
+  The source list for the Content Security Policy directive 'connect-src' contains an invalid source: 'https://*.*.braintree-api.com'. It will be ignored.
+cl @ vendor-15558e1….js:2
+  The source list for the Content Security Policy directive 'connect-src' contains an invalid source: 'https://*.*.paypal.com'. It will be ignored.
+cl @ vendor-15558e1….js:2
+  The source list for the Content Security Policy directive 'frame-src' contains an invalid source: 'https://*.*.paypal.com'. It will be ignored.
+cl @ vendor-15558e1….js:2
+  The source list for the Content Security Policy directive 'img-src' contains an invalid source: 'https://*.*.paypal.com'. It will be ignored.
+cl @ vendor-15558e1….js:2
+messages/5c5951704e205d1100f1ea0a682edf90ddffee677a4eed67:1 [Intervention] Images loaded lazily and replaced with placeholders. Load events are deferred. See https://go.microsoft.com/fwlink/?linkid=2048113
+ [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+ [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+ [Tinder AI] DOM change detected on path: /app/messages/5c5951704e205d1100f1ea0a682edf90ddffee677a4eed67
+ [Tinder AI] Debug: Found 60 elements matching the match list item selector on this page.
+ [Tinder AI][DEBUG] Injecting wand buttons on 60 matches (consent given).
+ [Tinder AI] Generating AI message for current conversation...
+ [Tinder AI] Extracting profile info from current chat...
+ [Tinder AI] DOM change detected on path: /app/messages/5c5951704e205d1100f1ea0a682edf90ddffee677a4eed67
+ [Tinder AI] Debug: Found 60 elements matching the match list item selector on this page.
+ [Tinder AI][DEBUG] Injecting wand buttons on 60 matches (consent given).
+content.js:2835 [Tinder AI] Starting detailed profile extraction from container: <body class=​"M(0)​ Pos(f)​ Ov(h)​ P(0)​ Expand Fz($s)​ C($c-ds-text-primary)​ Ovsby(n)​ theme-light" dir=​"auto">​…​</body>​
+content.js:2845 [Tinder AI] Step 1: Looking for name and age...
+content.js:2857 [Tinder AI] Found name element: Ichrak27
+content.js:2876 [Tinder AI] Step 2: Looking for bio...
+content.js:2896 [Tinder AI] No bio found via section text, trying alternative selectors...
+content.js:2909 [Tinder AI] Step 3: Looking for interests...
+content.js:2932 [Tinder AI] Step 4: Looking for prompts...
+content.js:2947 [Tinder AI] No prompts found via section text, trying alternative selectors...
+content.js:2958 [Tinder AI] Final extracted profile info: Object
+content.js:3424 [Tinder AI] Successfully extracted profile info from current chat: Object
+content.js:2968 [Tinder AI] Starting chat history extraction...
+content.js:3004 [Tinder AI] data-testid strategy failed or no messages found. Falling back to class-based strategy.
+content.js:3010 [Tinder AI] Found 71 potential message elements
+content.js:3072 [Tinder AI] Extracted 7 chat messages using fallback strategy. Array(7)
+content.js:3369 [Tinder AI] Language for response set to: en
+content.js:3394 [Tinder AI] Generating personalized message with prompt: You are a Tinder messaging assistant. Based on the profile and recent chat history below, write ONE short, engaging reply in en. Your reply should be from "me" and continue the conversation naturally. Do NOT include any intro, options, or explanations. ONLY output the raw message text itself.
+
+PROFILE:
+Name: Ichrak
+Bio: "n/a"
+Interests: Movies, Documentaries, Meditation, Instagram, Art
+
+RECENT CHAT HISTORY:
+them: Sent
+them: 10:40 AMLa vie
+them: La vie
+them: Ichrak27Verified!Looking for🤔Still figuring it outEssentials333 kilometers awayEsprit
+
+BasicsZodiacScorpioEducationPhDInterestsMoviesDocumentariesMeditationInstagramArtUnmatchBlock IchrakReport Ichrak
+
+Your reply:
+content.js:2569 [Tinder AI] getAIResponse called. Prompt: You are a Tinder messaging assistant. Based on the profile and recent chat history below, write ONE short, engaging reply in en. Your reply should be from "me" and continue the conversation naturally. Do NOT include any intro, options, or explanations. ONLY output the raw message text itself.
+
+PROFILE:
+Name: Ichrak
+Bio: "n/a"
+Interests: Movies, Documentaries, Meditation, Instagram, Art
+
+RECENT CHAT HISTORY:
+them: Sent
+them: 10:40 AMLa vie
+them: La vie
+them: Ichrak27Verified!Looking for🤔Still figuring it outEssentials333 kilometers awayEsprit
+
+BasicsZodiacScorpioEducationPhDInterestsMoviesDocumentariesMeditationInstagramArtUnmatchBlock IchrakReport Ichrak
+
+Your reply:
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:2412 [Tinder AI] DOM change detected on path: /app/messages/5c5951704e205d1100f1ea0a682edf90ddffee677a4eed67
+content.js:2416 [Tinder AI] Debug: Found 60 elements matching the match list item selector on this page.
+content.js:2423 [Tinder AI][DEBUG] Injecting wand buttons on 60 matches (consent given).
+content.js:2412 [Tinder AI] DOM change detected on path: /app/messages/5c5951704e205d1100f1ea0a682edf90ddffee677a4eed67
+content.js:2416 [Tinder AI] Debug: Found 60 elements matching the match list item selector on this page.
+content.js:2423 [Tinder AI][DEBUG] Injecting wand buttons on 60 matches (consent given).
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:2412 [Tinder AI] DOM change detected on path: /app/messages/5c5951704e205d1100f1ea0a682edf90ddffee677a4eed67
+content.js:2416 [Tinder AI] Debug: Found 60 elements matching the match list item selector on this page.
+content.js:2423 [Tinder AI][DEBUG] Injecting wand buttons on 60 matches (consent given).
+content.js:2186 [Tinder AI] Generating AI message for current conversation...
+content.js:3410 [Tinder AI] Extracting profile info from current chat...
+content.js:2412 [Tinder AI] DOM change detected on path: /app/messages/5c5951704e205d1100f1ea0a682edf90ddffee677a4eed67
+content.js:2416 [Tinder AI] Debug: Found 60 elements matching the match list item selector on this page.
+content.js:2423 [Tinder AI][DEBUG] Injecting wand buttons on 60 matches (consent given).
+content.js:2835 [Tinder AI] Starting detailed profile extraction from container: <body class=​"M(0)​ Pos(f)​ Ov(h)​ P(0)​ Expand Fz($s)​ C($c-ds-text-primary)​ Ovsby(n)​ theme-light" dir=​"auto">​…​</body>​
+content.js:2845 [Tinder AI] Step 1: Looking for name and age...
+content.js:2857 [Tinder AI] Found name element: Ichrak27
+content.js:2876 [Tinder AI] Step 2: Looking for bio...
+content.js:2896 [Tinder AI] No bio found via section text, trying alternative selectors...
+content.js:2909 [Tinder AI] Step 3: Looking for interests...
+content.js:2932 [Tinder AI] Step 4: Looking for prompts...
+content.js:2947 [Tinder AI] No prompts found via section text, trying alternative selectors...
+content.js:2958 [Tinder AI] Final extracted profile info: Object
+content.js:3424 [Tinder AI] Successfully extracted profile info from current chat: Object
+content.js:2968 [Tinder AI] Starting chat history extraction...
+content.js:3004 [Tinder AI] data-testid strategy failed or no messages found. Falling back to class-based strategy.
+content.js:3010 [Tinder AI] Found 71 potential message elements
+content.js:3072 [Tinder AI] Extracted 7 chat messages using fallback strategy. Array(7)
+content.js:3369 [Tinder AI] Language for response set to: en
+content.js:3394 [Tinder AI] Generating personalized message with prompt: You are a Tinder messaging assistant. Based on the profile and recent chat history below, write ONE short, engaging reply in en. Your reply should be from "me" and continue the conversation naturally. Do NOT include any intro, options, or explanations. ONLY output the raw message text itself.
+
+PROFILE:
+Name: Ichrak
+Bio: "n/a"
+Interests: Movies, Documentaries, Meditation, Instagram, Art
+
+RECENT CHAT HISTORY:
+them: Sent
+them: 10:40 AMLa vie
+them: La vie
+them: Ichrak27Verified!Looking for🤔Still figuring it outEssentials333 kilometers awayEsprit
+
+BasicsZodiacScorpioEducationPhDInterestsMoviesDocumentariesMeditationInstagramArtUnmatchBlock IchrakReport Ichrak
+
+Your reply:
+content.js:2569 [Tinder AI] getAIResponse called. Prompt: You are a Tinder messaging assistant. Based on the profile and recent chat history below, write ONE short, engaging reply in en. Your reply should be from "me" and continue the conversation naturally. Do NOT include any intro, options, or explanations. ONLY output the raw message text itself.
+
+PROFILE:
+Name: Ichrak
+Bio: "n/a"
+Interests: Movies, Documentaries, Meditation, Instagram, Art
+
+RECENT CHAT HISTORY:
+them: Sent
+them: 10:40 AMLa vie
+them: La vie
+them: Ichrak27Verified!Looking for🤔Still figuring it outEssentials333 kilometers awayEsprit
+
+BasicsZodiacScorpioEducationPhDInterestsMoviesDocumentariesMeditationInstagramArtUnmatchBlock IchrakReport Ichrak
+
+Your reply:
+content.js:2412 [Tinder AI] DOM change detected on path: /app/messages/5c5951704e205d1100f1ea0a682edf90ddffee677a4eed67
+content.js:2416 [Tinder AI] Debug: Found 60 elements matching the match list item selector on this page.
+content.js:2423 [Tinder AI][DEBUG] Injecting wand buttons on 60 matches (consent given).
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:2569 [Tinder AI] getAIResponse called. Prompt: Translate the following text to fr. Return ONLY the translated text, with no introduction or explanation.
+
+Text: "La vie est belle! 😉 Any favorite documentaries lately?"
+content.js:2412 [Tinder AI] DOM change detected on path: /app/messages/5c5951704e205d1100f1ea0a682edf90ddffee677a4eed67
+content.js:2416 [Tinder AI] Debug: Found 60 elements matching the match list item selector on this page.
+content.js:2423 [Tinder AI][DEBUG] Injecting wand buttons on 60 matches (consent given).
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:3369 [Tinder AI] Language for response set to: en
+content.js:3394 [Tinder AI] Generating personalized message with prompt: You are a Tinder messaging assistant. Based on the profile and recent chat history below, write ONE short, engaging reply in en. Your reply should be from "me" and continue the conversation naturally. Do NOT include any intro, options, or explanations. ONLY output the raw message text itself.
+
+PROFILE:
+Name: Ichrak
+Bio: "n/a"
+Interests: Movies, Documentaries, Meditation, Instagram, Art
+
+RECENT CHAT HISTORY:
+them: Sent
+them: 10:40 AMLa vie
+them: La vie
+them: Ichrak27Verified!Looking for🤔Still figuring it outEssentials333 kilometers awayEsprit
+
+BasicsZodiacScorpioEducationPhDInterestsMoviesDocumentariesMeditationInstagramArtUnmatchBlock IchrakReport Ichrak
+
+Your reply:
+content.js:2569 [Tinder AI] getAIResponse called. Prompt: You are a Tinder messaging assistant. Based on the profile and recent chat history below, write ONE short, engaging reply in en. Your reply should be from "me" and continue the conversation naturally. Do NOT include any intro, options, or explanations. ONLY output the raw message text itself.
+
+PROFILE:
+Name: Ichrak
+Bio: "n/a"
+Interests: Movies, Documentaries, Meditation, Instagram, Art
+
+RECENT CHAT HISTORY:
+them: Sent
+them: 10:40 AMLa vie
+them: La vie
+them: Ichrak27Verified!Looking for🤔Still figuring it outEssentials333 kilometers awayEsprit
+
+BasicsZodiacScorpioEducationPhDInterestsMoviesDocumentariesMeditationInstagramArtUnmatchBlock IchrakReport Ichrak
+
+Your reply:
+content.js:2412 [Tinder AI] DOM change detected on path: /app/messages/5c5951704e205d1100f1ea0a682edf90ddffee677a4eed67
+content.js:2416 [Tinder AI] Debug: Found 60 elements matching the match list item selector on this page.
+content.js:2423 [Tinder AI][DEBUG] Injecting wand buttons on 60 matches (consent given).
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:2569 [Tinder AI] getAIResponse called. Prompt: Translate the following text to fr. Return ONLY the translated text, with no introduction or explanation.
+
+Text: "La vie est belle! 😉 What kind of movies and documentaries do you enjoy?"
+content.js:2412 [Tinder AI] DOM change detected on path: /app/messages/5c5951704e205d1100f1ea0a682edf90ddffee677a4eed67
+content.js:2416 [Tinder AI] Debug: Found 60 elements matching the match list item selector on this page.
+content.js:2423 [Tinder AI][DEBUG] Injecting wand buttons on 60 matches (consent given).
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:3234 [Tinder AI] Auto-send disabled, injecting message into textarea
+content.js:3244 [Tinder AI] Message tracked for manual send
+content.js:2060 [Tinder AI] Messaging stats saved to storage: Object
+messages/5c5951704e205d1100f1ea0a682edf90ddffee677a4eed67:1  Error handling response: ReferenceError: currentTab is not defined
+    at chrome-extension://ffgpjnlafhnfelelmnekilcnfimiiadk/content.js:2063:9
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:2412 [Tinder AI] DOM change detected on path: /app/messages/5c5951704e205d1100f1ea0a682edf90ddffee677a4eed67
+content.js:2416 [Tinder AI] Debug: Found 60 elements matching the match list item selector on this page.
+content.js:2423 [Tinder AI][DEBUG] Injecting wand buttons on 60 matches (consent given).
+content.js:2412 [Tinder AI] DOM change detected on path: /app/messages/5c5951704e205d1100f1ea0a682edf90ddffee677a4eed67
+content.js:2416 [Tinder AI] Debug: Found 60 elements matching the match list item selector on this page.
+content.js:2423 [Tinder AI][DEBUG] Injecting wand buttons on 60 matches (consent given).
+sessions.bugsnag.com/:1 
+            
+            
+            Failed to load resource: net::ERR_BLOCKED_BY_CLIENT
+content.js:2412 [Tinder AI] DOM change detected on path: /app/matches
+content.js:2416 [Tinder AI] Debug: Found 60 elements matching the match list item selector on this page.
+content.js:2423 [Tinder AI][DEBUG] Injecting wand buttons on 60 matches (consent given).
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+[NEW] Explain Console errors by using Copilot in Edge: click
+         
+         to explain an error. 
+        Learn more
+        Don't show again
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+content.js:1781 [Tinder AI][DEBUG] processMessageQueue called. Queue length: 0
+
+# Previous Changelog Entries
+
+### v1.1.0
+- Dynamic swipe speed: Swiping now adapts speed and includes human-like breaks.
+- Robust error handling: Retries, exponential backoff, and user notifications for persistent errors.
+- Improved logging: All errors and important events are logged for diagnostics and user review.
