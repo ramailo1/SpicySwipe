@@ -19,6 +19,18 @@ All notable changes to this project will be documented in this file.
 - Removed undefined `setupSidebarConsent` call to prevent initialization errors.
 - Improved reliability of AI generation and UI injection.
 
+## [1.2.1] - 2024-06-09
+### Changed
+- Sidebar and popup UI: All labels, section headers, and important text are now pure white for maximum clarity on dark backgrounds.
+- Input fields (including API key) now fit perfectly in the sidebar and do not overflow.
+- API key input and AI model select are visually consistent in width (160px).
+- Improved spacing and grouping for settings sections.
+- Checkbox and label alignment improved for a more polished look.
+
+### Fixed
+- Fixed input overflow and text contrast issues in the AI and Swiping tabs.
+- Fixed sidebar text visibility issues caused by previous color overrides.
+
 ---
 
 ## [Older versions]
