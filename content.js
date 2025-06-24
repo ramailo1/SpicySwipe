@@ -13,6 +13,7 @@ let analytics = { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages:
 let isStopping = false;
 let sidebarActiveTab = 'status';
 let sidebarConsentGiven = false;
+const getTodayDateString = () => new Date().toISOString().slice(0, 10);
 
 // --- Helper Functions ---
 function waitForElement(selector, timeout = 10000) {
@@ -543,20 +544,29 @@ async function performSwipe() {
   }
 
   if (!button) {
-    await handleSwipeError(new Error('Failed to find swipe button after retries'), maxRetries, backoff, true);
+    // Out of likes or empty page detected
+    handleStopSwiping();
+    showStatusMessage('You are out of likes. Auto-swiping stopped.');
     return false;
   }
 
   try {
     await ANTI_DETECTION.simulateHumanBehavior(button, 'click');
     swipeCount++;
+    let delta = { swipes: 1 };
     if (decision === 'like') {
       analytics.likes = (analytics.likes || 0) + 1;
+      delta.likes = 1;
     } else {
       analytics.nopes = (analytics.nopes || 0) + 1;
+      delta.nopes = 1;
     }
     analytics.swipes = (analytics.swipes || 0) + 1;
     await chrome.storage.local.set({ analytics });
+    // Update all-time and session analytics for auto swipes
+    await updateAllTimeAnalytics(delta);
+    // Update sidebar stats live
+    renderSidebarActiveTab();
     // Check rate limit after each swipe
     if (await ANTI_DETECTION.checkRateLimit()) {
       ANTI_DETECTION.addDiagnosticLog('Rate limit reached. Pausing...');
@@ -758,8 +768,16 @@ function renderSidebarStatusTab(enabled) {
   statusPanel.style.overflowY = 'auto';
   statusPanel.style.maxHeight = 'calc(100vh - 60px)';
 
-  chrome.storage.local.get(['sessionAnalytics', 'activeAI', 'swipeConfig', 'geminiFreeApiKey', 'geminiProApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey', 'messagingConfig'], ({ sessionAnalytics, activeAI, swipeConfig, geminiFreeApiKey, geminiProApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey, messagingConfig }) => {
-    const analytics = sessionAnalytics || { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0 };
+  chrome.storage.local.get(['sessionAnalytics', 'activeAI', 'swipeConfig', 'geminiFreeApiKey', 'geminiProApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey', 'messagingConfig'], (data) => {
+    let sessionAnalytics = data.sessionAnalytics || { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0, date: getTodayDateString() };
+    // Daily auto-reset logic
+    if (!sessionAnalytics.date || sessionAnalytics.date !== getTodayDateString()) {
+      sessionAnalytics = { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0, date: getTodayDateString() };
+      chrome.storage.local.set({ sessionAnalytics });
+    }
+    const analytics = sessionAnalytics;
+    // Destructure configs for settings summary
+    const { swipeConfig, messagingConfig } = data;
     const profile = extractProfileInfo();
     const profilePreview = profile ? `
       <div style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
@@ -789,7 +807,7 @@ function renderSidebarStatusTab(enabled) {
     const likeRatio = analytics.swipes > 0 ? ((analytics.likes / analytics.swipes) * 100).toFixed(1) : '0.0';
     const statusContent = `
       <div style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
-        <div style="font-weight: 600; color: #e0e7ff; margin-bottom: 10px;">Current Session</div>
+        <div style="font-weight: 600; color: #e0e7ff; margin-bottom: 10px;">Today's Stats</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
           <div style="color: #a5b4fc;">Swipes:</div><div style="color: #e0e7ff;">${analytics.swipes}</div>
           <div style="color: #a5b4fc;">Likes:</div><div style="color: #22c55e;">${analytics.likes}</div>
@@ -1167,18 +1185,27 @@ function renderSidebarAnalyticsTab(enabled) {
   const analyticsPanel = document.getElementById('sidebar-tab-analytics');
   if(!analyticsPanel) return;
   if (!chrome.runtime?.id) return;
-  chrome.storage.local.get(['activeAI', 'allTimeAnalytics', 'aiPerformance', 'messagingStats', 'geminiFreeApiKey', 'geminiProApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey'], ({ activeAI, allTimeAnalytics, aiPerformance, messagingStats, geminiFreeApiKey, geminiProApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey }) => {
+  chrome.storage.local.get([
+    'activeAI', 'allTimeAnalytics', 'aiPerformance', 'messagingStats',
+    'geminiFreeApiKey', 'geminiProApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey',
+    'sessionAnalytics'
+  ], (data) => {
     if (!chrome.runtime?.id) return;
-    
-    const allTimeStats = { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0, ...allTimeAnalytics };
+    const { geminiFreeApiKey, geminiProApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey } = data;
+    // Daily auto-reset logic for analytics tab (still update sessionAnalytics in storage, but don't show it)
+    let sessionAnalytics = data.sessionAnalytics || { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0, date: getTodayDateString() };
+    if (!sessionAnalytics.date || sessionAnalytics.date !== getTodayDateString()) {
+      sessionAnalytics = { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0, date: getTodayDateString() };
+      chrome.storage.local.set({ sessionAnalytics });
+    }
+    const allTimeStats = { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0, ...data.allTimeAnalytics };
     const aiStats = AI_INTEGRATION.performance;
-    const messagingData = MESSAGING.messagingStats; // Get from MESSAGING object directly
+    const messagingData = MESSAGING.messagingStats;
     
     // Get current AI model and API key status
-    const selectedAI = activeAI || 'gemini';
+    const selectedAI = data.activeAI || 'gemini';
     let currentAIDisplay = 'Gemini';
     let apiKeyStatus = '🔴 No API Key';
-    
     if (selectedAI === 'gemini' || selectedAI === 'gemini-pro') {
       currentAIDisplay = selectedAI === 'gemini-pro' ? 'Gemini Pro' : 'Gemini';
       apiKeyStatus = geminiFreeApiKey && geminiFreeApiKey.trim() !== '' ? '🟢 API Key Set' : '🔴 No API Key';
@@ -1192,14 +1219,6 @@ function renderSidebarAnalyticsTab(enabled) {
       currentAIDisplay = 'Claude';
       apiKeyStatus = anthropicApiKey && anthropicApiKey.trim() !== '' ? '🟢 API Key Set' : '🔴 No API Key';
     }
-    
-    // Calculate derived metrics
-    const allTimeLikeRatio = allTimeStats.swipes > 0 ? ((allTimeStats.likes / allTimeStats.swipes) * 100).toFixed(1) : '0.0';
-    const matchRate = allTimeStats.likes > 0 ? ((allTimeStats.matches / allTimeStats.likes) * 100).toFixed(1) : '0.0';
-    
-    // Calculate AI success rate (use the appropriate AI model stats)
-    const aiModelStats = aiStats[selectedAI] || aiStats.gemini || { responses: 0, success: 0, avgRating: 0 };
-    const aiSuccessRate = aiModelStats.responses ? ((aiModelStats.success / aiModelStats.responses) * 100).toFixed(1) : '0.0';
     
     analyticsPanel.innerHTML = `
       <div style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
@@ -1216,27 +1235,26 @@ function renderSidebarAnalyticsTab(enabled) {
           <div style="color: #a5b4fc;">Total Messages:</div>
           <div style="color: #8b5cf6;">${allTimeStats.messages}</div>
           <div style="color: #a5b4fc;">Overall Like Ratio:</div>
-          <div style="color: #e0e7ff;">${allTimeLikeRatio}%</div>
+          <div style="color: #e0e7ff;">${allTimeStats.swipes > 0 ? ((allTimeStats.likes / allTimeStats.swipes) * 100).toFixed(1) : '0.0'}%</div>
           <div style="color: #a5b4fc;">Overall Match Rate:</div>
-          <div style="color: #e0e7ff;">${matchRate}%</div>
+          <div style="color: #e0e7ff;">${allTimeStats.likes > 0 ? ((allTimeStats.matches / allTimeStats.likes) * 100).toFixed(1) : '0.0'}%</div>
           <div style="color: #a5b4fc;">Efficiency Score:</div>
           <div style="color: #e0e7ff;">${calculateEfficiencyScore(allTimeStats)}</div>
         </div>
       </div>
-
       <div style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
         <div style="font-weight: 600; color: #e0e7ff; margin-bottom: 12px; font-size: 16px;">🤖 AI Performance</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; margin-bottom: 12px;">
           <div style="color: #a5b4fc;">Success Rate:</div>
-          <div style="color: #22c55e;">${aiSuccessRate}%</div>
+          <div style="color: #22c55e;">${aiStats.responses ? ((aiStats.success / aiStats.responses) * 100).toFixed(1) : '0.0'}%</div>
           <div style="color: #a5b4fc;">Total Responses:</div>
-          <div style="color: #e0e7ff;">${aiModelStats.responses || 0}</div>
+          <div style="color: #e0e7ff;">${aiStats.responses || 0}</div>
           <div style="color: #a5b4fc;">Successful:</div>
-          <div style="color: #22c55e;">${aiModelStats.success || 0}</div>
+          <div style="color: #22c55e;">${aiStats.success || 0}</div>
           <div style="color: #a5b4fc;">Failed:</div>
-          <div style="color: #ef4444;">${aiModelStats.responses ? aiModelStats.responses - aiModelStats.success : 0}</div>
+          <div style="color: #ef4444;">${aiStats.responses ? aiStats.responses - aiStats.success : 0}</div>
           <div style="color: #a5b4fc;">Avg Rating:</div>
-          <div style="color: #e0e7ff;">${aiModelStats.avgRating?.toFixed(1) || '0.0'}/10</div>
+          <div style="color: #e0e7ff;">${aiStats.avgRating?.toFixed(1) || '0.0'}/10</div>
           <div style="color: #a5b4fc;">Rate Limited:</div>
           <div style="color: #f59e0b;">${AI_INTEGRATION.rateLimits.gemini.count}</div>
         </div>
@@ -1244,23 +1262,6 @@ function renderSidebarAnalyticsTab(enabled) {
           <button id="reset-ai-stats" class="main-btn" style="background: #dc2626; color: #fff; padding: 6px 12px; font-size: 12px; width: 100%;">Reset AI Stats</button>
         </div>
       </div>
-
-      <div style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
-        <div style="font-weight: 600; color: #e0e7ff; margin-bottom: 12px; font-size: 16px;">💬 Messaging Analytics</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; margin-bottom: 12px;">
-          <div style="color: #a5b4fc;">Active Conversations:</div>
-          <div style="color: #e0e7ff;">${messagingData.conversations}</div>
-          <div style="color: #a5b4fc;">Messages Sent:</div>
-          <div style="color: #8b5cf6;">${messagingData.messagesSent}</div>
-          <div style="color: #a5b4fc;">Response Rate:</div>
-          <div style="color: #22c55e;">${messagingData.responseRate}%</div>
-          <div style="color: #a5b4fc;">Avg Response Time:</div>
-          <div style="color: #e0e7ff;">${formatResponseTime(messagingData.avgResponseTime)}</div>
-          <div style="color: #a5b4fc;">Auto-Send:</div>
-          <div style="color: #e0e7ff;">${MESSAGING.autoSend ? 'Enabled' : 'Disabled'}</div>
-        </div>
-      </div>
-
       <div style="background: #232946; border: 1px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
         <div style="font-weight: 600; color: #e0e7ff; margin-bottom: 12px; font-size: 16px;">⚡ Performance Metrics</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
@@ -1279,9 +1280,7 @@ function renderSidebarAnalyticsTab(enabled) {
         </div>
       </div>
     `;
-    
     analyticsPanel.style.opacity = enabled ? '1' : '0.5';
-    
     // Add event listeners for buttons
     setupAnalyticsEventListeners();
   });
@@ -1310,9 +1309,10 @@ function setupAnalyticsEventListeners() {
   const resetSessionBtn = document.getElementById('reset-session-stats');
   if (resetSessionBtn) {
     resetSessionBtn.addEventListener('click', () => {
-      chrome.storage.local.set({ sessionAnalytics: { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0 } }, () => {
+      chrome.storage.local.set({ sessionAnalytics: { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0, date: getTodayDateString() } }, () => {
         console.log('[Tinder AI] Session stats reset');
         renderSidebarAnalyticsTab(sidebarConsentGiven);
+        renderSidebarStatusTab(sidebarConsentGiven);
       });
     });
   }
@@ -1399,27 +1399,24 @@ function renderSidebarAntiDetectionTab(enabled) {
 
 // Helper to update all-time analytics in storage
 async function updateAllTimeAnalytics(delta) {
-    // This function is now async and will throw an error if the context is invalidated,
-    // which will be caught by the try/catch block in the automateSwiping loop.
     const data = await chrome.storage.local.get(['allTimeAnalytics', 'sessionAnalytics']);
     if (chrome.runtime.lastError) {
         throw new Error(chrome.runtime.lastError.message);
     }
-    
-    // Update all-time analytics
     const allTimeAnalytics = data.allTimeAnalytics || {};
     const newAllTimeTotal = { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0, ...allTimeAnalytics };
     for (const k in delta) {
         newAllTimeTotal[k] = (newAllTimeTotal[k] || 0) + (delta[k] || 0);
     }
-    
-    // Update session analytics
-    const sessionAnalytics = data.sessionAnalytics || {};
+    let sessionAnalytics = data.sessionAnalytics || { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0, date: getTodayDateString() };
+    if (!sessionAnalytics.date || sessionAnalytics.date !== getTodayDateString()) {
+      sessionAnalytics = { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0, date: getTodayDateString() };
+    }
     const newSessionTotal = { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0, ...sessionAnalytics };
     for (const k in delta) {
         newSessionTotal[k] = (newSessionTotal[k] || 0) + (delta[k] || 0);
     }
-    
+    newSessionTotal.date = getTodayDateString();
     await chrome.storage.local.set({ 
         allTimeAnalytics: newAllTimeTotal,
         sessionAnalytics: newSessionTotal
@@ -1534,6 +1531,7 @@ function injectSidebar() {
   blurOverlay.classList.toggle('hidden', sidebarConsentGiven);
   consentBtn.addEventListener('click', () => {
     sidebarConsentGiven = true;
+    chrome.storage.local.set({ sidebarConsentGiven: true });
     blurOverlay.classList.add('hidden');
     renderSidebarActiveTab();
     // Show AI and wand buttons immediately after consent
@@ -1735,22 +1733,26 @@ const MESSAGING = {
       zh: /\b(我|你|他|她|我们|你们|他们|你好|谢谢|是|不|怎么样|好吗)\b/i
     };
 
-    // Check for Arabic script (more comprehensive)
-    if (/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text)) {
-      return 'ar';
-    }
+    // Log the text being checked
+    console.log('[Tinder AI][LANG DETECT] Checking text:', text);
 
-    // Check for other scripts
-    if (/[\u3040-\u309F\u30A0-\u30FF]/.test(text)) return 'ja'; // Hiragana/Katakana
-    if (/[\u4E00-\u9FFF]/.test(text)) return 'zh'; // Chinese characters
-    if (/[\uAC00-\uD7AF]/.test(text)) return 'ko'; // Hangul
-    if (/[\u0400-\u04FF]/.test(text)) return 'ru'; // Cyrillic
+    // Correct Unicode script detection\// Arabic
+if (/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text)) return 'ar';
+// Japanese (Hiragana/Katakana)
+if (/[\u3040-\u309F\u30A0-\u30FF]/.test(text)) return 'ja';
+// Chinese
+if (/[\u4E00-\u9FFF]/.test(text)) return 'zh';
+// Korean
+if (/[\uAC00-\uD7AF]/.test(text)) return 'ko';
+// Russian (Cyrillic)
+if (/[\u0400-\u04FF]/.test(text)) return 'ru';
 
-    // Check for language patterns
     for (const [lang, pattern] of Object.entries(languagePatterns)) {
-      if (pattern.test(text)) return lang;
+      if (pattern.test(text)) { console.log('[Tinder AI][LANG DETECT] Detected:', lang); return lang; }
     }
-    
+    // Heuristic for French accents
+    if (/[éèêëàâäîïôöùûüçœæ]/i.test(text)) { console.log('[Tinder AI][LANG DETECT] Heuristic: Detected fr by accent'); return 'fr'; }
+    console.log('[Tinder AI][LANG DETECT] Default: en');
     return 'en'; // Default to English
   },
 
@@ -2104,10 +2106,19 @@ function createPersistentAIIcon() {
 
   const persistentIcon = document.createElement('div');
   persistentIcon.id = 'ai-persistent-icon';
+
+  // Determine sidebar state and set icon position
+  let rightPx = 20;
+  const sidebar = document.getElementById('tinder-ai-sidebar');
+  if (sidebar && sidebar.style.transform !== 'translateX(100%)') {
+    // Sidebar is open
+    rightPx = 360;
+  }
+
   persistentIcon.style.cssText = `
     position: fixed;
     bottom: 20px;
-    right: 20px;
+    right: ${rightPx}px;
     width: 50px;
     height: 50px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -2121,11 +2132,9 @@ function createPersistentAIIcon() {
     transition: all 0.3s ease;
     border: 2px solid #ffffff;
   `;
-  
   persistentIcon.innerHTML = `
     <span style="font-size: 20px; color: white;">🤖</span>
   `;
-  
   persistentIcon.title = 'Generate AI Message';
   
   // Add hover effects
@@ -2214,6 +2223,21 @@ function createPersistentAIIcon() {
   });
   
   document.body.appendChild(persistentIcon);
+
+  // Add observer/event for sidebar toggle to reposition icon
+  const toggleBtn = document.querySelector('div[style*="right: 340px"]');
+  if (sidebar && toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      setTimeout(() => {
+        // Recalculate position after sidebar animation
+        let rightPx = 20;
+        if (sidebar.style.transform !== 'translateX(100%)') {
+          rightPx = 360;
+        }
+        persistentIcon.style.right = rightPx + 'px';
+      }, 300);
+    });
+  }
 }
 
 function injectWandButtons(matches) {
@@ -2347,6 +2371,10 @@ function injectWandButtons(matches) {
       return;
     }
     
+  // Load consent from storage before initializing sidebar
+  const consentData = await new Promise(resolve => chrome.storage.local.get('sidebarConsentGiven', resolve));
+  sidebarConsentGiven = !!consentData.sidebarConsentGiven;
+
   injectSidebar();
   setupSidebarTabs();
   // setupSidebarConsent(); // Remove this line - consent is handled in sidebar setup
@@ -3186,21 +3214,16 @@ async function displayMessageForApproval(initialMessage, profileInfo, chatHistor
       observer.disconnect();
       observer = null;
     }
-    
     // Check auto-send setting
     const { messagingConfig } = await chrome.storage.local.get('messagingConfig');
     const autoSend = messagingConfig?.autoSend || false;
-    
     if (autoSend) {
       // Auto-send is enabled - send the message directly
       console.log('[Tinder AI] Auto-send enabled, sending message directly');
-      
-      // Track the message before sending
       MESSAGING.messagingStats.messagesSent++;
       MESSAGING.saveMessagingStats();
       updateAllTimeAnalytics({ messages: 1 });
       console.log('[Tinder AI] Message tracked for auto-send');
-      
       injectMessageAndSend(textBox.textContent);
     } else {
       // Auto-send is disabled - just inject into textarea for manual review
@@ -3209,22 +3232,17 @@ async function displayMessageForApproval(initialMessage, profileInfo, chatHistor
       if (messageTextarea) {
         messageTextarea.value = textBox.textContent;
         messageTextarea.focus();
-        // Trigger input event to update any UI that depends on textarea content
         messageTextarea.dispatchEvent(new Event('input', { bubbles: true }));
-        
-        // Mark this textarea as containing an AI-generated message for tracking
         messageTextarea.setAttribute('data-ai-message', 'true');
-        
-        // Track the message as injected (will be counted when manually sent)
         MESSAGING.messagingStats.messagesSent++;
         MESSAGING.saveMessagingStats();
         updateAllTimeAnalytics({ messages: 1 });
         console.log('[Tinder AI] Message tracked for manual send');
       }
     }
-    
     approvalBox.remove();
-    // Don't show persistent icon when message is used
+    // Show persistent icon after use
+    createPersistentAIIcon();
   };
 
   const regenerateWithTone = async () => {
@@ -3357,7 +3375,12 @@ async function generatePersonalizedMessage(profileInfo, chatHistory, overrideCon
           profileContext += `\n\nPrompts:\n${promptsText}`;
       }
 
-      prompt = `Based on the following Tinder profile, write ONE short, engaging opening message in ${language}. Be creative and refer to something specific from their profile if available. If the profile is very empty, ask a lighthearted, open-ended question. Do NOT use words like "mystery", "intriguing", "blank profile", or "empty profile". Do NOT include any intro, options, or explanations. ONLY output the raw message text itself.\n\nProfile:\n${profileContext}`;
+      // Enhanced prompt logic for empty bio but interests present
+      if ((!profileInfo.bio || profileInfo.bio.toLowerCase() === 'n/a' || profileInfo.bio.trim() === '') && profileInfo.interests && profileInfo.interests.length > 0) {
+        prompt = `Based on the following Tinder profile, write ONE short, engaging opening message in ${language}. The profile has no bio, so ask about or reference one of their interests: ${profileInfo.interests.join(', ')}. Be creative and specific. Do NOT use words like \"mystery\", \"intriguing\", \"blank profile\", or \"empty profile\". Do NOT include any intro, options, or explanations. ONLY output the raw message text itself.\n\nProfile:\n${profileContext}`;
+      } else {
+        prompt = `Based on the following Tinder profile, write ONE short, engaging opening message in ${language}. Be creative and refer to something specific from their profile if available. If the profile is very empty, ask a lighthearted, open-ended question. Do NOT use words like \"mystery\", \"intriguing\", \"blank profile\", or \"empty profile\". Do NOT include any intro, options, or explanations. ONLY output the raw message text itself.\n\nProfile:\n${profileContext}`;
+      }
     } else {
       // This is for generating a REPLY, focusing on the last 4 messages for relevance.
       const recentHistory = chatHistory.slice(-4).map(m => `${m.sender}: ${m.text}`).join('\n');
@@ -3396,128 +3419,6 @@ async function extractProfileInfoFromCurrentChat() {
   
   console.log('[Tinder AI] Successfully extracted profile info from current chat:', profileInfo);
   return profileInfo;
-}
-
-// Enhanced persistent AI icon with better match detection
-function createPersistentAIIcon() {
-  // Remove any existing persistent AI icon
-  const existingIcon = document.getElementById('ai-persistent-icon');
-  if (existingIcon) {
-    existingIcon.remove();
-  }
-
-  const persistentIcon = document.createElement('div');
-  persistentIcon.id = 'ai-persistent-icon';
-  persistentIcon.style.cssText = `
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    z-index: 1000;
-    transition: all 0.3s ease;
-    border: 2px solid #ffffff;
-  `;
-  
-  persistentIcon.innerHTML = `
-    <span style="font-size: 20px; color: white;">🤖</span>
-  `;
-  
-  persistentIcon.title = 'Generate AI Message';
-  
-  // Add hover effects
-  persistentIcon.addEventListener('mouseenter', () => {
-    persistentIcon.style.transform = 'scale(1.1)';
-    persistentIcon.style.boxShadow = '0 6px 20px rgba(0,0,0,0.4)';
-  });
-  
-  persistentIcon.addEventListener('mouseleave', () => {
-    persistentIcon.style.transform = 'scale(1)';
-    persistentIcon.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
-  });
-  
-  // Add click handler to generate AI message
-  persistentIcon.addEventListener('click', async () => {
-    // Check if extension context is valid before proceeding
-    if (!chrome.runtime?.id) {
-      showErrorNotification('Extension context lost. Please refresh the page and try again.');
-      return;
-    }
-
-    // Check if we're in a conversation with a message window open
-    const messageTextarea = document.querySelector('textarea[placeholder*="message"], textarea[placeholder*="Type"]');
-    if (!messageTextarea) {
-      // No message window open - show user feedback
-      persistentIcon.innerHTML = '<span style="font-size: 20px; color: white;">⚠️</span>';
-      persistentIcon.title = 'Open a conversation to use AI messaging';
-      
-      showErrorNotification('Please open a conversation to use AI messaging');
-      
-      // Revert icon after 3 seconds
-      setTimeout(() => {
-        persistentIcon.innerHTML = '<span style="font-size: 20px; color: white;">🤖</span>';
-        persistentIcon.title = 'Generate AI Message';
-      }, 3000);
-      
-      return;
-    }
-    
-    // Message window is open - proceed with AI generation
-    persistentIcon.innerHTML = '<span style="font-size: 20px; color: white;">🔄</span>';
-    persistentIcon.style.pointerEvents = 'none';
-    
-    try {
-      console.log('[Tinder AI] Generating AI message for current conversation...');
-      
-      // Extract profile info from current chat without clicking on match items
-      const profileInfo = await extractProfileInfoFromCurrentChat();
-      if (!profileInfo) {
-        throw new Error('Could not extract profile info from current conversation');
-      }
-      
-      // Wait for chat messages to load
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const chatHistory = extractChatHistory();
-      const newMessage = await generatePersonalizedMessage(profileInfo, chatHistory);
-      if (newMessage) {
-        await displayMessageForApproval(newMessage, profileInfo, chatHistory);
-      } else {
-        throw new Error('Failed to generate message');
-      }
-    } catch (error) {
-      console.error('[Tinder AI] Error generating AI message:', error);
-      persistentIcon.innerHTML = '<span style="font-size: 20px; color: white;">❌</span>';
-      persistentIcon.title = 'Error generating message';
-      
-      // Show specific error message based on error type
-      if (error.message.includes('Extension context invalidated')) {
-        showErrorNotification('Extension context lost. Please refresh the page and try again.');
-      } else if (error.message.includes('Could not extract profile info')) {
-        showErrorNotification('Could not extract profile information. Please try again.');
-      } else if (error.message.includes('Failed to generate message')) {
-        showErrorNotification('Failed to generate message. Please check your API settings.');
-      } else {
-        showErrorNotification('An error occurred while generating the message. Please try again.');
-      }
-      
-      // Revert icon after 3 seconds
-      setTimeout(() => {
-        persistentIcon.innerHTML = '<span style="font-size: 20px; color: white;">🤖</span>';
-        persistentIcon.title = 'Generate AI Message';
-        persistentIcon.style.pointerEvents = 'auto';
-      }, 3000);
-    }
-  });
-  
-  document.body.appendChild(persistentIcon);
 }
 
 // --- Worldwide Language Library ---
@@ -4289,3 +4190,17 @@ window.onNewMatchDetected = async function(matchId) {
   console.log('[Tinder AI] Auto-message: Resuming swiping after messaging new match', matchId);
   automateSwiping();
 };
+
+// Helper to show a status message in the sidebar
+function showStatusMessage(msg) {
+  const statusPanel = document.getElementById('sidebar-tab-status');
+  if (statusPanel) {
+    const existing = document.getElementById('out-of-likes-message');
+    if (existing) existing.remove();
+    const div = document.createElement('div');
+    div.id = 'out-of-likes-message';
+    div.style = 'background: #f59e0b; color: #232946; padding: 10px; border-radius: 8px; margin: 12px 0; font-weight: 600; text-align: center;';
+    div.textContent = msg;
+    statusPanel.prepend(div);
+  }
+}
