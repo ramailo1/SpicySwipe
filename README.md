@@ -6,9 +6,9 @@
 
 👉 **[View Full Changelog](CHANGELOG.md)**
 
-## 📝 Changelog
+## �� Changelog
 
-### v1.1.1
+### v1.2.1
 - Auto-swiping now stops and shows a clear message in the sidebar when you are out of likes (no like button found).
 
 ### v1.1.0

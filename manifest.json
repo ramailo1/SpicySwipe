@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SpicySwipe",
-  "version": "1.1.1",
+  "version": "1.2.1",
   "description": "AI-powered Tinder tool with smart messaging, profile analysis, and support for multiple AI models",
   "author": "Soufienne Rahali",
   "homepage_url": "https://github.com/ramailo1/SpicySwipe",
