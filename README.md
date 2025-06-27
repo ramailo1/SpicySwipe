@@ -16,6 +16,15 @@
 - Robust error handling: Retries, exponential backoff, and user notifications for persistent errors.
 - Improved logging: All errors and important events are logged for diagnostics and user review.
 
+### v1.2.2
+- Added custom AI prompt instructions for each message tone (Extra Naughty, Meme Lord, Super Romantic, etc.)
+- Improved AI message generation: selected tone now directly affects the style and content of generated messages
+- All tone options are available in the AI tab, Settings, and approval/translation bar
+- Enhanced prompt logic for more accurate and fun responses
+
+### How to use the new tones
+You can now select a message tone (e.g., Extra Naughty, Meme Lord, Super Romantic, etc.) in the AI tab, Settings, or when approving/translating a message. The AI will generate messages in the selected style, making your conversations more personalized and engaging.
+
 ## Overview
 
 SpicySwipe is a sophisticated Chrome extension that revolutionizes your Tinder experience through advanced AI-powered automation. Built with cutting-edge artificial intelligence, it provides intelligent messaging, comprehensive profile analysis, and seamless conversation management using multiple state-of-the-art AI models.
@@ -99,6 +108,12 @@ SpicySwipe is a sophisticated Chrome extension that revolutionizes your Tinder e
 2. **Monitor** real-time performance metrics
 3. **Track** AI model effectiveness and success rates
 4. **Analyze** long-term trends and optimization opportunities
+
+## 🖼️ Extension Preview
+
+Below is a preview of the AI suggestion section and popup UI with the latest elegant styles:
+
+![AI Suggestion & Popup UI](screenshots/1.png)
 
 ## 🔑 API Configuration
 

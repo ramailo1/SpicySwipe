@@ -7,7 +7,11 @@ module.exports = {
     '../friend/*.js'
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        inter: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+      },
+    },
   },
   plugins: [],
 }; 

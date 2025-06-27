@@ -197,17 +197,24 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === 'getGeminiAPIResponse') {
     (async () => {
         try {
-            const { geminiApiKey } = await new Promise(resolve => chrome.storage.local.get('geminiApiKey', resolve));
+            // Determine which key to use based on the model
+            let model = msg.model || 'gemini-2.0-flash';
+            let apiKeyKey = 'geminiFreeApiKey';
+            if (model === 'gemini-pro' || model === 'gemini-1.5-pro-latest') {
+                apiKeyKey = 'geminiProApiKey';
+                model = 'gemini-1.5-pro-latest';
+            } else {
+                apiKeyKey = 'geminiFreeApiKey';
+                model = 'gemini-2.0-flash';
+            }
+            const storageResult = await new Promise(resolve => chrome.storage.local.get(apiKeyKey, resolve));
+            const geminiApiKey = storageResult[apiKeyKey];
 
             if (!geminiApiKey) {
-                sendResponse({ error: 'Gemini API key not set in settings.' });
+                sendResponse({ error: `Gemini API key (${apiKeyKey}) not set in settings.` });
                 return;
             }
 
-            // Support both Flash and Pro
-            let model = msg.model || 'gemini-2.0-flash';
-            if (model === 'gemini-pro') model = 'gemini-1.5-pro-latest';
-            if (model === 'gemini') model = 'gemini-2.0-flash';
             const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
 
             console.log('[Tinder AI][BG] Calling Gemini API...');
