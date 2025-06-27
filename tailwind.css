@@ -8,6 +8,10 @@
 @tailwind utilities;
 
 /* Custom Styles */
+body, h1, h2, h3, h4, h5, h6 {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
 body {
   min-width: 400px;
   min-height: 500px;
@@ -44,4 +48,11 @@ body {
 
 #profile-preview {
   @apply bg-gradient-to-br from-white to-blue-100 dark:from-gray-800 dark:to-blue-900 border border-blue-200 dark:border-blue-800 rounded-lg shadow-inner p-3 mb-2 flex flex-col items-center justify-center min-h-[80px];
+}
+
+#tinder-ai-sidebar, .popup-body {
+  @apply bg-gradient-to-br from-blue-100 to-blue-200;
+}
+html.dark #tinder-ai-sidebar, html.dark .popup-body {
+  @apply bg-gradient-to-br from-indigo-900 via-indigo-700 to-indigo-400;
 }
