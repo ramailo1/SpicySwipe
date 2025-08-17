@@ -1,6 +1,43 @@
 // content.js
 // Handles Tinder/AI DOM automation and communication with background
 
+// --- Debug Mode --- 
+let debugMode = false;
+const logBuffer = [];
+const originalConsole = {
+    log: console.log.bind(console),
+    error: console.error.bind(console),
+    warn: console.warn.bind(console),
+    info: console.info.bind(console),
+    debug: console.debug.bind(console),
+};
+
+const consoleHandler = (type) => (...args) => {
+    if (debugMode) {
+        originalConsole[type](...args);
+    } else {
+        logBuffer.push({ type, args });
+    }
+};
+
+console.log = consoleHandler('log');
+console.error = consoleHandler('error');
+console.warn = consoleHandler('warn');
+console.info = consoleHandler('info');
+console.debug = consoleHandler('debug');
+
+chrome.storage.local.get('debugMode', (result) => {
+    debugMode = !!result.debugMode;
+    if (debugMode) {
+        // Flush buffer
+        logBuffer.forEach(log => originalConsole[log.type](...log.args));
+        logBuffer.length = 0; // Clear buffer
+    } else {
+        // Clear buffer without logging
+        logBuffer.length = 0;
+    }
+});
+
 // --- Config ---
 let SWIPE_DELAY_RANGE = [2000, 4000];
 let MAX_SESSION_SWIPES = 30;
@@ -17,6 +54,42 @@ const getTodayDateString = () => new Date().toISOString().slice(0, 10);
 
 // Add at the top of the file, after other global variables:
 let statusPanelState = { stats: true, stealth: true, settings: true };
+
+// --- I18n Initialization ---
+async function initializeI18n() {
+  try {
+    await i18n.init();
+    console.log('[Tinder AI] I18n initialized with locale:', i18n.getCurrentLocale());
+    return true;
+  } catch (error) {
+    console.error('[Tinder AI] Error initializing i18n:', error);
+    return false;
+  }
+}
+
+// Global flag to track i18n initialization
+let i18nInitialized = false;
+
+// Initialize i18n immediately
+initializeI18n().then((success) => {
+  i18nInitialized = success;
+  console.log('[Tinder AI] I18n initialization complete:', success);
+  
+  // Debug: Check current language storage
+  chrome.storage.local.get(['userLanguage'], (result) => {
+    console.log('[Tinder AI] Current language in storage:', result.userLanguage);
+    console.log('[Tinder AI] Current i18n locale:', i18n.getCurrentLocale());
+  });
+});
+
+// Update language selector with current language
+function updateLanguageSelector() {
+  const languageSelector = document.getElementById('language-selector');
+  if (languageSelector) {
+    languageSelector.value = i18n.getCurrentLocale();
+    console.log('[Tinder AI] Updated language selector to:', i18n.getCurrentLocale());
+  }
+}
 
 // --- Helper Functions ---
 function waitForElement(selector, timeout = 10000) {
@@ -44,32 +117,9 @@ function waitForElement(selector, timeout = 10000) {
     });
 }
 
-function randomDelay(min, max) {
-  return Math.random() * (max - min) + min;
-}
 
-async function simulateHumanEvents(element, eventType) {
-  if (!element) return;
-  
-  const events = {
-    click: ['mousedown', 'mouseup', 'click'],
-    input: ['focus', 'input', 'change']
-  };
-  
-  const eventSequence = events[eventType] || [eventType];
-  
-  for (const eventName of eventSequence) {
-    const event = new MouseEvent(eventName, {
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      clientX: element.getBoundingClientRect().left + element.offsetWidth / 2,
-      clientY: element.getBoundingClientRect().top + element.offsetHeight / 2
-    });
-    element.dispatchEvent(event);
-    await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 100));
-  }
-}
+
+
 
 // --- Profile Management ---
 // Removed expandProfile function entirely
@@ -766,247 +816,128 @@ function renderSidebarActiveTab() {
 }
 
 function renderSidebarStatusTab(enabled) {
-  const panel = document.getElementById('sidebar-tab-status');
-  if (!panel) return;
-  panel.innerHTML = '';
+  // Always sync analytics with sessionAnalytics from storage and reset daily if needed
+  chrome.storage.local.get(['sessionAnalytics'], (data) => {
+    let sessionAnalytics = data.sessionAnalytics || { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0, date: getTodayDateString() };
+    if (!sessionAnalytics.date || sessionAnalytics.date !== getTodayDateString()) {
+      sessionAnalytics = { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0, date: getTodayDateString() };
+      chrome.storage.local.set({ sessionAnalytics });
+    }
+    // Sync in-memory analytics
+    analytics = { swipes: sessionAnalytics.swipes, likes: sessionAnalytics.likes, nopes: sessionAnalytics.nopes, skips: sessionAnalytics.skips, matches: sessionAnalytics.matches, messages: sessionAnalytics.messages };
 
-  // Profile preview
-  let profileHTML = '';
-  const profile = window.currentProfile || extractProfileInfo();
-  if (profile && profile.photo) {
-    profileHTML = `<div class="sidebar-profile-preview">\n      <img src="${profile.photo}" alt="Profile" class="sidebar-profile-photo">\n      <div class="sidebar-profile-name">${profile.name || 'Unknown'}</div>\n      ${profile.age ? `<div class="sidebar-profile-age">${profile.age} years old</div>` : ''}\n      ${profile.interests && profile.interests.length > 0 ? `<div class="sidebar-profile-interests">${profile.interests.map(interest => `<span class=\"sidebar-profile-interest\">${interest}</span>`).join('')}` : ''}\n    </div>`;
-  } else {
-    profileHTML = `<div class="sidebar-profile-photo-placeholder">No Photo</div>`;
-  }
+    const panel = document.getElementById('sidebar-tab-status');
+    if (!panel) return;
+    panel.innerHTML = '';
 
-  // Stats box
-  const statsBox = `<div class="sidebar-box">
-    <div class="sidebar-box-header">
-      <span>Today's Stats</span>
-    </div>
-    <div class="sidebar-box-body">
-      <div>Swipes: ${analytics.swipes}</div>
-      <div>Likes: ${analytics.likes}</div>
-      <div>Nopes: ${analytics.nopes}</div>
-      <div>Matches: ${analytics.matches}</div>
-      <div>Messages: ${analytics.messages}</div>
-      <div>Like Ratio: ${analytics.swipes ? ((analytics.likes / analytics.swipes) * 100).toFixed(1) : 0}%</div>
-    </div>
-  </div>`;
-
-  // Stealth mode toggle
-  const stealthBox = `<div class="sidebar-box">
-    <div class="sidebar-box-header">
-      <span>Stealth Mode</span>
-    </div>
-    <div class="sidebar-box-body">
-      <label class="settings-label flex items-center">
-        <input type="checkbox" id="stealth-mode" ${ANTI_DETECTION.stealthMode ? 'checked' : ''} class="mr-2">
-        Enable Stealth Mode
-      </label>
-      <div class="stealth-panel-desc">Reduces detection risk by adding random delays and human-like behavior</div>
-    </div>
-  </div>`;
-
-  // Settings summary
-  const swipeConfig = window.swipeConfig || { maxSwipes: 30, likeRatio: 0.7 };
-  const messagingConfig = window.messagingConfig || { tone: 'friendly', autoSend: false };
-  const settingsBox = `<div class="sidebar-box">
-    <div class="sidebar-box-header">
-      <span>Current Settings</span>
-    </div>
-    <div class="sidebar-box-body">
-      <div>Max Swipes: ${swipeConfig.maxSwipes}</div>
-      <div>Like Ratio: ${Math.round((swipeConfig.likeRatio) * 100)}%</div>
-      <div>Message Tone: ${messagingConfig.tone}</div>
-      <div>Auto Send: ${messagingConfig.autoSend ? 'Yes' : 'No'}</div>
-    </div>
-  </div>`;
-
-  // Page status/warning
-  const currentPath = window.location.pathname;
-  const isOnSwipingPage = currentPath.includes('/app/recs') || 
-                         currentPath.includes('/app/explore') || 
-                         currentPath.includes('/app/discover') ||
-                         currentPath.includes('/app/matches') ||
-                         currentPath === '/app' ||
-                         currentPath === '/';
-  const pageStatusHTML = !isOnSwipingPage ? `<div class="sidebar-warning">
-    <div class="sidebar-warning-header">⚠️ Page Notice</div>
-    <div class="sidebar-warning-text">Auto-swiping works on the Discover/Explore page. Navigate there to use the Start button.</div>
-  </div>` : '';
-
-  // Control buttons
-  const controlsDisabled = !enabled;
-  const startDisabled = controlsDisabled || sessionActive;
-  const stopDisabled = controlsDisabled || !sessionActive;
-  const btnRow = `<div class="sidebar-btn-row">
-    <button id="sidebar-start-btn" class="main-btn btn-start${startDisabled ? ' btn-disabled' : ''}" ${startDisabled ? 'disabled' : ''}>▶️ Start</button>
-    <button id="sidebar-stop-btn" class="main-btn btn-stop${stopDisabled ? ' btn-disabled' : ''}" ${stopDisabled ? 'disabled' : ''}>⏹️ Stop</button>
-    <button id="sidebar-like-btn" class="swipe-btn btn-like${controlsDisabled ? ' btn-disabled' : ''}" ${controlsDisabled ? 'disabled' : ''}>👍 Like</button>
-    <button id="sidebar-dislike-btn" class="swipe-btn btn-nope${controlsDisabled ? ' btn-disabled' : ''}" ${controlsDisabled ? 'disabled' : ''}>👎 Nope</button>
-  </div>`;
-
-  panel.innerHTML = `
-    <div class="sidebar-profile-preview sidebar-section-spacing">${profileHTML}</div>
-    <div class="sidebar-section-spacing">${statsBox}</div>
-    <div class="sidebar-section-spacing">${stealthBox}</div>
-    <div class="sidebar-section-spacing">${settingsBox}</div>
-    ${pageStatusHTML}
-    ${btnRow}
-  `;
-
-  // Add event listeners for controls
-  const startBtn = document.getElementById('sidebar-start-btn');
-  const stopBtn = document.getElementById('sidebar-stop-btn');
-  const likeBtn = document.getElementById('sidebar-like-btn');
-  const dislikeBtn = document.getElementById('sidebar-dislike-btn');
-  if (startBtn && !startDisabled) startBtn.onclick = () => { handleStartSwiping(); setTimeout(() => renderSidebarStatusTab(enabled), 100); };
-  if (stopBtn && !stopDisabled) stopBtn.onclick = () => { handleStopSwiping(); setTimeout(() => renderSidebarStatusTab(enabled), 100); };
-  if (likeBtn && !controlsDisabled) likeBtn.onclick = () => handleManualLike();
-  if (dislikeBtn && !controlsDisabled) dislikeBtn.onclick = () => handleManualNope();
-  // Stealth mode checkbox event handler
-  const stealthCheckbox = document.getElementById('stealth-mode');
-  if (stealthCheckbox) {
-    stealthCheckbox.addEventListener('change', (e) => {
-      ANTI_DETECTION.toggleStealthMode(e.target.checked);
-    });
-  }
-}
-
-function renderSidebarSettingsTab(enabled) {
-  const settingsPanel = document.getElementById('sidebar-tab-settings');
-  if (!settingsPanel) return;
-
-  // Clear the panel before rendering
-  settingsPanel.innerHTML = '';
-
-  // Load existing settings
-  chrome.storage.local.get(['geminiFreeApiKey', 'geminiProApiKey', 'filterConfig', 'messagingConfig'], ({ geminiFreeApiKey, geminiProApiKey, filterConfig, messagingConfig }) => {
-    const config = filterConfig || { likeRatio: 0.7, maxSwipes: 100 };
-    const msgConfig = messagingConfig || { tone: 'friendly', language: 'en', autoSend: false };
-
-    // Swiping Configuration
-    const swipingSettingsHTML = `
-      <div class="sidebar-box">
-        <div class="settings-header">Swiping Behavior</div>
-        <div class="settings-row">
-          <label for="like-ratio" class="settings-label">Like Ratio (%)</label>
-          <div class="sidebar-flex-row sidebar-gap-md sidebar-btn-wide">
-            <input type="range" id="like-ratio" min="10" max="100" value="${Math.round((config.likeRatio || 0.7) * 100)}" class="settings-input sidebar-input-grow" />
-            <span class="settings-value sidebar-label-min sidebar-text-right">${Math.round((config.likeRatio || 0.7) * 100)}%</span>
-          </div>
-        </div>
-        <div class="settings-row">
-          <label for="max-swipes" class="settings-label">Max Swipes</label>
-          <input type="number" id="max-swipes" min="5" max="100" value="${config.maxSwipes || 100}" class="settings-input" />
-        </div>
-      </div>
-    `;
-
-    // Messaging Configuration
-    const messagingSettingsHTML = `
-      <div class="settings-divider"></div>
-      <div class="settings-header">Messaging Configuration</div>
-      <div class="settings-row">
-        <label for="message-tone" class="settings-label">Message Tone</label>
-        <select id="message-tone" class="settings-input">
-          <option value="playful" ${msgConfig.tone === 'playful' ? 'selected' : ''}>Playful</option>
-          <option value="friendly" ${msgConfig.tone === 'friendly' ? 'selected' : ''}>Friendly</option>
-          <option value="flirty" ${msgConfig.tone === 'flirty' ? 'selected' : ''}>Flirty</option>
-          <option value="witty" ${msgConfig.tone === 'witty' ? 'selected' : ''}>Witty</option>
-          <option value="extra-naughty" ${msgConfig.tone === 'extra-naughty' ? 'selected' : ''}>Extra Naughty</option>
-          <option value="more-funny" ${msgConfig.tone === 'more-funny' ? 'selected' : ''}>More Funny</option>
-          <option value="super-romantic" ${msgConfig.tone === 'super-romantic' ? 'selected' : ''}>Super Romantic</option>
-          <option value="sarcastic" ${msgConfig.tone === 'sarcastic' ? 'selected' : ''}>Sarcastic</option>
-          <option value="meme-lord" ${msgConfig.tone === 'meme-lord' ? 'selected' : ''}>Meme Lord</option>
-          <option value="icebreaker" ${msgConfig.tone === 'icebreaker' ? 'selected' : ''}>Icebreaker</option>
-          <option value="mysterious" ${msgConfig.tone === 'mysterious' ? 'selected' : ''}>Mysterious</option>
-          <option value="compliment-bomb" ${msgConfig.tone === 'compliment-bomb' ? 'selected' : ''}>Compliment Bomb</option>
-          </select>
-        </div>
-      <div class="settings-row">
-        <label for="message-language" class="settings-label">Language</label>
-        <select id="message-language" class="settings-input">
-          <option value="en" ${msgConfig.language === 'en' ? 'selected' : ''}>English</option>
-          <option value="es" ${msgConfig.language === 'es' ? 'selected' : ''}>Spanish</option>
-          <option value="fr" ${msgConfig.language === 'fr' ? 'selected' : ''}>French</option>
-          <option value="de" ${msgConfig.language === 'de' ? 'selected' : ''}>German</option>
-          </select>
-        </div>
-      <div class="settings-row">
-        <label class="settings-label flex items-center text-muted">
-          <input type="checkbox" id="auto-send" ${msgConfig.autoSend ? 'checked' : ''} class="mr-2">
-          Auto-send messages
-        </label>
-      </div>
-      <div class="settings-row">
-        <label class="settings-label flex items-center text-muted">
-          <input type="checkbox" id="auto-message-on-match" ${msgConfig.autoMessageOnMatch ? 'checked' : ''} class="mr-2">
-          Auto-message new matches
-        </label>
-      </div>
-    `;
-
-    // Language Preferences Section
-    const selectedLanguages = msgConfig.selectedLanguages || DEFAULT_SELECTED_LANGUAGES;
-    const languagePreferencesHTML = `
-      <div class="settings-divider"></div>
-      <div class="settings-header">Language Preferences</div>
-      <p class="stealth-panel-desc">Select which languages appear in your translation dropdowns:</p>
-      <div id="language-selection-container" class="diagnostic-log">
-        <div class="grid grid-cols-auto gap-2">
-          ${getAllLanguageOptions().map(lang => `
-            <label class="settings-label flex items-center text-xs cursor-pointer">
-              <input type="checkbox" class="language-checkbox" value="${lang.value}" ${selectedLanguages.includes(lang.value) ? 'checked' : ''} class="mr-2">
-              ${lang.text}
-            </label>
-          `).join('')}
-        </div>
-      </div>
-      <div class="flex gap-2 mt-3">
-        <button id="select-all-languages" class="main-btn bg-primary text-white p-2 text-xs">Select All</button>
-        <button id="deselect-all-languages" class="main-btn bg-danger text-white p-2 text-xs">Deselect All</button>
-        <button id="reset-languages" class="main-btn bg-warning text-white p-2 text-xs">Reset to Default</button>
-      </div>
-      <div class="stealth-panel-desc">
-        Selected: <span id="selected-count">${selectedLanguages.length}</span> languages
-      </div>
-    `;
-
-    // API Settings
-    const apiSettingsHTML = `
-      <div class="settings-divider"></div>
-      <div class="settings-header">API Settings</div>
-      <p class="stealth-panel-desc">Using an API is faster and more reliable. Get your key from Google AI Studio.</p>
-      <div class="settings-row">
-          <label for="gemini-free-api-key" class="settings-label">Gemini Free API Key</label>
-          <input type="password" id="gemini-free-api-key" class="settings-input" placeholder="Enter Gemini Free API Key">
-        </div>
-      <div id="api-key-status" class="stealth-panel-desc"></div>
-      <button id="save-api-keys-btn" class="main-btn sidebar-save-btn">Save API Key</button>
-    `;
-
-    // Save Settings Button
-    const saveSettingsHTML = `
-      <div class="settings-divider"></div>
-      <button id="save-settings" class="main-btn btn-start sidebar-btn-full">Save All Settings</button>
-    
-      <div id="settings-status" class="stealth-panel-desc"></div>
-    `;
-
-    settingsPanel.innerHTML = swipingSettingsHTML + messagingSettingsHTML + languagePreferencesHTML + apiSettingsHTML + saveSettingsHTML;
-
-    // Load existing API key
-    const keyInput = document.getElementById('gemini-free-api-key');
-    if (keyInput && geminiFreeApiKey) {
-      keyInput.value = geminiFreeApiKey;
+    // Profile preview
+    let profileHTML = '';
+    const profile = window.currentProfile || extractProfileInfo();
+    if (profile && profile.photo) {
+      profileHTML = `<div class="sidebar-profile-preview">\n      <img src="${profile.photo}" alt="Profile" class="sidebar-profile-photo">\n      <div class="sidebar-profile-name">${profile.name || 'Unknown'}</div>\n      ${profile.age ? `<div class=\"sidebar-profile-age\">${profile.age} years old</div>` : ''}\n      ${profile.interests && profile.interests.length > 0 ? `<div class=\"sidebar-profile-interests\">${profile.interests.map(interest => `<span class=\\"sidebar-profile-interest\\">${interest}</span>`).join('')}` : ''}\n    </div>`;
+    } else {
+      profileHTML = `<div class="sidebar-profile-photo-placeholder">No Photo</div>`;
     }
 
-    // Add event listeners
-    setupSettingsEventListeners();
+    // Stats box
+    const statsBox = `<div class="sidebar-box">
+      <div class="sidebar-box-header">
+        <span>${i18n.t('analytics.today')}</span>
+      </div>
+      <div class="sidebar-box-body">
+        <div>${i18n.t('analytics.swipes')}: ${analytics.swipes}</div>
+        <div>${i18n.t('analytics.likes')}: ${analytics.likes}</div>
+        <div>${i18n.t('analytics.nopes')}: ${analytics.nopes}</div>
+        <div>${i18n.t('analytics.matches')}: ${analytics.matches}</div>
+        <div>${i18n.t('analytics.messages')}: ${analytics.messages}</div>
+        <div>${i18n.t('swiping.likeRatio')}: ${analytics.swipes ? ((analytics.likes / analytics.swipes) * 100).toFixed(1) : 0}%</div>
+      </div>
+    </div>`;
+
+    // Stealth mode toggle
+    const stealthBox = `<div class="sidebar-box">
+      <div class="sidebar-box-header">
+        <span>${i18n.t('swiping.stealthMode')}</span>
+      </div>
+      <div class="sidebar-box-body">
+        <label class="settings-label flex items-center">
+          <input type="checkbox" id="stealth-mode" ${ANTI_DETECTION.stealthMode ? 'checked' : ''} class="mr-2">
+          ${i18n.t('swiping.stealthMode')}
+        </label>
+        <div class="stealth-panel-desc">${i18n.t('swiping.stealthModeDesc')}</div>
+      </div>
+    </div>`;
+
+    // Always fetch latest settings from storage
+    chrome.storage.local.get(['swipeConfig', 'messagingConfig'], ({ swipeConfig, messagingConfig }) => {
+      const _swipeConfig = swipeConfig || { maxSwipes: 30, likeRatio: 0.7 };
+      const _messagingConfig = messagingConfig || { tone: 'friendly', autoSend: false };
+      const settingsBox = `<div class="sidebar-box">
+        <div class="sidebar-box-header">
+          <span>${i18n.t('status.title')}</span>
+        </div>
+        <div class="sidebar-box-body">
+            <div>${i18n.t('swiping.maxSwipes')}: ${_swipeConfig.maxSwipes}</div>
+            <div>${i18n.t('swiping.likeRatio')}: ${Math.round((_swipeConfig.likeRatio) * 100)}%</div>
+            <div>${i18n.t('ai.messaging.tone')}: ${_messagingConfig.tone}</div>
+            <div>${i18n.t('ai.messaging.autoSend')}: ${_messagingConfig.autoSend ? 'Yes' : 'No'}</div>
+        </div>
+      </div>`;
+
+      // Page status/warning
+      const currentPath = window.location.pathname;
+      const isOnSwipingPage = currentPath.includes('/app/recs') || 
+                            currentPath.includes('/app/explore') || 
+                            currentPath.includes('/app/discover') ||
+                            currentPath.includes('/app/matches') ||
+                            currentPath === '/app' ||
+                            currentPath === '/';
+      const pageStatusHTML = !isOnSwipingPage ? `<div class="sidebar-warning">
+        <div class="sidebar-warning-header">⚠️ ${i18n.t('notifications.warning')}</div>
+        <div class="sidebar-warning-text">Auto-swiping works on the Discover/Explore page. Navigate there to use the Start button.</div>
+      </div>` : '';
+
+      // Control buttons
+      const controlsDisabled = !enabled;
+      const startDisabled = controlsDisabled || sessionActive;
+      const stopDisabled = controlsDisabled || !sessionActive;
+      const btnRow = `<div class="sidebar-btn-row">
+        <button id="sidebar-start-btn" class="main-btn btn-start${startDisabled ? ' btn-disabled' : ''}" ${startDisabled ? 'disabled' : ''}>▶️ ${i18n.t('swiping.startSwiping')}</button>
+        <button id="sidebar-stop-btn" class="main-btn btn-stop${stopDisabled ? ' btn-disabled' : ''}" ${stopDisabled ? 'disabled' : ''}>⏹️ ${i18n.t('swiping.stopSwiping')}</button>
+        <button id="sidebar-like-btn" class="swipe-btn btn-like${controlsDisabled ? ' btn-disabled' : ''}" ${controlsDisabled ? 'disabled' : ''}>👍 ${i18n.t('buttons.like')}</button>
+        <button id="sidebar-dislike-btn" class="swipe-btn btn-nope${controlsDisabled ? ' btn-disabled' : ''}" ${controlsDisabled ? 'disabled' : ''}>👎 ${i18n.t('buttons.nope')}</button>
+      </div>`;
+
+      panel.innerHTML = `
+        <div class="sidebar-profile-preview sidebar-section-spacing">${profileHTML}</div>
+        <div class="sidebar-section-spacing">${statsBox}</div>
+        <div class="sidebar-section-spacing">${stealthBox}</div>
+        <div class="sidebar-section-spacing">${settingsBox}</div>
+        ${pageStatusHTML}
+        ${btnRow}
+      `;
+
+      // Add event listeners for controls
+      const startBtn = document.getElementById('sidebar-start-btn');
+      const stopBtn = document.getElementById('sidebar-stop-btn');
+      const likeBtn = document.getElementById('sidebar-like-btn');
+      const dislikeBtn = document.getElementById('sidebar-dislike-btn');
+      if (startBtn && !startDisabled) startBtn.onclick = () => { handleStartSwiping(); setTimeout(() => renderSidebarStatusTab(enabled), 100); };
+      if (stopBtn && !stopDisabled) stopBtn.onclick = () => { handleStopSwiping(); setTimeout(() => renderSidebarStatusTab(enabled), 100); };
+      if (likeBtn && !controlsDisabled) likeBtn.onclick = () => handleManualLike();
+      if (dislikeBtn && !controlsDisabled) dislikeBtn.onclick = () => handleManualNope();
+      // Stealth mode checkbox event handler
+      const stealthCheckbox = document.getElementById('stealth-mode');
+      if (stealthCheckbox) {
+        stealthCheckbox.addEventListener('change', (e) => {
+          ANTI_DETECTION.toggleStealthMode(e.target.checked);
+        });
+      }
+    });
   });
 }
+
+
 
 function setupSettingsEventListeners() {
   const likeRatioSlider = document.getElementById('like-ratio');
@@ -1078,14 +1009,14 @@ function setupSettingsEventListeners() {
       if (geminiKey) {
         chrome.storage.local.set({ geminiFreeApiKey: geminiKey }, () => {
           console.log('[Tinder AI] Gemini API Key saved.');
-          statusEl.textContent = 'Gemini API Key saved successfully!';
+          statusEl.textContent = i18n.t('ai.saved');
           statusEl.style.color = '#48bb78';
           setTimeout(() => { statusEl.textContent = ''; }, 3000);
         });
       } else {
         chrome.storage.local.remove('geminiFreeApiKey', () => {
           console.log('[Tinder AI] Gemini API Key removed.');
-          statusEl.textContent = 'Gemini API Key removed.';
+          statusEl.textContent = i18n.t('ai.removed');
           statusEl.style.color = '#f59e0b';
           setTimeout(() => { statusEl.textContent = ''; }, 3000);
         });
@@ -1118,7 +1049,7 @@ function setupSettingsEventListeners() {
       }, () => {
         console.log('[Tinder AI] Settings saved:', { newFilterConfig, newMessagingConfig });
         const statusEl = document.getElementById('settings-status');
-        statusEl.textContent = 'Settings saved successfully!';
+        statusEl.textContent = i18n.t('ai.settingsSaved');
         statusEl.style.color = '#48bb78';
         setTimeout(() => { statusEl.textContent = ''; }, 3000);
       });
@@ -1163,38 +1094,38 @@ function renderSidebarAnalyticsTab(enabled) {
     }
     analyticsPanel.innerHTML = `
       <div class="sidebar-box">
-        <div class="sidebar-box-header">🏆 All-Time Statistics</div>
+        <div class="sidebar-box-header">🏆 ${i18n.t('analytics.allTime')}</div>
         <div class="sidebar-box-body">
-          <div>Total Swipes: ${allTimeStats.swipes}</div>
-          <div>Total Likes: ${allTimeStats.likes}</div>
-          <div>Total Nopes: ${allTimeStats.nopes}</div>
-          <div>Total Matches: ${allTimeStats.matches}</div>
-          <div>Total Messages: ${allTimeStats.messages}</div>
-          <div>Overall Like Ratio: ${allTimeStats.swipes > 0 ? ((allTimeStats.likes / allTimeStats.swipes) * 100).toFixed(1) : '0.0'}%</div>
-          <div>Overall Match Rate: ${allTimeStats.likes > 0 ? ((allTimeStats.matches / allTimeStats.likes) * 100).toFixed(1) : '0.0'}%</div>
-          <div>Efficiency Score: ${calculateEfficiencyScore(allTimeStats)}</div>
+          <div>${i18n.t('analytics.swipes')}: ${allTimeStats.swipes}</div>
+          <div>${i18n.t('analytics.likes')}: ${allTimeStats.likes}</div>
+          <div>${i18n.t('analytics.nopes')}: ${allTimeStats.nopes}</div>
+          <div>${i18n.t('analytics.matches')}: ${allTimeStats.matches}</div>
+          <div>${i18n.t('analytics.messages')}: ${allTimeStats.messages}</div>
+          <div>${i18n.t('swiping.likeRatio')}: ${allTimeStats.swipes > 0 ? ((allTimeStats.likes / allTimeStats.swipes) * 100).toFixed(1) : '0.0'}%</div>
+          <div>${i18n.t('analytics.matchRate')}: ${allTimeStats.likes > 0 ? ((allTimeStats.matches / allTimeStats.likes) * 100).toFixed(1) : '0.0'}%</div>
+          <div>${i18n.t('analytics.efficiency')}: ${calculateEfficiencyScore(allTimeStats)}</div>
         </div>
       </div>
       <div class="sidebar-box">
-        <div class="sidebar-box-header"><span class="sidebar-ai-icon" aria-label="AI">🤖</span> AI Performance</div>
+        <div class="sidebar-box-header"><span class="sidebar-ai-icon" aria-label="AI">🤖</span> ${i18n.t('ai.title')}</div>
         <div class="sidebar-box-body">
-          <div>Success Rate: ${aiStats.responses ? ((aiStats.success / aiStats.responses) * 100).toFixed(1) : '0.0'}%</div>
-          <div>Total Responses: ${aiStats.responses || 0}</div>
-          <div>Successful: ${aiStats.success || 0}</div>
-          <div>Failed: ${aiStats.responses ? aiStats.responses - aiStats.success : 0}</div>
-          <div>Avg Rating: ${aiStats.avgRating?.toFixed(1) || '0.0'}/10</div>
-          <div>Rate Limited: ${AI_INTEGRATION.rateLimits.gemini.count}</div>
+          <div>${i18n.t('analytics.successRate')}: ${aiStats.responses ? ((aiStats.success / aiStats.responses) * 100).toFixed(1) : '0.0'}%</div>
+          <div>${i18n.t('analytics.totalResponses')}: ${aiStats.responses || 0}</div>
+          <div>${i18n.t('analytics.successful')}: ${aiStats.success || 0}</div>
+          <div>${i18n.t('analytics.failed')}: ${aiStats.responses ? aiStats.responses - aiStats.success : 0}</div>
+          <div>${i18n.t('analytics.avgRating')}: ${aiStats.avgRating?.toFixed(1) || '0.0'}/10</div>
+          <div>${i18n.t('analytics.rateLimited')}: ${AI_INTEGRATION.rateLimits.gemini.count}</div>
         </div>
       </div>
       <div class="sidebar-box">
-        <div class="sidebar-box-header">⚡ Performance Metrics</div>
+        <div class="sidebar-box-header">⚡ ${i18n.t('analytics.performanceMetrics')}</div>
         <div class="sidebar-box-body">
-          <div>Stealth Mode: ${ANTI_DETECTION.stealthMode ? 'Active' : 'Inactive'}</div>
-          <div>Failure Count: <span class="${ANTI_DETECTION.failureCount > 3 ? 'failure-count-high' : 'failure-count-low'}">${ANTI_DETECTION.failureCount}</span></div>
-          <div>Swipe Speed: ${SWIPE_DELAY_RANGE[0]}-${SWIPE_DELAY_RANGE[1]}ms</div>
-          <div>Session Active: ${sessionActive ? 'Yes' : 'No'}</div>
-          <div>Current AI: ${currentAIDisplay}</div>
-          <div>API Key Status: ${apiKeyStatus}</div>
+          <div>${i18n.t('swiping.stealthMode')}: ${ANTI_DETECTION.stealthMode ? i18n.t('status.active') : i18n.t('status.inactive')}</div>
+          <div>${i18n.t('analytics.failureCount')}: <span class="${ANTI_DETECTION.failureCount > 3 ? 'failure-count-high' : 'failure-count-low'}">${ANTI_DETECTION.failureCount}</span></div>
+          <div>${i18n.t('analytics.swipeSpeed')}: ${SWIPE_DELAY_RANGE[0]}-${SWIPE_DELAY_RANGE[1]}ms</div>
+          <div>${i18n.t('analytics.sessionActive')}: ${sessionActive ? i18n.t('analytics.yes') : i18n.t('analytics.no')}</div>
+          <div>${i18n.t('analytics.currentAI')}: ${currentAIDisplay}</div>
+          <div>${i18n.t('analytics.apiKeyStatus')}: ${apiKeyStatus}</div>
         </div>
       </div>
     `;
@@ -1212,13 +1143,6 @@ function calculateEfficiencyScore(stats) {
   
   const score = (likeRatio * 0.4 + matchRate * 0.4 + messageRate * 0.2) * 100;
   return Math.min(score, 100).toFixed(1);
-}
-
-function formatResponseTime(ms) {
-  if (!ms || ms === 0) return 'N/A';
-  if (ms < 60000) return `${Math.round(ms / 1000)}s`;
-  if (ms < 3600000) return `${Math.round(ms / 60000)}m`;
-  return `${Math.round(ms / 3600000)}h`;
 }
 
 function setupAnalyticsEventListeners() {
@@ -1286,9 +1210,9 @@ function renderSidebarAntiDetectionTab(enabled) {
     
   antiDetectionPanel.innerHTML = `
     <div class="analytics-section">
-      <div class="analytics-header">Anti-Detection</div>
+      <div class="analytics-header">${i18n.t('swiping.stealthMode')}</div>
       <div class="settings-row">
-        <label for="stealth-mode" class="settings-label">Stealth Mode:</label>
+        <label for="stealth-mode" class="settings-label">${i18n.t('swiping.stealthMode')}:</label>
         <input type="checkbox" id="stealth-mode" ${stealthEnabled ? 'checked' : ''} ${!enabled ? 'disabled' : ''} />
       </div>
       <div class="analytics-header mt-4">Diagnostic Log</div>
@@ -1362,8 +1286,110 @@ function setupSidebarTabs() {
   });
 }
 
-function injectSidebar() {
+// Function to show the consent overlay
+function showConsentOverlay() {
+  console.log('[Tinder AI] Showing consent overlay');
+  
+  // Detect browser language and set appropriate locale
+  const browserLang = navigator.language || navigator.userLanguage || 'en';
+  const langCode = browserLang.split('-')[0].toLowerCase();
+  
+  // Check if we support this language, fallback to English if not
+  const supportedLanguages = ['en', 'ja', 'ko', 'fr', 'es', 'de', 'it', 'pt', 'ar', 'zh'];
+  const detectedLanguage = supportedLanguages.includes(langCode) ? langCode : 'en';
+  
+  console.log(`[Tinder AI] Detected browser language: ${browserLang}, using: ${detectedLanguage}`);
+  
+  // Create overlay container
+  const overlay = document.createElement('div');
+  overlay.id = 'tinder-ai-consent-overlay';
+  overlay.className = 'tinder-ai-consent-overlay';
+  
+  // Create consent dialog
+  const dialog = document.createElement('div');
+  dialog.className = 'tinder-ai-consent-dialog';
+  
+  // Add title
+  const title = document.createElement('h2');
+  title.className = 'tinder-ai-consent-title';
+  title.textContent = i18n.t('consentOverlay.title', { lng: detectedLanguage });
+  
+  // Add description
+  const description = document.createElement('p');
+  description.className = 'tinder-ai-consent-description';
+  description.textContent = i18n.t('consentOverlay.description', { lng: detectedLanguage });
+  
+  // Create features container
+  const featuresContainer = document.createElement('div');
+  featuresContainer.className = 'tinder-ai-consent-features';
+  
+  const features = i18n.t('consentOverlay.features', { lng: detectedLanguage });
+  
+  features.forEach(featureText => {
+    const feature = document.createElement('div');
+    feature.className = 'tinder-ai-consent-feature';
+    feature.textContent = featureText;
+    featuresContainer.appendChild(feature);
+  });
+  
+  // Add accept button
+  const acceptButton = document.createElement('button');
+  acceptButton.className = 'tinder-ai-consent-accept-btn';
+  acceptButton.textContent = i18n.t('consentOverlay.acceptButton', { lng: detectedLanguage });
+  
+  // Add event listener to accept button
+  acceptButton.addEventListener('click', () => {
+    console.log('[Tinder AI] Consent given, removing overlay');
+    // Set consent to true
+    sidebarConsentGiven = true;
+    // Save consent to storage
+    chrome.storage.local.set({ sidebarConsentGiven: true });
+    // Remove overlay
+    overlay.remove();
+    // Initialize features that require consent
+    console.log('[Tinder AI] Consent accepted, initializing features...');
+    createPersistentAIIcon();
+    injectWandButtons();
+    // Refresh sidebar tabs to enable features
+    renderSidebarActiveTab();
+    // Force a DOM change check to inject any missing buttons
+    setTimeout(() => {
+      const matches = document.querySelectorAll(window.SELECTORS.matchListItemSelector + ':not(.wand-injected)');
+      if (matches.length > 0) {
+        injectWandButtons(matches);
+      }
+    }, 1000);
+  });
+  
+  // Assemble dialog
+  dialog.appendChild(title);
+  dialog.appendChild(description);
+  dialog.appendChild(featuresContainer);
+  dialog.appendChild(acceptButton);
+  overlay.appendChild(dialog);
+  
+  // Add to body
+  document.body.appendChild(overlay);
+  console.log('[Tinder AI] Consent overlay added to DOM');
+}
+
+async function injectSidebar() {
   console.log('[Tinder AI] injectSidebar called');
+  
+  // Wait for i18n to be initialized
+  if (!i18nInitialized) {
+    console.log('[Tinder AI] Waiting for i18n initialization...');
+    let attempts = 0;
+    while (!i18nInitialized && attempts < 50) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      attempts++;
+    }
+    if (!i18nInitialized) {
+      console.warn('[Tinder AI] i18n not initialized after 5 seconds, proceeding anyway');
+    } else {
+      console.log('[Tinder AI] i18n initialized, proceeding with sidebar injection');
+    }
+  }
   
   // Remove any existing sidebar and styles to prevent duplicates
   const existingSidebar = document.getElementById('tinder-ai-sidebar');
@@ -1423,21 +1449,127 @@ function injectSidebar() {
     <div class="sidebar-header">
       <div class="sidebar-ai-title">
         <span class="sidebar-ai-icon" aria-label="AI">🤖</span>
-        <h1 class="text-lg font-semibold">SpicySwipe</h1>
+        <h1 class="text-lg font-semibold">${i18n.t('extension.name')}</h1>
       </div>
-      <button id="theme-toggle" class="text-muted" title="Toggle theme">🌙</button>
+      <div class="sidebar-controls">
+        <select id="language-selector" class="language-selector-abbr" title="${i18n.t('sidebar.language.label')}">
+          <option value="en">EN</option>
+          <option value="fr">FR</option>
+          <option value="es">ES</option>
+          <option value="de">DE</option>
+          <option value="it">IT</option>
+          <option value="pt">PT</option>
+          <option value="ar">AR</option>
+          <option value="zh">ZH</option>
+          <option value="ko">KO</option>
+          <option value="ja">JA</option>
+        </select>
+        <button id="theme-toggle" class="text-muted" title="${i18n.t('sidebar.theme.toggle')}">🌙</button>
+      </div>
     </div>
     <div class="sidebar-tab-bar">
-      <button class="sidebar-tab-btn active" data-tab="status">Status</button>
-      <button class="sidebar-tab-btn" data-tab="ai">AI</button>
-      <button class="sidebar-tab-btn" data-tab="swiping">Swiping</button>
-      <button class="sidebar-tab-btn" data-tab="analytics">Analytics</button>
+      <button class="sidebar-tab-btn active" data-tab="status">${i18n.t('sidebar.tabs.status')}</button>
+      <button class="sidebar-tab-btn" data-tab="ai">${i18n.t('sidebar.tabs.ai')}</button>
+      <button class="sidebar-tab-btn" data-tab="swiping">${i18n.t('sidebar.tabs.swiping')}</button>
+      <button class="sidebar-tab-btn" data-tab="analytics">${i18n.t('sidebar.tabs.analytics')}</button>
     </div>
     <div class="sidebar-content">
-      <div id="sidebar-tab-status" class="sidebar-tab-panel active"></div>
-      <div id="sidebar-tab-ai" class="sidebar-tab-panel"></div>
-      <div id="sidebar-tab-swiping" class="sidebar-tab-panel"></div>
-      <div id="sidebar-tab-analytics" class="sidebar-tab-panel"></div>
+      <div id="sidebar-tab-status" class="sidebar-tab-panel active">
+        <div class="sidebar-panel-content">
+          <div class="sidebar-panel-section">
+            <h3 class="sidebar-panel-title">${i18n.t('status.title')}</h3>
+            <div class="sidebar-status-grid">
+              <div class="sidebar-status-item">
+                <span class="sidebar-status-label">${i18n.t('status.active')}</span>
+                <span id="status-active" class="sidebar-status-value">${i18n.t('status.inactive')}</span>
+              </div>
+              <div class="sidebar-status-item">
+                <span class="sidebar-status-label">${i18n.t('status.connected')}</span>
+                <span id="status-connected" class="sidebar-status-value">${i18n.t('status.disconnected')}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="sidebar-tab-ai" class="sidebar-tab-panel">
+        <div class="sidebar-panel-content">
+          <div class="sidebar-panel-section">
+            <h3 class="sidebar-panel-title">${i18n.t('ai.title')}</h3>
+            <div class="sidebar-form-group">
+              <label class="sidebar-form-label">${i18n.t('ai.apiKey')}</label>
+              <input type="password" id="ai-api-key" class="sidebar-form-input" placeholder="Enter API key">
+            </div>
+            <div class="sidebar-form-group">
+              <label class="sidebar-form-label">${i18n.t('ai.model')}</label>
+              <select id="ai-model" class="sidebar-form-select">
+                <option value="gpt-4">GPT-4</option>
+                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                <option value="claude-3">Claude-3</option>
+                <option value="gemini-pro">Gemini Pro</option>
+              </select>
+            </div>
+            <div class="sidebar-form-group">
+              <label class="sidebar-form-label">${i18n.t('ai.tone')}</label>
+              <select id="ai-tone" class="sidebar-form-select">
+                <option value="friendly">Friendly</option>
+                <option value="professional">Professional</option>
+                <option value="casual">Casual</option>
+                <option value="romantic">Romantic</option>
+                <option value="humorous">Humorous</option>
+              </select>
+            </div>
+            <button id="ai-save" class="sidebar-btn primary">${i18n.t('ai.saved')}</button>
+            <div id="ai-status" class="sidebar-status-message"></div>
+          </div>
+        </div>
+      </div>
+      <div id="sidebar-tab-swiping" class="sidebar-tab-panel">
+        <div class="sidebar-panel-content">
+          <div class="sidebar-panel-section">
+            <h3 class="sidebar-panel-title">${i18n.t('swiping.title')}</h3>
+            <div class="sidebar-form-group">
+              <label class="sidebar-form-label">${i18n.t('swiping.autoSwipe')}</label>
+              <input type="checkbox" id="swiping-auto" class="sidebar-form-checkbox">
+            </div>
+            <div class="sidebar-form-group">
+              <label class="sidebar-form-label">${i18n.t('swiping.swipeDelay')}</label>
+              <input type="range" id="swiping-delay" class="sidebar-form-range" min="1000" max="10000" step="500">
+              <span id="swiping-delay-value" class="sidebar-form-value">3000ms</span>
+            </div>
+            <div class="sidebar-form-group">
+              <label class="sidebar-form-label">${i18n.t('swiping.maxSwipes')}</label>
+              <input type="number" id="swiping-max" class="sidebar-form-input" min="1" max="100" value="30">
+            </div>
+            <button id="swiping-save" class="sidebar-btn primary">${i18n.t('swiping.settingsSaved')}</button>
+            <div id="swiping-status" class="sidebar-status-message"></div>
+          </div>
+        </div>
+      </div>
+      <div id="sidebar-tab-analytics" class="sidebar-tab-panel">
+        <div class="sidebar-panel-content">
+          <div class="sidebar-panel-section">
+            <h3 class="sidebar-panel-title">${i18n.t('analytics.title')}</h3>
+            <div class="sidebar-analytics-grid">
+              <div class="sidebar-analytics-item">
+                <span class="sidebar-analytics-label">${i18n.t('analytics.swipes')}</span>
+                <span id="analytics-swipes" class="sidebar-analytics-value">0</span>
+              </div>
+              <div class="sidebar-analytics-item">
+                <span class="sidebar-analytics-label">${i18n.t('analytics.likes')}</span>
+                <span id="analytics-likes" class="sidebar-analytics-value">0</span>
+              </div>
+              <div class="sidebar-analytics-item">
+                <span class="sidebar-analytics-label">${i18n.t('analytics.matches')}</span>
+                <span id="analytics-matches" class="sidebar-analytics-value">0</span>
+              </div>
+              <div class="sidebar-analytics-item">
+                <span class="sidebar-analytics-label">${i18n.t('analytics.messages')}</span>
+                <span id="analytics-messages" class="sidebar-analytics-value">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 
@@ -1478,25 +1610,66 @@ function injectSidebar() {
     }
   }, 100);
 
-  // Add toggle button
+  // In injectSidebar, after adding the sidebar to the DOM:
+  // Remove old toggle if present
   const oldToggle = document.querySelector('.tinder-ai-sidebar-toggle');
   if (oldToggle) oldToggle.remove();
+
+  // Create the toggle button
   const toggleBtn = document.createElement('div');
   toggleBtn.className = 'tinder-ai-sidebar-toggle';
-  toggleBtn.innerHTML = '<span id="tinder-ai-sidebar-arrow">◀</span>';
+  toggleBtn.innerHTML = `<span id="tinder-ai-sidebar-arrow">${i18n.t('sidebar.toggle.hide')}</span>`;
+  toggleBtn.style.position = 'fixed';
+  toggleBtn.style.top = '50%';
+  toggleBtn.style.transform = 'translateY(-50%)';
+  toggleBtn.style.zIndex = '10001';
+  toggleBtn.style.cursor = 'pointer';
+  toggleBtn.style.background = 'var(--primary)';
+  toggleBtn.style.color = 'white';
+  toggleBtn.style.padding = '10px';
+  toggleBtn.style.borderRadius = '50%';
+  toggleBtn.style.boxShadow = 'rgba(0, 0, 0, 0.15) 0px 4px 12px';
+  toggleBtn.style.transition = 'left 0.3s cubic-bezier(0.4,0,0.2,1), right 0.3s cubic-bezier(0.4,0,0.2,1)';
+  toggleBtn.style.width = '40px';
+  toggleBtn.style.height = '40px';
+  toggleBtn.style.display = 'flex';
+  toggleBtn.style.alignItems = 'center';
+  toggleBtn.style.justifyContent = 'center';
+  toggleBtn.style.fontSize = '1.2em';
+  toggleBtn.style.userSelect = 'none';
+  toggleBtn.style.left = 'calc(100vw - 50px)'; // Start at the edge
+
   document.body.appendChild(toggleBtn);
-  console.log('[Tinder AI] Toggle button added to DOM');
+
+  // Function to update toggle position
+  function updateTogglePosition() {
+    const sidebar = document.getElementById('tinder-ai-sidebar');
+    const isHidden = sidebar.classList.contains('hidden');
+    if (isHidden) {
+      // Sidebar is closed: put toggle at the right edge of the screen
+      toggleBtn.style.left = '';
+      toggleBtn.style.right = '0px';
+    } else {
+      // Sidebar is open: put toggle attached to the sidebar's left edge
+      toggleBtn.style.right = '';
+      toggleBtn.style.left = 'calc(100vw - 380px - 50px)'; // Sidebar width + offset
+    }
+  }
+
+  // Initial position
+  updateTogglePosition();
+  // Also update position on window resize
+  window.addEventListener('resize', updateTogglePosition);
 
   // Setup toggle functionality
-  let hidden = false;
-  const toggleHandler = () => {
-    hidden = !hidden;
-    sidebar.classList.toggle('hidden', hidden);
-    // Don't hide the toggle button - it should always be visible
-    toggleBtn.querySelector('#tinder-ai-sidebar-arrow').textContent = hidden ? '▶' : '◀';
-    console.log('[Tinder AI] Sidebar toggled. Hidden:', hidden);
-  };
-  toggleBtn.addEventListener('click', toggleHandler);
+let hidden = false;
+   const toggleHandler = () => {
+     hidden = !hidden;
+     sidebar.classList.toggle('hidden', hidden);
+     toggleBtn.querySelector('#tinder-ai-sidebar-arrow').textContent = hidden ? i18n.t('sidebar.toggle.show') : i18n.t('sidebar.toggle.hide');
+     updateTogglePosition();
+   };
+   toggleBtn.addEventListener('click', toggleHandler);
 
   // Setup tab navigation
   const tabBtns = sidebar.querySelectorAll('.sidebar-tab-btn');
@@ -1520,34 +1693,68 @@ function injectSidebar() {
   
   console.log('[Tinder AI] Sidebar injection complete. Check for red border to confirm visibility.');
 
+  // --- Theme persistence ---
+  chrome.storage.local.get(['theme'], ({ theme }) => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      const themeToggle = document.getElementById('theme-toggle');
+      if (themeToggle) themeToggle.textContent = i18n.t('sidebar.theme.light');
+    } else {
+      document.documentElement.classList.remove('dark');
+      const themeToggle = document.getElementById('theme-toggle');
+      if (themeToggle) themeToggle.textContent = i18n.t('sidebar.theme.dark');
+    }
+  });
+
   // Add theme toggle logic after rendering
   setTimeout(() => {
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) {
       themeToggle.onclick = () => {
-        console.log('[Tinder AI] Theme toggle clicked');
-        console.log('[Tinder AI] Before toggle - dark class:', document.documentElement.classList.contains('dark'));
         document.documentElement.classList.toggle('dark');
-        console.log('[Tinder AI] After toggle - dark class:', document.documentElement.classList.contains('dark'));
-        themeToggle.textContent = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
-        console.log('[Tinder AI] Theme toggle text updated to:', themeToggle.textContent);
-        
-        // Test if dark mode styles are being applied
-        setTimeout(() => {
-          const sidebar = document.getElementById('tinder-ai-sidebar');
-          if (sidebar) {
-            const computedStyle = window.getComputedStyle(sidebar);
-            console.log('[Tinder AI] Dark mode test - Sidebar background:', computedStyle.background);
-            console.log('[Tinder AI] Dark mode test - Sidebar color:', computedStyle.color);
-            
-            // Check if the debug indicator is visible
-            const beforePseudo = window.getComputedStyle(sidebar, '::before');
-            console.log('[Tinder AI] Dark mode test - Before pseudo content:', beforePseudo.content);
-          }
-        }, 50);
+        const isDark = document.documentElement.classList.contains('dark');
+        themeToggle.textContent = isDark ? i18n.t('sidebar.theme.light') : i18n.t('sidebar.theme.dark');
+        chrome.storage.local.set({ theme: isDark ? 'dark' : 'light' });
+        // ... existing debug/test code ...
       };
     } else {
       console.error('[Tinder AI] Theme toggle button not found');
+    }
+
+    // Add language selector logic
+    const languageSelector = document.getElementById('language-selector');
+    if (languageSelector) {
+      // Set current language
+      languageSelector.value = i18n.getCurrentLocale();
+      
+      languageSelector.onchange = async (event) => {
+        const newLocale = event.target.value;
+        console.log(`[Tinder AI] Language changed to: ${newLocale}`);
+        
+        try {
+          await i18n.changeLanguage(newLocale);
+          
+          // Debug: Verify language was saved
+          chrome.storage.local.get(['userLanguage'], (result) => {
+            console.log('[Tinder AI] Language saved to storage:', result.userLanguage);
+          });
+          
+          // Update all text elements in the sidebar
+          updateSidebarTranslations();
+          
+          // Update language selector to reflect new language
+          updateLanguageSelector();
+          
+          // Show success message
+          showStatusMessage(i18n.t('notifications.languageChanged'));
+          
+        } catch (error) {
+          console.error('[Tinder AI] Error changing language:', error);
+          showErrorNotification('Failed to change language. Please try again.');
+        }
+      };
+    } else {
+      console.error('[Tinder AI] Language selector not found');
     }
   }, 0);
 
@@ -1557,14 +1764,23 @@ function injectSidebar() {
 }
 
 // --- Initialization ---
+// Initialize i18n first
+initializeI18n().then(() => {
+  console.log('[Tinder AI] I18n initialized successfully');
+}).catch(error => {
+  console.error('[Tinder AI] Error initializing i18n:', error);
+});
+
 // Inject sidebar on Tinder.com
 if (window.location.hostname.includes('tinder.com')) {
   console.log('[Tinder AI] Tinder.com detected, setting up sidebar...');
   // Use a small delay to ensure the body is ready
-  setTimeout(() => {
+  setTimeout(async () => {
     console.log('[Tinder AI] Injecting sidebar...');
-    injectSidebar();
+    await injectSidebar();
     console.log('[Tinder AI] Sidebar injection complete');
+    // Update language selector with saved preference
+    updateLanguageSelector();
     // Force Gemini as default AI if not set or invalid
     chrome.storage.local.get(['activeAI'], ({ activeAI }) => {
       if (!activeAI || !['gemini'].includes(activeAI)) {
@@ -1578,39 +1794,95 @@ if (window.location.hostname.includes('tinder.com')) {
 }
 
 // Load initial settings
-chrome.storage.local.get(['swipeConfig', 'swipeSpeedMin', 'swipeSpeedMax'], (settings) => {
-    currentFilters.likeRatio = settings.swipeConfig?.likeRatio || 0.7;
-    MAX_SESSION_SWIPES = settings.swipeConfig?.maxSwipes || 30;
-  SWIPE_DELAY_RANGE[0] = settings.swipeSpeedMin || 2000;
-  SWIPE_DELAY_RANGE[1] = settings.swipeSpeedMax || 4000;
-});
+async function loadSwipingSettings() {
+  try {
+    const settings = await chrome.storage.local.get(['swipeConfig', 'swipeSpeedMin', 'swipeSpeedMax']);
+    
+    // Set default values if not found
+    const defaultConfig = {
+      likeRatio: 0.7,
+      maxSwipes: 30
+    };
+    
+    const defaultSpeedRange = [2000, 4000];
+    
+    // Update global variables with stored or default values
+    currentFilters.likeRatio = settings.swipeConfig?.likeRatio || defaultConfig.likeRatio;
+    MAX_SESSION_SWIPES = settings.swipeConfig?.maxSwipes || defaultConfig.maxSwipes;
+    SWIPE_DELAY_RANGE[0] = settings.swipeSpeedMin || defaultSpeedRange[0];
+    SWIPE_DELAY_RANGE[1] = settings.swipeSpeedMax || defaultSpeedRange[1];
+    
+    console.log('[Tinder AI] Loaded swiping settings:', {
+      likeRatio: currentFilters.likeRatio,
+      maxSwipes: MAX_SESSION_SWIPES,
+      speedRange: SWIPE_DELAY_RANGE
+    });
+    
+    // Ensure settings are saved to storage if they were using defaults
+    if (!settings.swipeConfig) {
+      await chrome.storage.local.set({
+        swipeConfig: {
+          likeRatio: currentFilters.likeRatio,
+          maxSwipes: MAX_SESSION_SWIPES
+        },
+        swipeSpeedMin: SWIPE_DELAY_RANGE[0],
+        swipeSpeedMax: SWIPE_DELAY_RANGE[1]
+      });
+      console.log('[Tinder AI] Saved default swiping settings to storage');
+    }
+    
+  } catch (error) {
+    console.error('[Tinder AI] Error loading swiping settings:', error);
+    // Use defaults if there's an error
+    currentFilters.likeRatio = 0.7;
+    MAX_SESSION_SWIPES = 30;
+    SWIPE_DELAY_RANGE[0] = 2000;
+    SWIPE_DELAY_RANGE[1] = 4000;
+  }
+}
+
+// Load initial settings
+loadSwipingSettings();
 
 // Update settings and apply them
 async function updateSettings(newSettings) {
+  try {
   // Update global variables
   currentFilters.likeRatio = newSettings.swipeConfig.likeRatio;
   MAX_SESSION_SWIPES = newSettings.swipeConfig.maxSwipes;
   SWIPE_DELAY_RANGE = [newSettings.swipeSpeedMin, newSettings.swipeSpeedMax];
   
   // Update AI settings
-  if (newSettings.activeAI !== AI_INTEGRATION.currentAI) {
+    if (newSettings.activeAI && newSettings.activeAI !== AI_INTEGRATION.currentAI) {
     AI_INTEGRATION.currentAI = newSettings.activeAI;
     await AI_INTEGRATION.checkAILoginStatus();
   }
   
   // Save to storage
   await chrome.storage.local.set({
-    activeAI: newSettings.activeAI,
+      activeAI: newSettings.activeAI || AI_INTEGRATION.currentAI,
     swipeConfig: newSettings.swipeConfig,
     swipeSpeedMin: newSettings.swipeSpeedMin,
     swipeSpeedMax: newSettings.swipeSpeedMax
   });
+    
+    console.log('[Tinder AI] Settings updated and saved:', {
+      likeRatio: currentFilters.likeRatio,
+      maxSwipes: MAX_SESSION_SWIPES,
+      speedRange: SWIPE_DELAY_RANGE,
+      activeAI: newSettings.activeAI || AI_INTEGRATION.currentAI
+    });
   
   // Update UI
   renderSidebarStatusTab(sidebarConsentGiven);
   
   // Log the update
-  ANTI_DETECTION.addDiagnosticLog(`Settings updated: Like ratio ${newSettings.swipeConfig.likeRatio}, Max swipes ${newSettings.swipeConfig.maxSwipes}, Speed ${newSettings.swipeSpeedMin}-${newSettings.swipeSpeedMax}ms, AI: ${newSettings.activeAI}`);
+    ANTI_DETECTION.addDiagnosticLog(`Settings updated: Like ratio ${newSettings.swipeConfig.likeRatio}, Max swipes ${newSettings.swipeConfig.maxSwipes}, Speed ${newSettings.swipeSpeedMin}-${newSettings.swipeSpeedMax}ms, AI: ${newSettings.activeAI || AI_INTEGRATION.currentAI}`);
+    
+  } catch (error) {
+    console.error('[Tinder AI] Error updating settings:', error);
+    showErrorNotification('Failed to save settings. Please try again.');
+  }
 }
 
 // --- Messaging Automation ---
@@ -2346,12 +2618,21 @@ function injectWandButtons(matches) {
     }
     
   // Load consent from storage before initializing sidebar
+  console.log('[Tinder AI] Loading consent data from storage...');
   const consentData = await new Promise(resolve => chrome.storage.local.get('sidebarConsentGiven', resolve));
   sidebarConsentGiven = !!consentData.sidebarConsentGiven;
+  console.log('[Tinder AI] Consent data loaded:', sidebarConsentGiven);
     
-  injectSidebar();
+  await injectSidebar();
   setupSidebarTabs();
-  // setupSidebarConsent(); // Remove this line - consent is handled in sidebar setup
+  
+  // Show consent overlay if consent not given
+  if (!sidebarConsentGiven) {
+    console.log('[Tinder AI] Consent not given, showing consent overlay');
+    showConsentOverlay();
+  } else {
+    console.log('[Tinder AI] Consent already given, skipping consent overlay');
+  }
 
   // Initialize modules
   await ANTI_DETECTION.init();
@@ -2438,6 +2719,37 @@ function injectWandButtons(matches) {
       clearInterval(contextCheckInterval);
     }
   }, 30000); // Check every 30 seconds
+
+  // Listen for storage changes to handle consent updates
+  chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === 'local' && changes.sidebarConsentGiven) {
+      const newConsentValue = changes.sidebarConsentGiven.newValue;
+      if (newConsentValue !== sidebarConsentGiven) {
+        console.log('[Tinder AI] Consent changed in storage:', newConsentValue);
+        sidebarConsentGiven = newConsentValue;
+        
+        if (newConsentValue) {
+          console.log('[Tinder AI] Consent granted via storage, initializing features...');
+          createPersistentAIIcon();
+          injectWandButtons();
+          renderSidebarActiveTab();
+        }
+      }
+    }
+  });
+
+  // Add global function to reset consent for testing
+  window.resetSpicySwipeConsent = () => {
+    console.log('[Tinder AI] Resetting consent...');
+    chrome.storage.local.remove('sidebarConsentGiven', () => {
+      console.log('[Tinder AI] Consent removed from storage');
+      sidebarConsentGiven = false;
+      // Force show consent overlay
+      showConsentOverlay();
+    });
+  };
+  
+  console.log('[Tinder AI] Consent reset function available: resetSpicySwipeConsent()');
 })();
 
 
@@ -2808,7 +3120,12 @@ function extractDetailedProfileInfo(container) {
     age: '',
     bio: '',
     interests: [],
-    prompts: []
+    prompts: [],
+    job: '',
+    education: '',
+    location: '',
+    essentials: {},
+    lookingFor: ''
   };
 
   try {
@@ -2925,6 +3242,44 @@ function extractDetailedProfileInfo(container) {
       }
     }
 
+    console.log('[Tinder AI] Step 5: Looking for job...');
+    // --- Extract 'Looking for' section ---
+    const lookingForHeader = findElementByText('h2', 'Looking for');
+    if (lookingForHeader) {
+      const lookingForDiv = lookingForHeader.parentElement.nextElementSibling;
+      if (lookingForDiv) {
+        profileInfo.lookingFor = lookingForDiv.textContent.trim();
+      }
+    }
+
+    console.log('[Tinder AI] Step 6: Looking for job...');
+    // --- Extract 'Essentials' section ---
+    const essentialsHeader = findElementByText('h2', 'Essentials');
+    if (essentialsHeader) {
+      const essentialsList = essentialsHeader.parentElement.nextElementSibling;
+      if (essentialsList && essentialsList.tagName === 'UL') {
+        const essentials = {};
+        essentialsList.querySelectorAll('li').forEach(li => {
+          const label = li.querySelector('div.D(f) Ai(c) svg + span, span.Typs\(body-1-regular\)');
+          const value = li.querySelector('div.D(f) Ai(c) span:last-child');
+          if (label && value) {
+            essentials[label.textContent.trim()] = value.textContent.trim();
+          } else if (li.textContent) {
+            // fallback: just use the text
+            essentials[li.textContent.trim().split(':')[0]] = li.textContent.trim().split(':').slice(1).join(':').trim();
+          }
+        });
+        profileInfo.essentials = essentials;
+        // Try to extract job, education, location from essentials if present
+        Object.keys(essentials).forEach(key => {
+          const lower = key.toLowerCase();
+          if (lower.includes('job') || lower.includes('work') || lower.includes('occupation')) profileInfo.job = essentials[key];
+          if (lower.includes('school') || lower.includes('education') || lower.includes('college') || lower.includes('university')) profileInfo.education = essentials[key];
+          if (lower.includes('location') || lower.includes('city') || lower.includes('lives')) profileInfo.location = essentials[key];
+        });
+      }
+    }
+
     console.log('[Tinder AI] Final extracted profile info:', profileInfo);
     return profileInfo;
 
@@ -2939,108 +3294,114 @@ function extractChatHistory() {
   const messages = [];
   
   try {
-    // Strategy 1: Using data-testid attributes which are more stable
-    const messageNodes = document.querySelectorAll('[data-testid^="message-"]');
-    
-    if (messageNodes.length > 0) {
-      console.log(`[Tinder AI] Found ${messageNodes.length} messages with data-testid`);
-      
-      messageNodes.forEach(node => {
-        const testId = node.getAttribute('data-testid');
-        // Text is usually in a span or a styled div, sometimes nested.
-        const textNode = node.querySelector('span, div[class*="text"], div[class*="message"]'); 
-        
-        if (textNode) {
-          const text = textNode.textContent.trim();
-          if (text && text.length > 0 && text.length < 1000) {
+    // Strategy 1: Use the new robust selector for all chat bubbles
+    const chatBubbles = document.querySelectorAll('.msg.BreakWord');
+    if (chatBubbles.length > 0) {
+      console.log(`[Tinder AI] Found ${chatBubbles.length} chat bubbles with primary selector`);
+      chatBubbles.forEach(bubble => {
             let sender = 'them';
-            if (testId.includes('-sent') || testId.includes('sent')) {
-              sender = 'me';
-            }
-            messages.push({ sender, text });
-          }
+        if (bubble.classList.contains('C($c-ds-text-chat-bubble-send)')) sender = 'me';
+        if (bubble.classList.contains('C($c-ds-text-chat-bubble-receive)')) sender = 'them';
+        // Fallback: check for send/receive in className
+        if (bubble.className.includes('chat-bubble-send')) sender = 'me';
+        if (bubble.className.includes('chat-bubble-receive')) sender = 'them';
+        const textNode = bubble.querySelector('span.text');
+        const text = textNode ? textNode.textContent.trim() : bubble.textContent.trim();
+        // Find timestamp from sibling <time> element
+        let timestamp = '';
+        const parent = bubble.parentElement;
+        if (parent) {
+          const timeElem = parent.querySelector('time');
+          if (timeElem) timestamp = timeElem.getAttribute('datetime') || timeElem.textContent.trim();
+        }
+        if (text && text.length > 0 && text.length < 2000) {
+          messages.push({ sender, text, timestamp });
         }
       });
-
       if (messages.length > 0) {
-        const uniqueMessages = messages.filter((msg, index, self) =>
-          index === self.findIndex((t) => t.text === msg.text && t.sender === msg.sender)
-        );
-        console.log(`[Tinder AI] Extracted ${uniqueMessages.length} messages using data-testid strategy.`);
-        return uniqueMessages;
+        console.log(`[Tinder AI] Successfully extracted ${messages.length} messages with primary strategy`);
+        return messages;
       }
     }
 
-    console.log('[Tinder AI] data-testid strategy failed or no messages found. Falling back to class-based strategy.');
-
-    // Strategy 2: Using class names as a fallback - more comprehensive
-    const allMessageElements = document.querySelectorAll('div[class*="message"], div[class*="msg"], div[class*="chat"], div[class*="bubble"]');
-    
-    if (allMessageElements.length > 0) {
-      console.log(`[Tinder AI] Found ${allMessageElements.length} potential message elements`);
-      
-      allMessageElements.forEach(el => {
-        // Filter out UI elements that aren't messages
-        if (el.closest('button, [role="button"], textarea, input, nav, header, footer')) return;
-        
-        const text = el.textContent.trim();
-        // Heuristic to avoid grabbing large non-message blocks
-        if (text && text.length > 0 && text.length < 500 && !text.includes('Loading') && !text.includes('Typing')) {
+    // Strategy 2: Try data-testid selectors
+    const testIdBubbles = document.querySelectorAll('[data-testid*="message"], [data-testid*="chat"]');
+    if (testIdBubbles.length > 0) {
+      console.log(`[Tinder AI] Found ${testIdBubbles.length} chat bubbles with data-testid selector`);
+      testIdBubbles.forEach(bubble => {
           let sender = 'them';
-          
-          // Check for alignment classes on the parent container
-          const parentContainer = el.parentElement;
-          if (parentContainer) {
-            const classList = parentContainer.className;
-            if (typeof classList === 'string' && (
-              classList.includes('justify-end') || 
-              classList.includes('items-end') || 
-              classList.includes('right') ||
-              classList.includes('sent') ||
-              classList.includes('outgoing')
-            )) {
+        // Check for send/receive indicators
+        if (bubble.getAttribute('data-testid')?.includes('send') || 
+            bubble.classList.contains('sent') || 
+            bubble.classList.contains('outgoing')) {
               sender = 'me';
-            }
-          }
-          
-          // Also check for common sent message indicators
-          if (el.querySelector('[class*="sent"], [class*="outgoing"], [class*="right"]')) {
-            sender = 'me';
-          }
-          
-          messages.push({ sender, text });
+        }
+        const text = bubble.textContent.trim();
+        if (text && text.length > 0 && text.length < 2000) {
+          messages.push({ sender, text, timestamp: '' });
         }
       });
+      if (messages.length > 0) {
+        console.log(`[Tinder AI] Successfully extracted ${messages.length} messages with data-testid strategy`);
+        return messages;
+      }
     }
-    
-    // Strategy 3: Look for specific Tinder message containers
-    if (messages.length === 0) {
-      console.log('[Tinder AI] Class-based strategy failed. Trying Tinder-specific selectors...');
-      
-      // Look for Tinder's specific message structure
-      const tinderMessages = document.querySelectorAll('[class*="Message"], [class*="ChatMessage"], [class*="Bubble"]');
-      
-      tinderMessages.forEach(el => {
-        const text = el.textContent.trim();
-        if (text && text.length > 0 && text.length < 500) {
+
+    // Strategy 3: Try generic message containers
+    const messageContainers = document.querySelectorAll('.message, .chat-message, .msg, [class*="message"], [class*="chat"]');
+    if (messageContainers.length > 0) {
+      console.log(`[Tinder AI] Found ${messageContainers.length} message containers with generic selector`);
+      messageContainers.forEach(container => {
+        let sender = 'them';
+        // Check for send/receive indicators
+        if (container.classList.contains('sent') || 
+            container.classList.contains('outgoing') || 
+            container.classList.contains('me') ||
+            container.className.includes('send')) {
+            sender = 'me';
+          }
+        const text = container.textContent.trim();
+        if (text && text.length > 0 && text.length < 2000) {
+          messages.push({ sender, text, timestamp: '' });
+        }
+      });
+      if (messages.length > 0) {
+        console.log(`[Tinder AI] Successfully extracted ${messages.length} messages with generic strategy`);
+        return messages;
+      }
+    }
+
+    // Strategy 4: Try to find any text content that looks like messages
+    const allTextElements = document.querySelectorAll('span, div, p');
+    if (allTextElements.length > 0) {
+      console.log(`[Tinder AI] Trying to extract from ${allTextElements.length} text elements`);
+      allTextElements.forEach(element => {
+        const text = element.textContent.trim();
+        // Only consider text that looks like a message (not too short, not too long, not empty)
+        if (text && text.length > 3 && text.length < 500 && 
+            !text.includes('Type a message') && 
+            !text.includes('Send') &&
+            !text.includes('Like') &&
+            !text.includes('Nope')) {
+          // Try to determine sender based on element position or classes
           let sender = 'them';
-          
-          // Check for sent message indicators
-          if (el.closest('[class*="sent"], [class*="outgoing"], [class*="right"]')) {
+          if (element.classList.contains('sent') || 
+              element.classList.contains('outgoing') || 
+              element.classList.contains('me') ||
+              element.className.includes('send')) {
             sender = 'me';
           }
-          
-          messages.push({ sender, text });
+          messages.push({ sender, text, timestamp: '' });
         }
       });
+      if (messages.length > 0) {
+        console.log(`[Tinder AI] Successfully extracted ${messages.length} messages with text element strategy`);
+        return messages;
+      }
     }
-    
-    const uniqueFallbackMessages = messages.filter((msg, index, self) =>
-      index === self.findIndex((t) => t.text === msg.text && t.sender === msg.sender)
-    );
-    
-    console.log(`[Tinder AI] Extracted ${uniqueFallbackMessages.length} chat messages using fallback strategy.`, uniqueFallbackMessages);
-    return uniqueFallbackMessages;
+
+    console.log('[Tinder AI] No messages found with any strategy');
+    return [];
     
   } catch (error) {
     console.error('[Tinder AI] Error extracting chat history:', error);
@@ -3068,53 +3429,41 @@ async function displayMessageForApproval(initialMessage, profileInfo, chatHistor
     return;
   }
   
+  // Load dynamic tone options from prompt library
+  const { toneList } = await loadToneInstructions();
+  const toneOptions = toneList.map(item => 
+    `<option value="${item.type}">${item.title || item.text.split('.')[0]}</option>`
+  ).join('');
+  
   const approvalBox = document.createElement('div');
   approvalBox.id = 'ai-approval-box';
   approvalBox.className = 'approval-box';
 
   approvalBox.innerHTML = `
     <div class="approval-box-header" id="ai-approval-header">
-      <span class="approval-box-header-title">AI Suggestion</span>
-      <span class="approval-box-header-desc">(Drag to move)</span>
+      <span class="approval-box-header-title">${i18n.t('approvalBox.title')}</span>
+      <span class="approval-box-header-desc">${i18n.t('approvalBox.dragToMove')}</span>
     </div>
     <div class="approval-box-content">
       <p id="ai-approval-text" class="approval-box-text">${initialMessage}</p>
       <div id="ai-approval-actions" class="approval-box-actions">
-        <button id="ai-use-btn" class="approval-box-btn approval-btn-use">Use</button>
-        <button id="ai-regenerate-btn" class="approval-box-btn approval-btn-regenerate">Regenerate</button>
-        <select id="ai-tone-select" class="approval-box-select" title="Change message tone">
-          <option value="friendly">Friendly</option>
-          <option value="playful">Playful</option>
-          <option value="flirty">Flirty</option>
-          <option value="witty">Witty</option>
-          <option value="extra-naughty">Extra Naughty</option>
-          <option value="more-funny">More Funny</option>
-          <option value="super-romantic">Super Romantic</option>
-          <option value="sarcastic">Sarcastic</option>
-          <option value="meme-lord">Meme Lord</option>
-          <option value="icebreaker">Icebreaker</option>
-          <option value="mysterious">Mysterious</option>
-          <option value="compliment-bomb">Compliment Bomb</option>
+        <button id="ai-use-btn" class="approval-box-btn approval-btn-use">${i18n.t('approvalBox.use')}</button>
+        <button id="ai-regenerate-btn" class="approval-box-btn approval-btn-regenerate">${i18n.t('approvalBox.regenerate')}</button>
+        <select id="ai-tone-select" class="approval-box-select" title="${i18n.t('approvalBox.changeTone')}">
+          ${toneOptions}
         </select>
         <div class="approval-box-divider"></div>
-        <button id="ai-translate-btn" class="approval-box-btn approval-btn-translate">Translate</button>
+        <button id="ai-translate-btn" class="approval-box-btn approval-btn-translate">${i18n.t('approvalBox.translate')}</button>
         <select id="ai-translate-lang" class="approval-box-select">
-          <option value="en">English</option>
-          <option value="es">Spanish</option>
-          <option value="fr">French</option>
-          <option value="de">German</option>
-          <option value="ar">Arabic</option>
-          <option value="pt">Portuguese</option>
-          <option value="it">Italian</option>
-          <option value="ru">Russian</option>
-          <option value="ja">Japanese</option>
-          <option value="ko">Korean</option>
-          <option value="zh">Chinese</option>
+          ${getLanguageOptions(['en', 'es', 'fr', 'de', 'it', 'pt']).map(lang => 
+            `<option value="${lang.value}">${lang.text}</option>`
+          ).join('')}
         </select>
-        <button id="ai-cancel-btn" class="approval-box-btn approval-btn-cancel">Cancel</button>
+        <button id="ai-cancel-btn" class="approval-box-btn approval-btn-cancel">${i18n.t('approvalBox.cancel')}</button>
       </div>
-      <div id="ai-approval-loader" class="approval-box-loader">Loading...</div>
+      <div id="ai-approval-loader" class="approval-box-loader">${i18n.t('approvalBox.loading')}</div>
     </div>
+    <div class="approval-box-resize-handle" id="ai-approval-resize"></div>
   `;
 
   // Always append to body and use fixed positioning, centered
@@ -3123,6 +3472,16 @@ async function displayMessageForApproval(initialMessage, profileInfo, chatHistor
   approvalBox.style.top = '50%';
   approvalBox.style.transform = 'translate(-50%, -50%)';
   approvalBox.style.zIndex = '99999';
+  
+  // Load saved dimensions if available
+  chrome.storage.local.get('approvalBoxSize', ({ approvalBoxSize }) => {
+    if (approvalBoxSize) {
+      approvalBox.style.width = `${approvalBoxSize.width}px`;
+      approvalBox.style.height = `${approvalBoxSize.height}px`;
+      approvalBox.style.transform = 'translate(-50%, -50%)';
+    }
+  });
+  
   document.body.appendChild(approvalBox);
 
   // Set up MutationObserver to watch for approval box removal
@@ -3260,42 +3619,80 @@ async function displayMessageForApproval(initialMessage, profileInfo, chatHistor
 
   // --- Draggable Logic & Unified Click Handling ---
   let isDragging = false;
+  let isResizing = false;
   let offsetX, offsetY;
+  let startWidth, startHeight, startX, startY;
 
   const onMouseMove = (e) => {
-    if (!isDragging) return;
+    if (isDragging) {
     approvalBox.style.left = `${e.clientX - offsetX}px`;
     approvalBox.style.top = `${e.clientY - offsetY}px`;
+    } else if (isResizing) {
+      const newWidth = Math.max(300, startWidth + (e.clientX - startX));
+      const newHeight = Math.max(200, startHeight + (e.clientY - startY));
+      approvalBox.style.width = `${newWidth}px`;
+      approvalBox.style.height = `${newHeight}px`;
+    }
   };
 
   const onMouseUp = () => {
+    if (isResizing) {
+      // Save the new dimensions
+      const finalWidth = parseInt(approvalBox.style.width);
+      const finalHeight = parseInt(approvalBox.style.height);
+      chrome.storage.local.set({
+        approvalBoxSize: { width: finalWidth, height: finalHeight }
+      });
+      console.log(`[Tinder AI] Saved approval box size: ${finalWidth}x${finalHeight}`);
+    }
+    
     isDragging = false;
+    isResizing = false;
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
   };
   
   approvalBox.addEventListener('mousedown', (e) => {
     const dragHeader = approvalBox.querySelector('#ai-approval-header');
+    const resizeHandle = approvalBox.querySelector('#ai-approval-resize');
     const isDragHandle = dragHeader && dragHeader.contains(e.target);
+    const isResizeHandle = resizeHandle && resizeHandle.contains(e.target);
+    
     e.stopPropagation();
+    
     if (isDragHandle) {
       e.preventDefault();
       isDragging = true;
+      
+      // Calculate offset relative to the box's current position
       const rect = approvalBox.getBoundingClientRect();
-      // Re-parent to body to escape container constraints and use fixed positioning.
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      
+      // Ensure the box is positioned fixed and on the body
       if (approvalBox.parentElement !== document.body) {
         document.body.appendChild(approvalBox);
+      }
+      
+      // Set fixed positioning and maintain current position
         approvalBox.style.position = 'fixed';
-        // Remove all other inline styles except for left/top/width
-        approvalBox.style.removeProperty('bottom');
-        approvalBox.style.removeProperty('right');
-        // Set initial drag position
         approvalBox.style.left = `${rect.left}px`;
         approvalBox.style.top = `${rect.top}px`;
         approvalBox.style.width = `${rect.width}px`;
-      }
-      offsetX = e.clientX - rect.left;
-      offsetY = e.clientY - rect.top;
+      approvalBox.style.transform = 'none'; // Remove any transform
+      
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    } else if (isResizeHandle) {
+      e.preventDefault();
+      isResizing = true;
+      
+      const rect = approvalBox.getBoundingClientRect();
+      startWidth = rect.width;
+      startHeight = rect.height;
+      startX = e.clientX;
+      startY = e.clientY;
+      
       document.addEventListener('mousemove', onMouseMove);
       document.addEventListener('mouseup', onMouseUp);
     }
@@ -3305,6 +3702,12 @@ async function displayMessageForApproval(initialMessage, profileInfo, chatHistor
 // Generate personalized message using extracted profile information
 async function generatePersonalizedMessage(profileInfo, chatHistory, overrideConfig = {}) {
   try {
+    // Guard against undefined chatHistory
+    if (!chatHistory || !Array.isArray(chatHistory)) {
+      console.log('[Tinder AI] Chat history is undefined or not an array, treating as empty conversation');
+      chatHistory = [];
+    }
+
     const { messagingConfig } = await new Promise(resolve => chrome.storage.local.get('messagingConfig', resolve));
     
     // Start with default, apply stored config, then apply overrides
@@ -3328,7 +3731,16 @@ async function generatePersonalizedMessage(profileInfo, chatHistory, overrideCon
 
     let prompt;
     // Add custom instructions for each tone
-    const toneInstructions = {
+    let toneInstructions = {};
+    try {
+      const response = await fetch(chrome.runtime.getURL('popup/promptLibrary.json'));
+      const promptList = await response.json();
+      promptList.forEach(item => {
+        toneInstructions[item.type] = item.text;
+      });
+    } catch (e) {
+      console.error('[Tinder AI] Failed to load promptLibrary.json, falling back to default tone instructions.', e);
+      toneInstructions = {
       'playful': 'Make it playful, lighthearted, and fun.',
       'friendly': 'Keep it friendly and approachable.',
       'flirty': 'Add a flirty and charming vibe, but keep it respectful.',
@@ -3342,15 +3754,19 @@ async function generatePersonalizedMessage(profileInfo, chatHistory, overrideCon
       'mysterious': 'Make it mysterious and intriguing, leaving them wanting to know more.',
       'compliment-bomb': 'Shower them with genuine, creative compliments in a fun way.'
     };
+    }
     const tone = config.tone || 'friendly';
     const toneInstruction = toneInstructions[tone] ? `\nTONE INSTRUCTION: ${toneInstructions[tone]}` : '';
     
     if (chatHistory.length === 0) {
       // This is for generating an OPENER
-      let profileContext = `Name: ${profileInfo.name || 'n/a'}\nBio: "${profileInfo.bio || 'n/a'}"\nInterests: ${profileInfo.interests.join(', ') || 'n/a'}`;
+      let profileContext = `Name: ${profileInfo.name || 'n/a'}\nBio: "${profileInfo.bio || 'n/a'}"\nInterests: ${profileInfo.interests.join(', ') || 'n/a'}\nJob: ${profileInfo.job || 'n/a'}\nEducation: ${profileInfo.education || 'n/a'}\nLocation: ${profileInfo.location || 'n/a'}\nLooking For: ${profileInfo.lookingFor || 'n/a'}`;
       if (profileInfo.prompts && profileInfo.prompts.length > 0) {
           const promptsText = profileInfo.prompts.map(p => `Q: ${p.question}\nA: ${p.answer}`).join('\n\n');
           profileContext += `\n\nPrompts:\n${promptsText}`;
+      }
+      if (profileInfo.essentials && Object.keys(profileInfo.essentials).length > 0) {
+        profileContext += `\n\nEssentials:\n` + Object.entries(profileInfo.essentials).map(([k, v]) => `${k}: ${v}`).join('\n');
       }
       if ((!profileInfo.bio || profileInfo.bio.toLowerCase() === 'n/a' || profileInfo.bio.trim() === '') && profileInfo.interests && profileInfo.interests.length > 0) {
         prompt = `Based on the following Tinder profile, write ONE short, engaging opening message in ${language}. The profile has no bio, so ask about or reference one of their interests: ${profileInfo.interests.join(', ')}. Be creative and specific. Do NOT use words like \"mystery\", \"intriguing\", \"blank profile\", or \"empty profile\". Do NOT include any intro, options, or explanations. ONLY output the raw message text itself.${toneInstruction}\n\nProfile:\n${profileContext}`;
@@ -3482,9 +3898,10 @@ const DEFAULT_SELECTED_LANGUAGES = ['en', 'es', 'fr', 'de', 'ar', 'pt', 'it', 'r
 // Language configuration functions
 function getSelectedLanguages() {
   return new Promise((resolve) => {
-    chrome.storage.local.get('messagingConfig', ({ messagingConfig }) => {
-      const selectedLanguages = messagingConfig?.selectedLanguages || DEFAULT_SELECTED_LANGUAGES;
-      resolve(selectedLanguages);
+    chrome.storage.local.get(['messagingConfig', 'selectedLanguages'], ({ messagingConfig, selectedLanguages }) => {
+      // Try to get from selectedLanguages first, then from messagingConfig, then default
+      const savedLanguages = selectedLanguages || messagingConfig?.selectedLanguages || DEFAULT_SELECTED_LANGUAGES;
+      resolve(savedLanguages);
     });
   });
 }
@@ -3512,16 +3929,29 @@ function renderSidebarAITab(enabled) {
   aiPanel.style.maxHeight = 'calc(100vh - 60px)';
   aiPanel.innerHTML = '';
 
-  chrome.storage.local.get(['activeAI', 'geminiFreeApiKey', 'geminiProApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey', 'messagingConfig'], ({ activeAI, geminiFreeApiKey, geminiProApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey, messagingConfig }) => {
+  chrome.storage.local.get(['activeAI', 'geminiFreeApiKey', 'geminiProApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey', 'messagingConfig'], async ({ activeAI, geminiFreeApiKey, geminiProApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey, messagingConfig }) => {
     const msgConfig = messagingConfig || { tone: 'friendly', language: 'en', autoSend: false, autoMessageOnMatch: false };
     const selectedAI = activeAI || 'gemini';
+
+    // Load dynamic tone options from prompt library
+    const { toneList } = await loadToneInstructions();
+    const toneOptions = toneList.map(item => 
+      `<option value="${item.type}" ${msgConfig.tone === item.type ? 'selected' : ''}>${item.title || item.text.split('.')[0]}</option>`
+    ).join('');
+
+    // Get selected languages for dynamic language dropdown - use getSelectedLanguages() for consistency
+    const selectedLanguages = await getSelectedLanguages();
+    const languageOptions = getLanguageOptions(selectedLanguages);
+    const languageDropdownOptions = languageOptions.map(lang => 
+      `<option value="${lang.value}" ${msgConfig.language === lang.value ? 'selected' : ''}>${lang.text}</option>`
+    ).join('');
 
     // --- AI Model & API Key Section ---
     const aiModelSection = `
       <div class="sidebar-box">
-        <div class="settings-header">AI Model & API Key</div>
+        <div class="settings-header">${i18n.t('ai.title')}</div>
       <div class="sidebar-settings-row">
-        <label for="ai-model-select" class="settings-label sidebar-label-min">AI Model</label>
+        <label for="ai-model-select" class="settings-label sidebar-label-min">${i18n.t('ai.model')}</label>
         <select id="ai-model-select" class="sidebar-select-wide">
             <option value="gemini" ${selectedAI === 'gemini' ? 'selected' : ''}>Google Gemini (Free)</option>
             <option value="gemini-pro" ${selectedAI === 'gemini-pro' ? 'selected' : ''}>Google Gemini Pro (Paid)</option>
@@ -3531,23 +3961,23 @@ function renderSidebarAITab(enabled) {
           </select>
         </div>
         <div id="gemini-free-key-row" class="sidebar-settings-row sidebar-row-mb sidebar-row-flex${selectedAI === 'gemini' ? '' : ' sidebar-row-none'}">
-          <label for="gemini-free-api-key" class="settings-label sidebar-label-min">Gemini Free API Key</label>
+          <label for="gemini-free-api-key" class="settings-label sidebar-label-min">Gemini Free ${i18n.t('ai.apiKey')}</label>
           <input type="password" id="gemini-free-api-key" class="settings-input sidebar-input-grow" placeholder="Enter Gemini Free API Key">
         </div>
         <div id="gemini-pro-key-row" class="sidebar-settings-row sidebar-row-mb sidebar-row-flex${selectedAI === 'gemini-pro' ? '' : ' sidebar-row-none'}">
-          <label for="gemini-pro-api-key" class="settings-label sidebar-label-min">Gemini Pro API Key</label>
+          <label for="gemini-pro-api-key" class="settings-label sidebar-label-min">Gemini Pro ${i18n.t('ai.apiKey')}</label>
           <input type="password" id="gemini-pro-api-key" class="settings-input" placeholder="Enter Gemini Pro API Key" >
         </div>
         <div id="openai-key-row" class="sidebar-settings-row sidebar-row-mb sidebar-row-flex${selectedAI === 'chatgpt' ? '' : ' sidebar-row-none'}">
-          <label for="openai-api-key" class="settings-label sidebar-label-min">OpenAI API Key</label>
+          <label for="openai-api-key" class="settings-label sidebar-label-min">OpenAI ${i18n.t('ai.apiKey')}</label>
           <input type="password" id="openai-api-key" class="settings-input" placeholder="Enter OpenAI API Key">
         </div>
         <div id="deepseek-key-row" class="sidebar-settings-row sidebar-row-mb sidebar-row-flex${selectedAI === 'deepseek' ? '' : ' sidebar-row-none'}">
-          <label for="deepseek-api-key" class="settings-label sidebar-label-min">DeepSeek API Key</label>
+          <label for="deepseek-api-key" class="settings-label sidebar-label-min">DeepSeek ${i18n.t('ai.apiKey')}</label>
           <input type="password" id="deepseek-api-key" class="settings-input" placeholder="Enter DeepSeek API Key">
         </div>
         <div id="anthropic-key-row" class="sidebar-settings-row sidebar-row-mb sidebar-row-flex${selectedAI === 'claude' ? '' : ' sidebar-row-none'}">
-          <label for="anthropic-api-key" class="settings-label sidebar-label-min">Anthropic API Key</label>
+          <label for="anthropic-api-key" class="settings-label sidebar-label-min">Anthropic ${i18n.t('ai.apiKey')}</label>
           <input type="password" id="anthropic-api-key" class="settings-input" placeholder="Enter Anthropic API Key">
         </div>
         <div id="api-key-status" class="stealth-panel-desc"></div>
@@ -3557,55 +3987,41 @@ function renderSidebarAITab(enabled) {
     // --- Messaging Configuration Section ---
     const messagingSettingsHTML = `
       <div class="sidebar-box">
-        <div class="settings-header">Messaging Configuration</div>
+        <div class="settings-header">${i18n.t('ai.messaging.title')}</div>
         <div class="settings-row">
-          <label for="message-tone" class="settings-label">Message Tone</label>
+          <label for="message-tone" class="settings-label">${i18n.t('ai.messaging.tone')}</label>
           <select id="message-tone" class="settings-input">
-            <option value="playful" ${msgConfig.tone === 'playful' ? 'selected' : ''}>Playful</option>
-            <option value="friendly" ${msgConfig.tone === 'friendly' ? 'selected' : ''}>Friendly</option>
-            <option value="flirty" ${msgConfig.tone === 'flirty' ? 'selected' : ''}>Flirty</option>
-            <option value="witty" ${msgConfig.tone === 'witty' ? 'selected' : ''}>Witty</option>
-            <option value="extra-naughty" ${msgConfig.tone === 'extra-naughty' ? 'selected' : ''}>Extra Naughty</option>
-            <option value="more-funny" ${msgConfig.tone === 'more-funny' ? 'selected' : ''}>More Funny</option>
-            <option value="super-romantic" ${msgConfig.tone === 'super-romantic' ? 'selected' : ''}>Super Romantic</option>
-            <option value="sarcastic" ${msgConfig.tone === 'sarcastic' ? 'selected' : ''}>Sarcastic</option>
-            <option value="meme-lord" ${msgConfig.tone === 'meme-lord' ? 'selected' : ''}>Meme Lord</option>
-            <option value="icebreaker" ${msgConfig.tone === 'icebreaker' ? 'selected' : ''}>Icebreaker</option>
-            <option value="mysterious" ${msgConfig.tone === 'mysterious' ? 'selected' : ''}>Mysterious</option>
-            <option value="compliment-bomb" ${msgConfig.tone === 'compliment-bomb' ? 'selected' : ''}>Compliment Bomb</option>
+            ${toneOptions}
           </select>
         </div>
         <div class="settings-row">
-          <label for="message-language" class="settings-label">Language</label>
+          <label for="message-language" class="settings-label">${i18n.t('ai.messaging.language')}</label>
           <select id="message-language" class="settings-input">
-            <option value="en" ${msgConfig.language === 'en' ? 'selected' : ''}>English</option>
-            <option value="es" ${msgConfig.language === 'es' ? 'selected' : ''}>Spanish</option>
-            <option value="fr" ${msgConfig.language === 'fr' ? 'selected' : ''}>French</option>
-            <option value="de" ${msgConfig.language === 'de' ? 'selected' : ''}>German</option>
+            ${languageDropdownOptions}
           </select>
         </div>
         <div class="settings-row">
           <label class="settings-label flex items-center text-muted">
             <input type="checkbox" id="auto-send" ${msgConfig.autoSend ? 'checked' : ''} class="mr-2">
-            Auto-send messages
+            ${i18n.t('ai.messaging.autoSend')}
           </label>
         </div>
         <div class="settings-row">
           <label class="settings-label flex items-center text-muted">
             <input type="checkbox" id="auto-message-on-match" ${msgConfig.autoMessageOnMatch ? 'checked' : ''} class="mr-2">
-            Auto-message new matches
+            ${i18n.t('ai.messaging.autoMessageOnMatch')}
           </label>
         </div>
       </div>
     `;
 
     // --- Collapsible Language Preferences Section ---
-    const selectedLanguages = msgConfig.selectedLanguages || DEFAULT_SELECTED_LANGUAGES;
     const languagePreferencesHTML = `
       <div class="sidebar-box">
         <div id="lang-pref-header" class="sidebar-lang-header">
-        <p class="sidebar-lang-desc">Select which languages appear in your translation dropdowns:</p>
+          <span class="sidebar-lang-title">${i18n.t('ai.languagePreferences.title')}</span>
          <span id="lang-pref-toggle" class="sidebar-lang-toggle">&#x25BC;</span>
+        </div>
            <div id="lang-pref-body" class="sidebar-lang-body">      
           <p class="sidebar-lang-desc">Select which languages appear in your translation dropdowns:</p>
           <div id="language-selection-container" class="diagnostic-log">
@@ -3619,12 +4035,12 @@ function renderSidebarAITab(enabled) {
             </div>
           </div>
           <div class="flex gap-2 mt-3">
-            <button id="select-all-languages" class="main-btn bg-primary text-white p-2 text-xs">Select All</button>
-            <button id="deselect-all-languages" class="main-btn bg-danger text-white p-2 text-xs">Deselect All</button>
+            <button id="select-all-languages" class="main-btn bg-primary text-white p-2 text-xs">${i18n.t('ai.languagePreferences.selectAll')}</button>
+            <button id="deselect-all-languages" class="main-btn bg-danger text-white p-2 text-xs">${i18n.t('ai.languagePreferences.clearAll')}</button>
             <button id="reset-languages" class="main-btn bg-warning text-white p-2 text-xs">Reset to Default</button>
            </div>
            <div class="stealth-panel-desc">
-            Selected: <span id="selected-count">${selectedLanguages.length}</span> languages
+            ${i18n.t('ai.languagePreferences.selected')}: <span id="selected-count">${selectedLanguages.length}</span> ${i18n.t('ai.languagePreferences.count')}
           </div>
         </div>
       </div>
@@ -3633,7 +4049,7 @@ function renderSidebarAITab(enabled) {
     // --- Save Button ---
     const saveSettingsHTML = `
       <div class="sidebar-box">
-        <button id="save-ai-settings" class="main-btn sidebar-save-btn-green sidebar-btn-full">Save All Settings</button>
+        <button id="save-ai-settings" class="main-btn sidebar-save-btn-green sidebar-btn-full">${i18n.t('buttons.save')}</button>
         <div id="ai-settings-status" class="stealth-panel-desc"></div>
       </div>
     `;
@@ -3645,11 +4061,26 @@ function renderSidebarAITab(enabled) {
     const langPrefBody = document.getElementById('lang-pref-body');
     const langPrefToggle = document.getElementById('lang-pref-toggle');
     if (langPrefHeader && langPrefBody && langPrefToggle) {
-      langPrefHeader.onclick = () => {
+      langPrefHeader.onclick = (e) => {
+        // Make the entire header clickable, but exclude the language selection container
+        const isLanguageContainer = e.target.closest('#language-selection-container');
+        const isButton = e.target.closest('button');
+        
+        // Don't toggle if clicking on language checkboxes, buttons, or the language container
+        if (!isLanguageContainer && !isButton && !e.target.classList.contains('language-checkbox')) {
         const isOpen = langPrefBody.style.display === 'block';
         langPrefBody.style.display = isOpen ? 'none' : 'block';
         langPrefToggle.innerHTML = isOpen ? '&#x25BC;' : '&#x25B2;';
+        }
       };
+    }
+
+    // Prevent language selection container from bubbling up to header
+    const languageContainer = document.getElementById('language-selection-container');
+    if (languageContainer) {
+      languageContainer.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
     }
 
     // --- Set initial values for API keys ---
@@ -3668,12 +4099,45 @@ function renderSidebarAITab(enabled) {
       document.getElementById('deepseek-key-row').style.display = (model === 'deepseek') ? 'flex' : 'none';
       document.getElementById('anthropic-key-row').style.display = (model === 'claude') ? 'flex' : 'none';
     }
-    updateKeyVisibility();
-    document.getElementById('ai-model-select').addEventListener('change', updateKeyVisibility);
 
-    // --- Add event listeners ---
+    // Initial visibility update
+    updateKeyVisibility();
+
+    // Add event listener for model selection
+    const aiModelSelect = document.getElementById('ai-model-select');
+    if (aiModelSelect) {
+      aiModelSelect.addEventListener('change', updateKeyVisibility);
+    }
+
+    // Setup AI event listeners
     setupAIEventListeners();
+    
+    // Load and display saved language selections
+    loadAndDisplayLanguageSelections();
   });
+}
+
+// Function to load and display saved language selections
+async function loadAndDisplayLanguageSelections() {
+  try {
+    const selectedLanguages = await getSelectedLanguages();
+    const languageCheckboxes = document.querySelectorAll('.language-checkbox');
+    const selectedCountSpan = document.getElementById('selected-count');
+    
+    // Update checkboxes to reflect saved selections
+    languageCheckboxes.forEach(checkbox => {
+      checkbox.checked = selectedLanguages.includes(checkbox.value);
+    });
+    
+    // Update the count display
+    if (selectedCountSpan) {
+      selectedCountSpan.textContent = selectedLanguages.length;
+    }
+    
+    console.log('[Tinder AI] Loaded saved language selections:', selectedLanguages);
+  } catch (error) {
+    console.error('[Tinder AI] Error loading language selections:', error);
+  }
 }
 
 function setupAIEventListeners() {
@@ -3682,50 +4146,98 @@ function setupAIEventListeners() {
   const selectedCountSpan = document.getElementById('selected-count');
   
   languageCheckboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', () => {
+    checkbox.addEventListener('change', async (e) => {
+      // Prevent the click from bubbling up to the header (which would collapse the list)
+      e.stopPropagation();
+      
       const selectedLanguages = Array.from(document.querySelectorAll('.language-checkbox:checked')).map(cb => cb.value);
       if (selectedCountSpan) {
         selectedCountSpan.textContent = selectedLanguages.length;
       }
+      
+      // Save selected languages to storage
+      await saveSelectedLanguages(selectedLanguages);
+      
+      // Update translation dropdowns in approval boxes
+      updateTranslationDropdowns(selectedLanguages);
+      
+      // Update messaging language dropdown in AI tab
+      updateMessagingLanguageDropdown(selectedLanguages);
+    });
+    
+    // Also prevent click event from bubbling
+    checkbox.addEventListener('click', (e) => {
+      e.stopPropagation();
     });
   });
 
   // Select All Languages
   const selectAllBtn = document.getElementById('select-all-languages');
   if (selectAllBtn) {
-    selectAllBtn.addEventListener('click', () => {
+    selectAllBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
       languageCheckboxes.forEach(checkbox => {
         checkbox.checked = true;
       });
       if (selectedCountSpan) {
         selectedCountSpan.textContent = languageCheckboxes.length;
       }
+      
+      // Save selected languages to storage
+      const allLanguages = Array.from(languageCheckboxes).map(cb => cb.value);
+      await saveSelectedLanguages(allLanguages);
+      
+      // Update translation dropdowns
+      updateTranslationDropdowns(allLanguages);
+      
+      // Update messaging language dropdown in AI tab
+      updateMessagingLanguageDropdown(allLanguages);
     });
   }
 
   // Deselect All Languages
   const deselectAllBtn = document.getElementById('deselect-all-languages');
   if (deselectAllBtn) {
-    deselectAllBtn.addEventListener('click', () => {
+    deselectAllBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
       languageCheckboxes.forEach(checkbox => {
         checkbox.checked = false;
       });
       if (selectedCountSpan) {
         selectedCountSpan.textContent = '0';
       }
+      
+      // Save selected languages to storage
+      await saveSelectedLanguages([]);
+      
+      // Update translation dropdowns with empty array
+      updateTranslationDropdowns([]);
+      
+      // Update messaging language dropdown in AI tab
+      updateMessagingLanguageDropdown([]);
     });
   }
 
   // Reset to Default Languages
   const resetLanguagesBtn = document.getElementById('reset-languages');
   if (resetLanguagesBtn) {
-    resetLanguagesBtn.addEventListener('click', () => {
+    resetLanguagesBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
       languageCheckboxes.forEach(checkbox => {
         checkbox.checked = DEFAULT_SELECTED_LANGUAGES.includes(checkbox.value);
       });
       if (selectedCountSpan) {
         selectedCountSpan.textContent = DEFAULT_SELECTED_LANGUAGES.length;
       }
+      
+      // Save selected languages to storage
+      await saveSelectedLanguages(DEFAULT_SELECTED_LANGUAGES);
+      
+      // Update translation dropdowns
+      updateTranslationDropdowns(DEFAULT_SELECTED_LANGUAGES);
+      
+      // Update messaging language dropdown in AI tab
+      updateMessagingLanguageDropdown(DEFAULT_SELECTED_LANGUAGES);
     });
   }
 
@@ -3779,7 +4291,7 @@ function setupAIEventListeners() {
       chrome.storage.local.set(toSave, () => {
         console.log('[Tinder AI] AI settings and API key saved:', toSave);
         const statusEl = document.getElementById('ai-settings-status');
-        statusEl.textContent = 'AI settings and API key saved successfully!';
+        statusEl.textContent = i18n.t('ai.settingsSaved');
         statusEl.style.color = '#48bb78';
         setTimeout(() => { statusEl.textContent = ''; }, 3000);
         // Update global variables
@@ -3792,32 +4304,87 @@ function setupAIEventListeners() {
   }
 }
 
+// Function to update translation dropdowns in approval boxes
+function updateTranslationDropdowns(selectedLanguages) {
+  // Find all translation dropdowns in approval boxes
+  const translationDropdowns = document.querySelectorAll('#ai-translate-lang');
+  
+  translationDropdowns.forEach(dropdown => {
+    const currentValue = dropdown.value;
+    const languageOptions = getLanguageOptions(selectedLanguages);
+    
+    // Update the dropdown options
+    dropdown.innerHTML = languageOptions.map(lang => 
+      `<option value="${lang.value}">${lang.text}</option>`
+    ).join('');
+    
+    // Try to restore the previously selected value if it's still available
+    if (selectedLanguages.includes(currentValue)) {
+      dropdown.value = currentValue;
+    } else if (languageOptions.length > 0) {
+      // Fallback to first available option
+      dropdown.value = languageOptions[0].value;
+    }
+  });
+}
+
+// Function to save selected languages to storage
+async function saveSelectedLanguages(selectedLanguages) {
+  try {
+    console.log('[Tinder AI] Saving selected languages:', selectedLanguages);
+    
+    const { messagingConfig } = await chrome.storage.local.get('messagingConfig');
+    const updatedConfig = {
+      ...messagingConfig,
+      selectedLanguages: selectedLanguages
+    };
+    
+    await chrome.storage.local.set({
+      messagingConfig: updatedConfig,
+      selectedLanguages: selectedLanguages
+    });
+    
+    console.log('[Tinder AI] Selected languages saved successfully:', selectedLanguages);
+    
+    // Verify the save by reading it back
+    const verification = await chrome.storage.local.get(['messagingConfig', 'selectedLanguages']);
+    console.log('[Tinder AI] Verification - saved languages:', verification.selectedLanguages);
+    console.log('[Tinder AI] Verification - messagingConfig.selectedLanguages:', verification.messagingConfig?.selectedLanguages);
+    
+  } catch (error) {
+    console.error('[Tinder AI] Error saving selected languages:', error);
+  }
+}
+
 function renderSidebarSwipingTab(enabled) {
   const swipingPanel = document.getElementById('sidebar-tab-swiping');
   if (!swipingPanel) return;
   swipingPanel.style.overflowY = 'auto';
   swipingPanel.style.maxHeight = 'calc(100vh - 60px)';
-  // ... existing code ...
   swipingPanel.innerHTML = '';
 
-  // Load existing settings
-  chrome.storage.local.get(['swipeConfig'], ({ swipeConfig }) => {
-    const config = swipeConfig || { likeRatio: 0.7, maxSwipes: 100 };
+  // Load existing settings from storage
+  chrome.storage.local.get(['swipeConfig'], async ({ swipeConfig }) => {
+    // Use current global values as fallback to ensure consistency
+    const config = swipeConfig || { 
+      likeRatio: currentFilters.likeRatio || 0.7, 
+      maxSwipes: MAX_SESSION_SWIPES || 30 
+    };
 
     // Swiping Configuration
     const swipingSettingsHTML = `
       <div class="sidebar-box">
-        <div class="settings-header">Swiping Behavior</div>
+        <div class="settings-header">${i18n.t('swiping.title')}</div>
         <div class="settings-row">
-          <label for="like-ratio" class="settings-label">Like Ratio (%)</label>
+          <label for="like-ratio" class="settings-label">${i18n.t('swiping.likeRatio')} (%)</label>
           <div class="sidebar-flex-row sidebar-gap-md sidebar-btn-wide">
             <input type="range" id="like-ratio" min="10" max="100" value="${Math.round((config.likeRatio || 0.7) * 100)}" class="settings-input sidebar-input-grow" />
             <span class="settings-value sidebar-label-min sidebar-text-right" id="like-ratio-value">${Math.round((config.likeRatio || 0.7) * 100)}%</span>
         </div>
         </div>
         <div class="settings-row">
-          <label for="max-swipes" class="settings-label">Max Swipes</label>
-          <input type="number" id="max-swipes" min="5" max="100" value="${config.maxSwipes || 100}" class="settings-input" />
+          <label for="max-swipes" class="settings-label">${i18n.t('swiping.maxSwipes')}</label>
+          <input type="number" id="max-swipes" min="1" max="500" value="${config.maxSwipes || 30}" class="settings-input" />
         </div>
         </div>
     `;
@@ -3840,14 +4407,24 @@ function renderSidebarSwipingTab(enabled) {
     // Save Settings Button
     const saveSettingsHTML = `
       <div class="settings-divider"></div>
-      <button id="save-swiping-settings" class="main-btn sidebar-save-btn-green sidebar-btn-full">Save Swiping Settings</button>
+      <button id="save-swiping-settings" class="main-btn sidebar-save-btn-green sidebar-btn-full">${i18n.t('buttons.save')} ${i18n.t('swiping.title')}</button>
       <div id="swiping-settings-status" class="settings-status"></div>
     `;
 
-    swipingPanel.innerHTML = swipingSettingsHTML + futureSettingsHTML + saveSettingsHTML;
+    // Reset Consent Button
+    const resetConsentHTML = `
+      <div class="settings-divider"></div>
+      <button id="reset-consent-btn" class="main-btn sidebar-btn-full" style="background: var(--danger); color: var(--text-light); border: 1px solid var(--danger); margin-top: 12px;">
+        🔄 Reset Consent & Revoke Access
+      </button>
+      <div id="reset-consent-status" class="settings-status"></div>
+    `;
+
+    swipingPanel.innerHTML = swipingSettingsHTML + futureSettingsHTML + saveSettingsHTML + resetConsentHTML;
 
     // Add event listeners
     setupSwipingEventListeners();
+    setupResetConsentEventListener();
   });
 }
 
@@ -3862,34 +4439,106 @@ function setupSwipingEventListeners() {
 
   const saveSwipingBtn = document.getElementById('save-swiping-settings');
   if (saveSwipingBtn) {
-    saveSwipingBtn.addEventListener('click', () => {
+    saveSwipingBtn.addEventListener('click', async () => {
+      try {
       const newSwipeConfig = {
         likeRatio: parseInt(document.getElementById('like-ratio').value, 10) / 100,
         maxSwipes: parseInt(document.getElementById('max-swipes').value, 10),
       };
 
+        // Validate the settings
+        if (newSwipeConfig.likeRatio < 0.1 || newSwipeConfig.likeRatio > 1) {
+          showErrorNotification('Like ratio must be between 10% and 100%');
+          return;
+        }
+        
+        if (newSwipeConfig.maxSwipes < 5 || newSwipeConfig.maxSwipes > 500) {
+          showErrorNotification('Max swipes must be between 5 and 500');
+          return;
+        }
+
       // Call updateSettings to update global variables for automatic swiping
-      updateSettings({
+        await updateSettings({
         swipeConfig: newSwipeConfig,
         swipeSpeedMin: SWIPE_DELAY_RANGE[0],
         swipeSpeedMax: SWIPE_DELAY_RANGE[1],
         activeAI: AI_INTEGRATION.currentAI
       });
 
-      chrome.storage.local.set({
-        swipeConfig: newSwipeConfig
-      }, () => {
-        console.log('[Tinder AI] Swiping settings saved:', newSwipeConfig);
+        // Show success message
         const statusEl = document.getElementById('swiping-settings-status');
-        statusEl.textContent = 'Swiping settings saved successfully!';
+        statusEl.textContent = i18n.t('swiping.settingsSaved');
         statusEl.style.color = '#48bb78';
         setTimeout(() => { statusEl.textContent = ''; }, 3000);
         
+        console.log('[Tinder AI] Swiping settings saved:', newSwipeConfig);
+        
         // Refresh the status tab to show updated values
-        if (currentTab === 'status') {
-          renderSidebarStatusTab(enabled);
+        if (sidebarActiveTab === 'status') {
+          renderSidebarStatusTab(sidebarConsentGiven);
         }
-      });
+        
+      } catch (error) {
+        console.error('[Tinder AI] Error saving swiping settings:', error);
+        const statusEl = document.getElementById('swiping-settings-status');
+        statusEl.textContent = i18n.t('ai.error');
+        statusEl.style.color = '#ef4444';
+        setTimeout(() => { statusEl.textContent = ''; }, 3000);
+      }
+    });
+  }
+}
+
+function setupResetConsentEventListener() {
+  const resetConsentBtn = document.getElementById('reset-consent-btn');
+  if (resetConsentBtn) {
+    resetConsentBtn.addEventListener('click', async () => {
+      try {
+        const statusEl = document.getElementById('reset-consent-status');
+        
+        // Show confirmation dialog
+        if (confirm('Are you sure you want to reset consent? This will revoke all extension permissions and show the consent overlay again.')) {
+          statusEl.textContent = 'Resetting consent...';
+          statusEl.style.color = '#f59e0b';
+          
+          // Remove consent from storage
+          await chrome.storage.local.remove('sidebarConsentGiven');
+          
+          // Update global variable
+          sidebarConsentGiven = false;
+          
+          // Hide sidebar and remove AI elements
+          const sidebar = document.getElementById('tinder-ai-sidebar');
+          if (sidebar) {
+            sidebar.style.display = 'none';
+          }
+          
+          // Remove AI icon if exists
+          const aiIcon = document.getElementById('tinder-ai-icon');
+          if (aiIcon) {
+            aiIcon.remove();
+          }
+          
+          // Remove wand buttons
+          document.querySelectorAll('.tinder-ai-wand-btn').forEach(btn => btn.remove());
+          
+          // Show success message
+          statusEl.textContent = 'Consent reset successfully! Reloading...';
+          statusEl.style.color = '#48bb78';
+          
+          console.log('[Tinder AI] Consent reset by user');
+          
+          // Reload page to show consent overlay
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        }
+      } catch (error) {
+        console.error('[Tinder AI] Error resetting consent:', error);
+        const statusEl = document.getElementById('reset-consent-status');
+        statusEl.textContent = 'Error resetting consent';
+        statusEl.style.color = '#ef4444';
+      }
     });
   }
 }
@@ -4003,7 +4652,7 @@ function setupSettingsEventListeners() {
       }, () => {
         console.log('[Tinder AI] Settings saved:', { newFilterConfig, newMessagingConfig });
         const statusEl = document.getElementById('settings-status');
-        statusEl.textContent = 'Settings saved successfully!';
+        statusEl.textContent = i18n.t('ai.settingsSaved');
         statusEl.style.color = '#48bb78';
         setTimeout(() => { statusEl.textContent = ''; }, 3000);
       });
@@ -4097,27 +4746,6 @@ function showErrorNotification(message) {
   }, 5000);
 }
 
-// Helper function to manually recover extension context
-function manualContextRecovery() {
-  console.log('[Tinder AI] Manual context recovery initiated');
-  
-  if (chrome.runtime?.id) {
-    showErrorNotification('Extension context is already valid');
-    return;
-  }
-  
-  // Try to reinitialize the extension
-  try {
-    // Force a page reload to reinitialize the extension
-    showErrorNotification('Reloading page to recover extension context...');
-    setTimeout(() => {
-      window.location.reload();
-    }, 2000);
-  } catch (error) {
-    console.error('[Tinder AI] Manual recovery failed:', error);
-    showErrorNotification('Manual recovery failed. Please refresh the page manually.');
-  }
-}
 
 // --- Auto-message on new match: global hook ---
 window.onNewMatchDetected = async function(matchId) {
@@ -4190,4 +4818,160 @@ function showStatusMessage(msg) {
     div.textContent = msg;
     statusPanel.prepend(div);
   }
+}
+
+// Global cache for tone instructions
+let cachedToneInstructions = null;
+let cachedToneList = null;
+
+// Load and cache tone instructions at startup
+async function loadToneInstructions() {
+  if (cachedToneInstructions && cachedToneList) return { toneInstructions: cachedToneInstructions, toneList: cachedToneList };
+  try {
+    const response = await fetch(chrome.runtime.getURL('popup/promptLibrary.json'));
+    const promptList = await response.json();
+    cachedToneInstructions = {};
+    cachedToneList = promptList;
+    promptList.forEach(item => {
+      cachedToneInstructions[item.type] = item.text;
+    });
+    return { toneInstructions: cachedToneInstructions, toneList: cachedToneList };
+  } catch (e) {
+    cachedToneInstructions = {
+      'playful': 'Make it playful, lighthearted, and fun.',
+      'friendly': 'Keep it friendly and approachable.',
+      'flirty': 'Add a flirty and charming vibe, but keep it respectful.',
+      'witty': 'Make it clever and witty, with a touch of humor.',
+      'extra-naughty': 'Make it extra naughty, bold, and risqué, but avoid anything illegal or non-consensual.',
+      'more-funny': 'Make it much funnier than usual, use jokes or puns if possible.',
+      'super-romantic': 'Make it super romantic, sweet, and heartfelt.',
+      'sarcastic': 'Add a strong dose of sarcasm and playful teasing.',
+      'meme-lord': 'Write it in the style of a meme lord, using meme references or internet humor.',
+      'icebreaker': 'Make it a creative icebreaker that gets the conversation started.',
+      'mysterious': 'Make it mysterious and intriguing, leaving them wanting to know more.',
+      'compliment-bomb': 'Shower them with genuine, creative compliments in a fun way.'
+    };
+    cachedToneList = Object.keys(cachedToneInstructions).map(type => ({ type, text: cachedToneInstructions[type] }));
+    return { toneInstructions: cachedToneInstructions, toneList: cachedToneList };
+  }
+}
+
+// Update all tone dropdowns to use the cached list
+async function getToneDropdownOptions(selectedTone) {
+  const { toneList } = await loadToneInstructions();
+  return toneList.map(item => `<option value="${item.type}" ${selectedTone === item.type ? 'selected' : ''}>${item.title || item.text.split('.')[0]}</option>`).join('');
+}
+
+// Function to update the messaging language dropdown in the AI tab
+function updateMessagingLanguageDropdown(selectedLanguages) {
+  const messagingLanguageDropdown = document.getElementById('message-language');
+  if (!messagingLanguageDropdown) return;
+  
+  const currentValue = messagingLanguageDropdown.value;
+  const languageOptions = getLanguageOptions(selectedLanguages);
+  
+  // Update the dropdown options
+  messagingLanguageDropdown.innerHTML = languageOptions.map(lang => 
+    `<option value="${lang.value}" ${currentValue === lang.value ? 'selected' : ''}>${lang.text}</option>`
+  ).join('');
+  
+  // If current value is not in selected languages, reset to first available option
+  if (!selectedLanguages.includes(currentValue) && languageOptions.length > 0) {
+    messagingLanguageDropdown.value = languageOptions[0].value;
+  }
+}
+
+// Function to update all sidebar translations when language changes
+function updateSidebarTranslations() {
+  try {
+    const sidebar = document.getElementById('tinder-ai-sidebar');
+    if (!sidebar) {
+      console.warn('[Tinder AI] Sidebar not found for translation update');
+      return;
+    }
+
+    // Update sidebar title
+    const title = sidebar.querySelector('.sidebar-ai-title h1');
+    if (title) {
+      title.textContent = i18n.t('extension.name');
+    }
+
+    // Update language selector title
+    const languageSelector = sidebar.querySelector('#language-selector');
+    if (languageSelector) {
+      languageSelector.title = i18n.t('sidebar.language.label');
+    }
+
+    // Update theme toggle button
+    const themeToggle = sidebar.querySelector('#theme-toggle');
+    if (themeToggle) {
+      const isDark = document.documentElement.classList.contains('dark');
+      themeToggle.textContent = isDark ? '☀️' : '🌙';
+      themeToggle.title = i18n.t('sidebar.theme.toggle');
+    }
+
+    // Update tab buttons
+    const tabButtons = sidebar.querySelectorAll('.sidebar-tab-btn');
+    tabButtons.forEach(btn => {
+      const tabId = btn.getAttribute('data-tab');
+      if (tabId) {
+        btn.textContent = i18n.t(`sidebar.tabs.${tabId}`);
+      }
+    });
+
+    // Find the currently active tab and re-render it
+    const activeTabBtn = sidebar.querySelector('.sidebar-tab-btn.active');
+    if (activeTabBtn) {
+      const activeTabId = activeTabBtn.getAttribute('data-tab');
+      console.log('[Tinder AI] Re-rendering active tab:', activeTabId);
+      
+      // Re-render the currently active tab content
+      switch (activeTabId) {
+        case 'status':
+          renderSidebarStatusTab(sidebarConsentGiven);
+          break;
+        case 'ai':
+          renderSidebarAITab(true);
+          break;
+        case 'swiping':
+          renderSidebarSwipingTab(true);
+          break;
+        case 'analytics':
+          renderSidebarAnalyticsTab(true);
+          break;
+        case 'anti-detection':
+          renderSidebarAntiDetectionTab(true);
+          break;
+        default:
+          // For other tabs, just update the basic translations
+          updateBasicTabTranslations(activeTabId);
+      }
+    }
+
+    console.log('[Tinder AI] Sidebar translations updated');
+  } catch (error) {
+    console.error('[Tinder AI] Error updating sidebar translations:', error);
+  }
+}
+
+// Helper function to update basic tab translations for tabs that don't need full re-rendering
+function updateBasicTabTranslations(tabId) {
+  const tab = document.getElementById(`sidebar-tab-${tabId}`);
+  if (!tab) return;
+
+  // Update tab title
+  const title = tab.querySelector('.sidebar-panel-title');
+  if (title) {
+    title.textContent = i18n.t(`${tabId}.title`);
+  }
+
+  // Update common elements
+  const labels = tab.querySelectorAll('.sidebar-form-label, .sidebar-status-label, .sidebar-analytics-label');
+  labels.forEach((label, index) => {
+    // This is a simplified update - specific tabs should handle their own detailed updates
+    const key = label.getAttribute('data-i18n-key');
+    if (key) {
+      label.textContent = i18n.t(key);
+    }
+  });
 }

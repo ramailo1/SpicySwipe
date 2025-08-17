@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpicySwipe i18n Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .language-selector {
+            margin-bottom: 20px;
+        }
+        select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .test-result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+            margin: 10px 0;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌍 SpicySwipe i18n System Test</h1>
+    
+    <div class="test-container">
+        <h2>Language Selection</h2>
+        <div class="language-selector">
+            <label for="test-language">Select Language:</label>
+            <select id="test-language">
+                <option value="en">🇺🇸 English</option>
+                <option value="fr">🇫🇷 Français</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="it">🇮🇹 Italiano</option>
+                <option value="pt">🇵🇹 Português</option>
+            </select>
+        </div>
+        
+        <button onclick="testTranslation()">Test Translation</button>
+        <button onclick="testAllLanguages()">Test All Languages</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div id="test-results"></div>
+
+    <script src="utils/i18n.js"></script>
+    <script>
+        let testResults = [];
+        
+        async function initializeTest() {
+            try {
+                await i18n.init();
+                console.log('i18n initialized successfully');
+                document.getElementById('test-language').value = i18n.getCurrentLocale();
+                addResult('✅ i18n system initialized successfully', 'success');
+            } catch (error) {
+                addResult('❌ Failed to initialize i18n: ' + error.message, 'error');
+            }
+        }
+        
+        async function testTranslation() {
+            const selectedLang = document.getElementById('test-language').value;
+            try {
+                await i18n.changeLanguage(selectedLang);
+                const currentLang = i18n.getCurrentLocale();
+                const extensionName = i18n.t('extension.name');
+                const statusTitle = i18n.t('status.title');
+                
+                addResult(`✅ Language changed to ${currentLang}`, 'success');
+                addResult(`📝 Extension name: ${extensionName}`, 'success');
+                addResult(`📝 Status title: ${statusTitle}`, 'success');
+            } catch (error) {
+                addResult(`❌ Error testing ${selectedLang}: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAllLanguages() {
+            const languages = ['en', 'fr', 'es', 'de', 'it', 'pt'];
+            addResult('🔄 Testing all languages...', 'success');
+            
+            for (const lang of languages) {
+                try {
+                    await i18n.changeLanguage(lang);
+                    const extensionName = i18n.t('extension.name');
+                    addResult(`✅ ${lang}: ${extensionName}`, 'success');
+                } catch (error) {
+                    addResult(`❌ ${lang}: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        function addResult(message, type = 'success') {
+            const resultsDiv = document.getElementById('test-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            resultsDiv.appendChild(resultDiv);
+            testResults.push({ message, type, timestamp: new Date() });
+        }
+        
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '';
+            testResults = [];
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeTest);
+        
+        // Test language change on select change
+        document.getElementById('test-language').addEventListener('change', testTranslation);
+    </script>
+</body>
+</html> 

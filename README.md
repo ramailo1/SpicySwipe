@@ -6,21 +6,33 @@
 
 👉 **[View Full Changelog](CHANGELOG.md)**
 
-## �� Changelog
+## �Current version�
+## [1.2.4] - 2025-06-28
+**🚀 MAJOR UPDATE: Enhanced User Experience & Privacy Controls**
 
-### v1.2.1
-- Auto-swiping now stops and shows a clear message in the sidebar when you are out of likes (no like button found).
+### 🔐 **Privacy & Consent Management**
+- **Reset Consent & Revoke Access**: One-click button to reset all extension permissions and consent
+- **User Autonomy**: Complete control over extension access without developer tools
+- **Privacy Compliance**: Enhanced alignment with privacy regulations
+- **Automatic Reload**: Seamless reset process with page reload to re-display consent overlay
 
-### v1.1.0
-- Dynamic swipe speed: Swiping now adapts speed and includes human-like breaks.
-- Robust error handling: Retries, exponential backoff, and user notifications for persistent errors.
-- Improved logging: All errors and important events are logged for diagnostics and user review.
+### 🌍 **Internationalization & Localization**
+- **9 Languages**: Full support for English, French, Spanish, German, Italian, Portuguese, Arabic, Chinese, Korean, Japanese
+- **Smart Detection**: Automatic browser language detection
+- **Language Selector**: Manual language switching with persistent preferences
+- **Robust Fallback**: Graceful fallback to English for missing translations
+- **i18n System**: Professional internationalization utility with parameter support
 
-### v1.2.2
-- Added custom AI prompt instructions for each message tone (Extra Naughty, Meme Lord, Super Romantic, etc.)
-- Improved AI message generation: selected tone now directly affects the style and content of generated messages
-- All tone options are available in the AI tab, Settings, and approval/translation bar
-- Enhanced prompt logic for more accurate and fun responses
+### 🎨 **UI/UX Enhancements**
+- **Dark Mode**: Complete dark/light theme toggle with persistent preferences
+- **Enhanced Styling**: Improved CSS for language selectors and UI elements
+- **Visual Polish**: Better visual hierarchy and user experience across all interfaces
+- **Debug Mode**: A toggle switch in the popup to control debug logging for troubleshooting.
+- **Theme Persistence**: User preferences remembered across sessions
+
+
+
+
 
 ### How to use the new tones
 You can now select a message tone (e.g., Extra Naughty, Meme Lord, Super Romantic, etc.) in the AI tab, Settings, or when approving/translating a message. The AI will generate messages in the selected style, making your conversations more personalized and engaging.
@@ -55,11 +67,12 @@ SpicySwipe is a sophisticated Chrome extension that revolutionizes your Tinder e
 - **Session Analytics** - Detailed activity tracking and insights
 - **Historical Data Analysis** - Long-term performance trends and patterns
 
-### 🛡️ Enterprise-Grade Security
-- **Stealth Mode Technology** - Human-like behavior simulation
-- **Intelligent Rate Limiting** - API quota optimization and management
-- **Randomized Interaction Timing** - Natural conversation flow simulation
-- **Multi-Model Fallback System** - Automatic AI provider switching
+### 🛡️ **Enterprise-Grade Security**
+- **Privacy-First Design** - No data collection, local processing only
+- **Secure Storage** - All data stored locally in your browser
+- **No External APIs** - Zero external dependencies or data sharing
+- **User Control** - Complete transparency and user autonomy
+- **Consent Management** - One-click consent reset and privacy control
 
 ## 🚀 Quick Start
 
@@ -109,11 +122,46 @@ SpicySwipe is a sophisticated Chrome extension that revolutionizes your Tinder e
 3. **Track** AI model effectiveness and success rates
 4. **Analyze** long-term trends and optimization opportunities
 
-## 🖼️ Extension Preview
+### Consent Management
 
-Below is a preview of the AI suggestion section and popup UI with the latest elegant styles:
+1. **Access** the Swiping tab in the sidebar
+2. **Locate** the "Reset Consent & Revoke Access" button at the bottom
+3. **Click** the button and confirm the action in the dialog
+4. **Wait** for automatic page reload to show consent overlay
+5. **Re-accept** consent to continue using the extension
 
-![AI Suggestion & Popup UI](screenshots/1.png)
+## 📸 Screenshots
+
+<div align="center">
+  <img src="docs/banner.png" alt="SpicySwipe Banner" width="700">
+</div>
+
+### 🚀 Major Update v1.2.4 Features
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="docs/AI tab.png" alt="AI Tab Interface" width="300">
+        <br><strong>AI Messaging Interface</strong>
+      </td>
+      <td align="center">
+        <img src="docs/POPup.png" alt="Extension Popup" width="300">
+        <br><strong>Extension Popup</strong>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img src="docs/satus tab.png" alt="Status Dashboard" width="300">
+        <br><strong>Analytics Dashboard</strong>
+      </td>
+      <td align="center">
+        <img src="docs/suggested message.png" alt="Smart Suggestions" width="300">
+        <br><strong>AI Suggestions</strong>
+      </td>
+    </tr>
+  </table>
+</div>
 
 ## 🔑 API Configuration
 
@@ -263,3 +311,34 @@ This extension is designed for love and chat. Users are responsible for ensuring
 ---
 
 **Built with ❤️ for the AI research community** 
+
+## 🌍 Multi-Language Support
+
+SpicySwipe now supports multiple languages and automatically detects your browser's language preference. The extension is currently available in:
+
+- 🇺🇸 **English** (Default)
+- 🇫🇷 **Français** (French)
+- 🇪🇸 **Español** (Spanish)
+- 🇩🇪 **Deutsch** (German)
+- 🇮🇹 **Italiano** (Italian)
+- 🇵🇹 **Português** (Portuguese)
+
+### How it works:
+
+1. **Automatic Detection**: The extension automatically detects your browser's language and loads the appropriate translation
+2. **Manual Selection**: You can manually change the language using the language selector in the sidebar
+3. **Persistent Settings**: Your language preference is saved and will be remembered across sessions
+4. **Fallback Support**: If a translation is missing, the extension falls back to English
+
+### Changing Languages:
+
+1. Open the SpicySwipe sidebar on Tinder.com
+2. Look for the language dropdown in the top-right corner of the sidebar
+3. Select your preferred language from the dropdown
+4. The interface will immediately update with the new language
+
+### Adding New Languages:
+
+To add support for additional languages, create a new translation file in the `locales/` directory following the same structure as the existing files.
+
+## Features
