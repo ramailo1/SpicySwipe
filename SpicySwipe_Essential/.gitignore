@@ -1,0 +1,14 @@
+# Logs
+logs
+logs.txt
+*.log
+
+# Backups
+*.backup
+
+# Build artifacts
+*.clean.js
+
+# OS generated files
+.DS_Store
+Thumbs.db
