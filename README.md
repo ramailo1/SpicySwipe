@@ -7,7 +7,7 @@
 👉 **[View Full Changelog](CHANGELOG.md)**
 
 ## �Current version�
-## [1.2.4] - 2025-06-28
+## [1.2.4] - 2025-08-17
 **🚀 MAJOR UPDATE: Enhanced User Experience & Privacy Controls**
 
 ### 🔐 **Privacy & Consent Management**
@@ -342,3 +342,4 @@ SpicySwipe now supports multiple languages and automatically detects your browse
 To add support for additional languages, create a new translation file in the `locales/` directory following the same structure as the existing files.
 
 ## Features
+
