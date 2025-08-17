@@ -1,5 +1,14 @@
 [
-  { "id": 1, "type": "flirty", "text": "Create a flirty Tinder reply: [context]" },
-  { "id": 2, "type": "friendly", "text": "Write a friendly opening message for Tinder: [context]" },
-  { "id": 3, "type": "bold", "text": "Send a bold, attention-grabbing Tinder opener: [context]" }
+  { "id": 1, "type": "playful", "title": "Playful", "text": "Make it playful, lighthearted, and fun." },
+  { "id": 2, "type": "friendly", "title": "Friendly", "text": "Keep it friendly and approachable." },
+  { "id": 3, "type": "flirty", "title": "Flirty", "text": "Add a flirty and charming vibe, but keep it respectful." },
+  { "id": 4, "type": "witty", "title": "Witty", "text": "Make it clever and witty, with a touch of humor." },
+  { "id": 5, "type": "extra-naughty", "title": "Extra Naughty", "text": "Make it extra naughty, bold, and risqué, but avoid anything illegal or non-consensual." },
+  { "id": 6, "type": "more-funny", "title": "Funnier", "text": "Make it much funnier than usual, use jokes or puns if possible." },
+  { "id": 7, "type": "super-romantic", "title": "Super Romantic", "text": "Make it super romantic, sweet, and heartfelt." },
+  { "id": 8, "type": "sarcastic", "title": "Sarcastic", "text": "Add a strong dose of sarcasm and playful teasing." },
+  { "id": 9, "type": "meme-lord", "title": "Meme Lord", "text": "Write it in the style of a meme lord, using meme references or internet humor." },
+  { "id": 10, "type": "icebreaker", "title": "Icebreaker", "text": "Make it a creative icebreaker that gets the conversation started." },
+  { "id": 11, "type": "mysterious", "title": "Mysterious", "text": "Make it mysterious and intriguing, leaving them wanting to know more." },
+  { "id": 12, "type": "compliment-bomb", "title": "Compliment Bomb", "text": "Shower them with genuine, creative compliments in a fun way." }
 ] 
