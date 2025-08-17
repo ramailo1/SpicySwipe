@@ -1,0 +1,173 @@
+{
+  "extension": {
+    "name": "SpicySwipe",
+    "description": "Tinder AI扩展，具有改进的AI语调定制、提示逻辑和增强的消息生成功能，适用于所有语调风格。"
+  },
+  "sidebar": {
+    "tabs": {
+      "status": "状态",
+      "ai": "AI",
+      "swiping": "滑动",
+      "analytics": "分析"
+    },
+    "toggle": {
+      "show": "▶",
+      "hide": "◀"
+    },
+    "theme": {
+      "light": "☀️",
+      "dark": "🌙",
+      "toggle": "切换主题"
+    },
+    "language": {
+      "label": "语言",
+      "en": "英语",
+      "fr": "法语",
+      "es": "西班牙语",
+      "de": "德语",
+      "it": "意大利语",
+      "pt": "葡萄牙语",
+      "ar": "阿拉伯语",
+      "zh": "中文",
+      "ko": "韩语",
+      "ja": "日语"
+    }
+  },
+  "status": {
+    "title": "状态",
+    "enabled": "已启用",
+    "disabled": "已禁用",
+    "active": "活跃",
+    "inactive": "非活跃",
+    "connected": "已连接",
+    "disconnected": "已断开",
+    "running": "运行中",
+    "stopped": "已停止",
+    "paused": "已暂停",
+    "error": "错误",
+    "success": "成功",
+    "warning": "警告",
+    "info": "信息"
+  },
+  "ai": {
+    "title": "AI设置",
+    "model": "AI模型",
+    "apiKey": "API密钥",
+    "tone": "语调",
+    "save": "保存",
+    "remove": "删除",
+    "saved": "API密钥保存成功！",
+    "removed": "API密钥已删除。",
+    "error": "保存设置时出错。请重试。",
+    "settingsSaved": "AI设置和API密钥保存成功！",
+    "messaging": {
+      "title": "消息设置",
+      "tone": "语调",
+      "language": "语言",
+      "autoSend": "自动发送",
+      "multiTurn": "多轮对话",
+      "autoMessageOnMatch": "匹配时自动发送消息"
+    },
+    "languagePreferences": {
+      "title": "语言偏好",
+      "selected": "已选择",
+      "selectAll": "全选",
+      "clearAll": "清除全部",
+      "count": "种语言已选择"
+    }
+  },
+  "swiping": {
+    "title": "滑动设置",
+    "autoSwipe": "自动滑动",
+    "likeRatio": "喜欢比例",
+    "swipeDelay": "滑动延迟",
+    "maxSwipes": "最大滑动次数",
+    "stealthMode": "隐身模式",
+    "stealthModeDesc": "通过添加随机延迟和类人行为来降低检测风险",
+    "startSwiping": "开始",
+    "stopSwiping": "停止",
+    "settingsSaved": "滑动设置保存成功！"
+  },
+  "analytics": {
+    "title": "分析",
+    "today": "今日统计",
+    "allTime": "总统计",
+    "swipes": "总滑动次数",
+    "likes": "总喜欢次数",
+    "nopes": "总拒绝次数",
+    "matches": "总匹配次数",
+    "messages": "总消息数",
+    "efficiency": "效率评分",
+    "responseTime": "平均响应时间",
+    "matchRate": "匹配率",
+    "successRate": "成功率",
+    "totalResponses": "总响应数",
+    "successful": "成功",
+    "failed": "失败",
+    "avgRating": "平均评分",
+    "rateLimited": "速率限制",
+    "performanceMetrics": "性能指标",
+    "failureCount": "失败次数",
+    "swipeSpeed": "滑动速度",
+    "sessionActive": "会话活跃",
+    "currentAI": "当前AI",
+    "apiKeyStatus": "API密钥状态",
+    "yes": "是",
+    "no": "否"
+  },
+  "popup": {
+    "sidebarAvailable": "SpicySwipe 已激活！",
+    "sidebarInstructions": "在 Tinder 中打开侧边栏以访问 AI 功能",
+    "openTinder": "打开 Tinder 使用 SpicySwipe",
+    "openTinderButton": "打开 Tinder",
+    "supportDevelopment": "支持开发"
+  },
+  "notifications": {
+    "error": "错误",
+    "success": "成功",
+    "warning": "警告",
+    "info": "信息",
+    "languageChanged": "语言更改成功！"
+  },
+  "buttons": {
+    "save": "保存",
+    "cancel": "取消",
+    "close": "关闭",
+    "retry": "重试",
+    "regenerate": "重新生成",
+    "send": "发送",
+    "approve": "批准",
+    "reject": "拒绝",
+    "like": "喜欢",
+    "nope": "拒绝"
+  },
+  "messages": {
+    "loading": "加载中...",
+    "processing": "处理中...",
+    "generating": "生成中...",
+    "sending": "发送中...",
+    "error": "发生错误",
+    "success": "操作成功完成",
+    "noData": "无可用数据"
+  },
+  "approvalBox": {
+    "title": "AI建议",
+    "dragToMove": "（拖动移动）",
+    "use": "使用",
+    "regenerate": "重新生成",
+    "translate": "翻译",
+    "cancel": "取消",
+    "changeTone": "更改消息语气",
+    "loading": "加载中..."
+  },
+  "consentOverlay": {
+    "title": "欢迎使用 SpicySwipe",
+    "description": "要使用 SpicySwipe 功能，我们需要您的同意，以通过 AI 驱动的功能增强您的 Tinder 体验。",
+    "features": [
+      "为 Tinder 添加 AI 功能",
+      "分析个人资料信息",
+      "增强您的消息体验"
+    ],
+    "acceptButton": "我同意"
+  }
+}
