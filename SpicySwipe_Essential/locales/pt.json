@@ -1,0 +1,173 @@
+{
+  "extension": {
+    "name": "SpicySwipe",
+    "description": "Extensão Tinder AI com personalização melhorada do tom IA, lógica de prompts e geração de mensagens melhorada para todos os estilos de tom."
+  },
+  "sidebar": {
+    "tabs": {
+      "status": "Status",
+      "ai": "IA",
+      "swiping": "Deslizar",
+      "analytics": "Análises"
+    },
+    "toggle": {
+      "show": "▶",
+      "hide": "◀"
+    },
+    "theme": {
+      "light": "☀️",
+      "dark": "🌙",
+      "toggle": "Alternar tema"
+    },
+    "language": {
+      "label": "Idioma",
+      "en": "Inglês",
+      "fr": "Francês",
+      "es": "Espanhol",
+      "de": "Alemão",
+      "it": "Italiano",
+      "pt": "Português",
+      "ar": "Árabe",
+      "zh": "Chinês",
+      "ko": "Coreano",
+      "ja": "Japonês"
+    }
+  },
+  "status": {
+    "title": "Status",
+    "enabled": "Habilitado",
+    "disabled": "Desabilitado",
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "connected": "Conectado",
+    "disconnected": "Desconectado",
+    "running": "Executando",
+    "stopped": "Parado",
+    "paused": "Pausado",
+    "error": "Erro",
+    "success": "Sucesso",
+    "warning": "Aviso",
+    "info": "Info"
+  },
+  "ai": {
+    "title": "Configurações IA",
+    "model": "Modelo IA",
+    "apiKey": "Chave API",
+    "tone": "Tom",
+    "save": "Salvar",
+    "remove": "Remover",
+    "saved": "Chave(s) API salva(s) com sucesso!",
+    "removed": "Chave API removida.",
+    "error": "Erro ao salvar configurações. Tente novamente.",
+    "settingsSaved": "Configurações IA e chave API salvas com sucesso!",
+    "messaging": {
+      "title": "Configurações de mensagem",
+      "tone": "Tom",
+      "language": "Idioma",
+      "autoSend": "Envio automático",
+      "multiTurn": "Conversas multi-turno",
+      "autoMessageOnMatch": "Mensagem automática no match"
+    },
+    "languagePreferences": {
+      "title": "Preferências de idioma",
+      "selected": "Selecionado",
+      "selectAll": "Selecionar tudo",
+      "clearAll": "Limpar tudo",
+      "count": "idiomas selecionados"
+    }
+  },
+  "swiping": {
+    "title": "Configurações de Deslize",
+    "autoSwipe": "Deslize Automático",
+    "likeRatio": "Proporção de Likes",
+    "swipeDelay": "Atraso de Deslize",
+    "maxSwipes": "Deslizes Máx",
+    "stealthMode": "Modo Furtivo",
+    "stealthModeDesc": "Reduz o risco de detecção adicionando atrasos aleatórios e comportamento humano",
+    "startSwiping": "Iniciar",
+    "stopSwiping": "Parar",
+    "settingsSaved": "Configurações de deslize salvas com sucesso!"
+  },
+  "analytics": {
+    "title": "Análises",
+    "today": "Estatísticas de Hoje",
+    "allTime": "Estatísticas Globais",
+    "swipes": "Total de Deslizes",
+    "likes": "Total de Likes",
+    "nopes": "Total de Nopes",
+    "matches": "Total de Matches",
+    "messages": "Total de Mensagens",
+    "efficiency": "Pontuação de Eficiência",
+    "responseTime": "Tempo Médio de Resposta",
+    "matchRate": "Taxa de match",
+    "successRate": "Taxa de sucesso",
+    "totalResponses": "Total de respostas",
+    "successful": "Bem-sucedidas",
+    "failed": "Falhadas",
+    "avgRating": "Avaliação média",
+    "rateLimited": "Limitado por taxa",
+    "performanceMetrics": "Métricas de desempenho",
+    "failureCount": "Contagem de falhas",
+    "swipeSpeed": "Velocidade de deslize",
+    "sessionActive": "Sessão ativa",
+    "currentAI": "IA atual",
+    "apiKeyStatus": "Status da chave API",
+    "yes": "Sim",
+    "no": "Não"
+  },
+  "popup": {
+    "sidebarAvailable": "SpicySwipe está ativo!",
+    "sidebarInstructions": "Abra a barra lateral no Tinder para acessar os recursos de IA",
+    "openTinder": "Abra o Tinder para usar o SpicySwipe",
+    "openTinderButton": "Abrir Tinder",
+    "supportDevelopment": "Apoiar o desenvolvimento"
+  },
+  "notifications": {
+    "error": "Erro",
+    "success": "Sucesso",
+    "warning": "Aviso",
+    "info": "Informação",
+    "languageChanged": "Idioma alterado com sucesso!"
+  },
+  "buttons": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "retry": "Tentar Novamente",
+    "regenerate": "Regenerar",
+    "send": "Enviar",
+    "approve": "Aprovar",
+    "reject": "Rejeitar",
+    "like": "Curtir",
+    "nope": "Nope"
+  },
+  "messages": {
+    "loading": "Carregando...",
+    "processing": "Processando...",
+    "generating": "Gerando...",
+    "sending": "Enviando...",
+    "error": "Ocorreu um erro",
+    "success": "Operação concluída com sucesso",
+    "noData": "Nenhum dado disponível"
+  },
+  "approvalBox": {
+    "title": "Sugestão de IA",
+    "dragToMove": "(Arrastar para mover)",
+    "use": "Usar",
+    "regenerate": "Regenerar",
+    "translate": "Traduzir",
+    "cancel": "Cancelar",
+    "changeTone": "Alterar tom da mensagem",
+    "loading": "Carregando..."
+  },
+  "consentOverlay": {
+    "title": "Bem-vindo ao SpicySwipe",
+    "description": "Para usar os recursos do SpicySwipe, precisamos do seu consentimento para aprimorar sua experiência no Tinder com recursos alimentados por IA.",
+    "features": [
+      "Adicionar recursos de IA ao Tinder",
+      "Analisar informações do perfil",
+      "Aprimorar sua experiência de mensagens"
+    ],
+    "acceptButton": "Aceito"
+  }
+}
