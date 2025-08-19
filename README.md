@@ -7,7 +7,7 @@
 👉 **[View Full Changelog](CHANGELOG.md)**
 
 ## �Current version�
-## [1.2.4] - 2025-08-17
+## [1.2.4] - 2025-06-28
 **🚀 MAJOR UPDATE: Enhanced User Experience & Privacy Controls**
 
 ### 🔐 **Privacy & Consent Management**
@@ -73,6 +73,14 @@ SpicySwipe is a sophisticated Chrome extension that revolutionizes your Tinder e
 - **No External APIs** - Zero external dependencies or data sharing
 - **User Control** - Complete transparency and user autonomy
 - **Consent Management** - One-click consent reset and privacy control
+
+## 🚀 Get Started
+
+### Download
+
+- **[Get it on Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/bmplipcnocejcfimbfclhhgijmenhapc)**
+
+> **Note:** Due to the review process on the Edge Store, new versions may be delayed. For the latest version, you can always download the ZIP from the [releases page](https://github.com/ramailo1/SpicySwipe/releases/latest) and install it manually.
 
 ## 🚀 Quick Start
 
@@ -342,4 +350,3 @@ SpicySwipe now supports multiple languages and automatically detects your browse
 To add support for additional languages, create a new translation file in the `locales/` directory following the same structure as the existing files.
 
 ## Features
-
