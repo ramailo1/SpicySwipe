@@ -37,6 +37,7 @@
         "content/anti-detection.js",
         "content/ai-integration.js",
         "content/messaging.js",
+        "content/swiping.js",
         "content.js"
       ]
     }
