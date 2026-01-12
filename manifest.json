@@ -33,8 +33,10 @@
         "utils/debugControl.js",
         "selectors.js",
         "utils/i18n.js",
+        "content/languages.js",
         "content/anti-detection.js",
         "content/ai-integration.js",
+        "content/messaging.js",
         "content.js"
       ]
     }
