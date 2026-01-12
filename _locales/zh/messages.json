@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "SpicySwipe",
+    "description": "The name of the application"
+  },
+  "appDesc": {
+    "message": "Tinder AI扩展，具有改进的AI语调定制、提示逻辑和增强的消息生成功能，适用于所有语调风格。",
+    "description": "The description of the application"
+  }
+}
