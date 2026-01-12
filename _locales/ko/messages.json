@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "SpicySwipe",
+    "description": "The name of the application"
+  },
+  "appDesc": {
+    "message": "향상된 AI 톤 맞춤화, 프롬프트 로직, 모든 톤 스타일을 위한 향상된 메시지 생성 기능을 갖춘 Tinder AI 확장 프로그램입니다.",
+    "description": "The description of the application"
+  }
+}

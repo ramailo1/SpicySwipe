@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "SpicySwipe",
+    "description": "The name of the application"
+  },
+  "appDesc": {
+    "message": "امتداد تيندر الذكي مع تحسين تخصيص نبرة الذكاء الاصطناعي ومنطق الاقتراحات وتحسين توليد الرسائل لجميع أنماط النبرة.",
+    "description": "The description of the application"
+  }
+}

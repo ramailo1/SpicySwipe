@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "SpicySwipe",
+    "description": "The name of the application"
+  },
+  "appDesc": {
+    "message": "Extensión de Tinder AI con personalización mejorada del tono de IA, lógica de prompts y generación de mensajes mejorada para todos los estilos de tono.",
+    "description": "The description of the application"
+  }
+}

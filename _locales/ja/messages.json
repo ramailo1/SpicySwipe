@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "SpicySwipe",
+    "description": "The name of the application"
+  },
+  "appDesc": {
+    "message": "強化されたAIトーンカスタマイゼーション、プロンプトロジック、すべてのトーンスタイル向けの強化されたメッセージ生成機能を備えたTinder AI拡張機能です。",
+    "description": "The description of the application"
+  }
+}
