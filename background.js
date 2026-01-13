@@ -301,7 +301,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         console.log('[Tinder AI][BG] OpenAI API key found, making request');
         const API_URL = 'https://api.openai.com/v1/chat/completions';
         const requestBody = {
-          model: msg.model || 'gpt-5.1',
+          model: msg.model || 'gpt-4o-mini',
           messages: msg.messages,
           temperature: msg.temperature || 0.9
         };
@@ -383,7 +383,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             'anthropic-version': '2023-06-01'
           },
           body: JSON.stringify({
-            model: msg.model || 'claude-4.5-sonnet',
+            model: msg.model || 'claude-haiku-4-5',
             max_tokens: msg.max_tokens || 100,
             temperature: msg.temperature || 0.9,
             messages: msg.messages

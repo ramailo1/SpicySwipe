@@ -36,9 +36,16 @@
         "content/languages.js",
         "content/anti-detection.js",
         "content/ai-integration.js",
+        "content/ai-response.js",
+        "content/profile-extraction.js",
         "content/messaging.js",
         "content/swiping.js",
+        "content/ui-render.js",
+        "content/ui-render.js",
         "content.js"
+      ],
+      "css": [
+        "content/styles.css"
       ]
     }
   ],
@@ -55,6 +62,7 @@
         "assets/*",
         "popup/styles.css",
         "popup/promptLibrary.json",
+        "tone_instructions.json",
         "locales/*"
       ],
       "matches": [

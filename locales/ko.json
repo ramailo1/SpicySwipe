@@ -160,6 +160,20 @@
     "changeTone": "메시지 톤 변경",
     "loading": "로딩 중..."
   },
+  "errors": {
+    "title": "AI 생성 실패",
+    "forMatch": "대상",
+    "rateLimitTitle": "⏳ 사용 한도 도달",
+    "rateLimitMessage": "AI 제공업체의 사용 한도에 도달했습니다. 30-60초 후에 다시 시도하거나 설정에서 다른 AI 모델로 전환하세요.",
+    "missingKeyTitle": "🔑 API 키 누락",
+    "missingKeyMessage": "선택한 AI 모델의 API 키를 찾을 수 없습니다. 설정의 AI 탭으로 이동하여 API 키를 입력하세요.",
+    "extensionErrorTitle": "🔄 확장 프로그램 오류",
+    "extensionErrorMessage": "확장 프로그램을 다시 로드해야 합니다. 이 페이지를 새로고침하세요.",
+    "networkErrorTitle": "🌐 네트워크 오류",
+    "networkErrorMessage": "AI 서비스에 연결할 수 없습니다. 인터넷 연결을 확인하고 다시 시도하세요.",
+    "retryButton": "🔄 재시도",
+    "settingsButton": "⚙️ 설정"
+  },
   "consent": {
     "title": "동의 관리",
     "description": "데이터 처리 및 스토리지에 대한 동의를 관리합니다",
