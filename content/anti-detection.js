@@ -1,6 +1,6 @@
 // content/anti-detection.js
 // Anti-Detection & Rate Limiting Module for SpicySwipe
-// Handles human behavior simulation and rate limit detection
+// Handles human behavior simulation, rate limit detection, and CAPTCHA detection
 
 const ANTI_DETECTION = {
     stealthMode: false,
@@ -8,11 +8,32 @@ const ANTI_DETECTION = {
     lastFailureTime: null,
     diagnosticLog: [],
 
+    // Rate limiting configuration
+    rateLimit: {
+        maxSessionSwipes: 100,
+        sessionSwipes: 0,
+        lastActionTimestamp: 0,
+        minActionInterval: 800
+    },
+
+    // Stealth mode timing configuration
+    timingConfig: {
+        typingDelay: [80, 220],
+        mouseMoveDelay: [15, 50],
+        scrollDelay: [400, 1000]
+    },
+
     // Initialize from storage
     async init() {
         const data = await chrome.storage.local.get(['stealthMode', 'diagnosticLog']);
         this.stealthMode = data.stealthMode || false;
         this.diagnosticLog = data.diagnosticLog || [];
+    },
+
+    // Get random delay with stealth mode consideration
+    getRandomDelay(min, max) {
+        const baseDelay = Math.random() * (max - min) + min;
+        return this.stealthMode ? baseDelay * (1 + Math.random() * 0.5) : baseDelay;
     },
 
     // Enhanced human-like behavior
@@ -41,7 +62,7 @@ const ANTI_DETECTION = {
                     clientY: y
                 });
                 element.dispatchEvent(moveEvent);
-                await new Promise(resolve => setTimeout(resolve, 20 + Math.random() * 30));
+                await new Promise(resolve => setTimeout(resolve, this.getRandomDelay(20, 50)));
             }
         }
 
@@ -72,9 +93,99 @@ const ANTI_DETECTION = {
         }
     },
 
-    // Enhanced rate limiting
+    // Simulate natural-looking page scrolling with easing
+    async simulateNaturalScroll() {
+        return new Promise(resolve => {
+            const scrollAmount = (Math.random() - 0.5) * 400;
+            const startY = window.scrollY;
+            const duration = this.getRandomDelay(300, 800);
+            let startTime = null;
+
+            const scrollStep = (timestamp) => {
+                if (!startTime) startTime = timestamp;
+                const progress = (timestamp - startTime) / duration;
+                const ease = 0.5 - 0.5 * Math.cos(progress * Math.PI); // Ease-in-out
+                window.scrollTo(0, startY + scrollAmount * ease);
+                if (progress < 1) {
+                    window.requestAnimationFrame(scrollStep);
+                } else {
+                    this.addDiagnosticLog(`Simulated natural scroll by ${Math.round(scrollAmount)}px.`);
+                    resolve();
+                }
+            };
+            window.requestAnimationFrame(scrollStep);
+        });
+    },
+
+    // Randomize viewport size (signals for background script)
+    randomizeViewport() {
+        const width = 1200 + Math.floor(Math.random() * 400);
+        const height = 800 + Math.floor(Math.random() * 200);
+        this.addDiagnosticLog(`Requesting new viewport size: ${width}x${height}`);
+        return { width, height };
+    },
+
+    // CAPTCHA detection based on keywords in the DOM
+    detectCAPTCHA() {
+        const bodyText = document.body.innerText.toLowerCase();
+        const captchaKeywords = ['captcha', 'verify you are human', 'challenge', 'are you a robot'];
+        if (captchaKeywords.some(keyword => bodyText.includes(keyword))) {
+            this.addDiagnosticLog('CAPTCHA detected via keyword search.');
+            return true;
+        }
+        return false;
+    },
+
+    // Watch for DOM changes that might indicate anti-bot measures
+    detectDOMChanges(targetSelector, timeout = 2000) {
+        return new Promise((resolve) => {
+            const observer = new MutationObserver((mutations, obs) => {
+                for (const mutation of mutations) {
+                    if (mutation.addedNodes.length > 0) {
+                        for (const node of mutation.addedNodes) {
+                            if (node.textContent && (node.textContent.toLowerCase().includes('captcha') || node.textContent.toLowerCase().includes('challenge'))) {
+                                this.addDiagnosticLog('Suspicious DOM change: CAPTCHA or challenge text detected.');
+                            }
+                        }
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+            setTimeout(() => {
+                observer.disconnect();
+                resolve();
+            }, timeout);
+        });
+    },
+
+    // Reset session counters
+    resetSession() {
+        this.rateLimit.sessionSwipes = 0;
+        this.failureCount = 0;
+        this.lastFailureTime = null;
+        this.addDiagnosticLog('Anti-detection session counters reset.');
+    },
+
+    // Enhanced rate limiting with session tracking
     async checkRateLimit() {
         const now = Date.now();
+
+        // Check minimum action interval
+        if (now - this.rateLimit.lastActionTimestamp < this.rateLimit.minActionInterval) {
+            const delay = this.rateLimit.minActionInterval - (now - this.rateLimit.lastActionTimestamp);
+            this.addDiagnosticLog(`Rate limit check: Throttling action for ${delay}ms.`);
+            await new Promise(r => setTimeout(r, delay));
+        }
+
+        // Check max session swipes
+        if (this.rateLimit.sessionSwipes >= this.rateLimit.maxSessionSwipes) {
+            this.addDiagnosticLog('Rate limit check: Max session swipes reached.');
+            return false;
+        }
+
+        this.rateLimit.lastActionTimestamp = Date.now();
+
+        // Track failures over time
         if (this.lastFailureTime && now - this.lastFailureTime < 3600000) { // 1 hour window
             this.failureCount++;
         } else {
@@ -91,7 +202,12 @@ const ANTI_DETECTION = {
             this.addDiagnosticLog('Rate limit detected. Increasing delays.');
             return true;
         }
-        return false;
+        return true;
+    },
+
+    // Increment swipe counter
+    incrementSwipeCount() {
+        this.rateLimit.sessionSwipes++;
     },
 
     // Add to diagnostic log
@@ -103,14 +219,17 @@ const ANTI_DETECTION = {
             stealthMode: this.stealthMode
         };
 
-        this.diagnosticLog.push(logEntry);
+        this.diagnosticLog.unshift(logEntry); // Add to beginning for newest first
         // Keep only last 100 entries
         if (this.diagnosticLog.length > 100) {
-            this.diagnosticLog.shift();
+            this.diagnosticLog.pop();
         }
 
         // Save to storage
         await chrome.storage.local.set({ diagnosticLog: this.diagnosticLog });
+
+        // Dispatch event for UI updates
+        window.dispatchEvent(new CustomEvent('antiDetectionDiagnostic', { detail: logEntry }));
 
         // Update UI if anti-detection tab is active
         if (typeof sidebarActiveTab !== 'undefined' && sidebarActiveTab === 'antidetection') {

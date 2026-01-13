@@ -162,6 +162,20 @@
     "changeTone": "Change message tone",
     "loading": "Loading..."
   },
+  "errors": {
+    "title": "AI Generation Failed",
+    "forMatch": "for",
+    "rateLimitTitle": "⏳ API Rate Limit Reached",
+    "rateLimitMessage": "Your AI provider hit its usage limit. Please wait 30-60 seconds and try again, or switch to a different AI model in settings.",
+    "missingKeyTitle": "🔑 Missing API Key",
+    "missingKeyMessage": "No API key found for the selected AI model. Go to the AI tab in settings and enter your API key.",
+    "extensionErrorTitle": "🔄 Extension Error",
+    "extensionErrorMessage": "The extension needs to be reloaded. Please refresh this page.",
+    "networkErrorTitle": "🌐 Network Error",
+    "networkErrorMessage": "Could not connect to the AI service. Check your internet connection and try again.",
+    "retryButton": "🔄 Retry",
+    "settingsButton": "⚙️ Settings"
+  },
   "consentOverlay": {
     "title": "Welcome to SpicySwipe",
     "description": "To use SpicySwipe features, we need your consent to enhance your Tinder experience with AI-powered features.",

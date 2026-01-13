@@ -11,7 +11,7 @@
   --primary-light: #818cf8;
   --primary-dark: #4f46e5;
   --primary-darker: #3730a3;
-  
+
   /* Accent & Status Colors */
   --accent: #f59e0b;
   --accent-light: #fbbf24;
@@ -20,7 +20,7 @@
   --warning: #f59e0b;
   --danger: #ef4444;
   --danger-light: #f87171;
-  
+
   /* Neutral Colors */
   --bg: #fafbfc;
   --bg-secondary: #f1f5f9;
@@ -30,7 +30,7 @@
   --text-secondary: #475569;
   --text-muted: #64748b;
   --text-light: #ffffff;
-  
+
   /* Borders & Shadows */
   --border: #e2e8f0;
   --border-light: #f1f5f9;
@@ -40,14 +40,14 @@
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --shadow-primary: 0 10px 15px -3px rgba(99, 102, 241, 0.1), 0 4px 6px -2px rgba(99, 102, 241, 0.05);
   --shadow-accent: 0 10px 15px -3px rgba(245, 158, 11, 0.1), 0 4px 6px -2px rgba(245, 158, 11, 0.05);
-  
+
   /* Gradients */
   --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
   --gradient-accent: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
   --gradient-success: linear-gradient(135deg, var(--success) 0%, var(--success-light) 100%);
   --gradient-bg: linear-gradient(135deg, #fafbfc 0%, #f1f5f9 100%);
   --gradient-surface: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
-  
+
   /* Animations */
   --transition-fast: 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
   --transition-normal: 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
@@ -73,6 +73,21 @@ html.dark {
   --gradient-surface: linear-gradient(135deg, #1e293b 0%, #334155 100%);
 }
 
+/* Spicy Mode (Tinder Brand Colors) */
+html.spicy-theme {
+  --primary: #fd297b;
+  --primary-light: #ff655b;
+  --primary-dark: #e11d64;
+  --primary-darker: #c21554;
+  --gradient-primary: linear-gradient(135deg, #fd297b 0%, #ff655b 100%);
+  --shadow-primary: 0 10px 15px -3px rgba(253, 41, 123, 0.2), 0 4px 6px -2px rgba(253, 41, 123, 0.1);
+
+  /* Keep background light/clean for contrast */
+  --bg: #fff0f5;
+  /* Very subtle pink tint */
+  --bg-secondary: #fff5f8;
+}
+
 /* Consent Overlay Styles */
 .tinder-ai-consent-overlay {
   position: fixed !important;
@@ -94,6 +109,7 @@ html.dark {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -118,6 +134,7 @@ html.dark {
     opacity: 0;
     transform: translateY(30px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -240,18 +257,20 @@ html.dark .tinder-ai-consent-features {
     padding: 32px 24px !important;
     margin: 16px !important;
   }
-  
+
   .tinder-ai-consent-title {
     font-size: 24px !important;
   }
-  
+
   .tinder-ai-consent-description {
     font-size: 15px !important;
   }
 }
 
 /* Base Styles */
-body, .tinder-ai-sidebar-debug, .sidebar-content {
+body,
+.tinder-ai-sidebar-debug,
+.sidebar-content {
   background: var(--gradient-bg);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
@@ -332,7 +351,7 @@ body, .tinder-ai-sidebar-debug, .sidebar-content {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
   transition: left var(--transition-normal);
 }
 
@@ -456,6 +475,7 @@ body, .tinder-ai-sidebar-debug, .sidebar-content {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -600,7 +620,8 @@ body, .tinder-ai-sidebar-debug, .sidebar-content {
 }
 
 /* Buttons */
-.main-btn, .swipe-btn {
+.main-btn,
+.swipe-btn {
   border: none;
   outline: none;
   cursor: pointer;
@@ -618,18 +639,20 @@ body, .tinder-ai-sidebar-debug, .sidebar-content {
   gap: 8px;
 }
 
-.main-btn::before, .swipe-btn::before {
+.main-btn::before,
+.swipe-btn::before {
   content: '';
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left var(--transition-normal);
 }
 
-.main-btn:hover::before, .swipe-btn:hover::before {
+.main-btn:hover::before,
+.swipe-btn:hover::before {
   left: 100%;
 }
 
@@ -808,7 +831,8 @@ body, .tinder-ai-sidebar-debug, .sidebar-content {
 .approval-box-content {
   padding: 28px 32px 24px 32px;
   overflow-y: auto;
-  max-height: calc(100% - 60px); /* Account for header */
+  max-height: calc(100% - 60px);
+  /* Account for header */
 }
 
 .approval-box-resize-handle {
@@ -933,6 +957,7 @@ body, .tinder-ai-sidebar-debug, .sidebar-content {
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -952,13 +977,33 @@ body, .tinder-ai-sidebar-debug, .sidebar-content {
 }
 
 /* Utility Classes */
-.mt-4 { margin-top: 20px; }
-.text-muted { color: var(--text-muted); }
-.cursor-pointer { cursor: pointer; }
-.flex { display: flex; }
-.gap-2 { gap: 8px; }
-.grid { display: grid; }
-.grid-cols-auto { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+.mt-4 {
+  margin-top: 20px;
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.flex {
+  display: flex;
+}
+
+.gap-2 {
+  gap: 8px;
+}
+
+.grid {
+  display: grid;
+}
+
+.grid-cols-auto {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
 
 /* Popup Styles */
 .popup-body {
@@ -993,6 +1038,7 @@ body, .tinder-ai-sidebar-debug, .sidebar-content {
     opacity: 0;
     transform: scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -1024,7 +1070,8 @@ body, .tinder-ai-sidebar-debug, .sidebar-content {
   align-items: stretch;
 }
 
-.popup-btn, .popup-donate-btn {
+.popup-btn,
+.popup-donate-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1044,7 +1091,8 @@ body, .tinder-ai-sidebar-debug, .sidebar-content {
   margin: 0;
 }
 
-.popup-btn:hover, .popup-btn:focus-visible {
+.popup-btn:hover,
+.popup-btn:focus-visible {
   background: var(--primary-dark);
   box-shadow: var(--shadow-lg);
   transform: translateY(-2px) scale(1.03);
@@ -1056,7 +1104,9 @@ body, .tinder-ai-sidebar-debug, .sidebar-content {
   margin-top: 0;
 }
 
-.popup-donate-btn:hover, .popup-donate-btn:focus-visible, .popup-btn-donate-hover {
+.popup-donate-btn:hover,
+.popup-donate-btn:focus-visible,
+.popup-btn-donate-hover {
   background: var(--accent);
   color: var(--text-light);
   box-shadow: var(--shadow-accent);
@@ -1082,11 +1132,11 @@ body, .tinder-ai-sidebar-debug, .sidebar-content {
     width: 100vw;
     right: 0;
   }
-  
+
   .tinder-ai-sidebar-debug.hidden {
     right: -100vw;
   }
-  
+
   .persistent-ai-icon.sidebar-open {
     right: 32px;
     bottom: 100px;
@@ -1114,8 +1164,13 @@ body, .tinder-ai-sidebar-debug, .sidebar-content {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Accessibility */
@@ -1142,18 +1197,20 @@ body, .tinder-ai-sidebar-debug, .sidebar-content {
     --border: #000000;
     --shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
   }
-  
+
   .sidebar-box {
     border: 2px solid var(--primary);
   }
-  
-  .main-btn, .swipe-btn {
+
+  .main-btn,
+  .swipe-btn {
     border: 2px solid currentColor;
   }
 }
 
 /* Print styles */
 @media print {
+
   .tinder-ai-sidebar-debug,
   .persistent-ai-icon,
   .wand-button-container,
@@ -1292,7 +1349,7 @@ html.dark .sidebar-box.elevated {
 
 /* Progress indicators */
 .progress-bar {
-    width: 100%;
+  width: 100%;
   height: 4px;
   background: var(--border);
   border-radius: 2px;
@@ -1317,8 +1374,15 @@ html.dark .sidebar-box.elevated {
 }
 
 @keyframes progressPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
 }
 
 /* Card stack effect */
@@ -1366,8 +1430,13 @@ html.dark .sidebar-box.elevated {
 }
 
 @keyframes glow {
-  from { box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); }
-  to { box-shadow: 0 0 30px rgba(99, 102, 241, 0.7); }
+  from {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+  }
+
+  to {
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.7);
+  }
 }
 
 /* Skeleton loading states */
@@ -1379,8 +1448,13 @@ html.dark .sidebar-box.elevated {
 }
 
 @keyframes skeleton {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Advanced badge styles */
@@ -1448,8 +1522,8 @@ html.dark .sidebar-box.elevated {
 }
 
 .reveal.active {
-    opacity: 1;
-    transform: translateY(0);
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .reveal.from-left {
@@ -1484,7 +1558,7 @@ html.dark .sidebar-box.elevated {
 }
 
 .switch input {
-    opacity: 0;
+  opacity: 0;
   width: 0;
   height: 0;
 }
@@ -1514,11 +1588,11 @@ html.dark .sidebar-box.elevated {
   box-shadow: var(--shadow-sm);
 }
 
-.switch input:checked + .switch-slider {
+.switch input:checked+.switch-slider {
   background: var(--gradient-primary);
 }
 
-.switch input:checked + .switch-slider:before {
+.switch input:checked+.switch-slider:before {
   transform: translateX(24px);
 }
 
@@ -1554,6 +1628,7 @@ html.dark .sidebar-box.elevated {
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -1563,7 +1638,8 @@ html.dark .sidebar-box.elevated {
 /* End of enhanced styles */
 
 /* Add after the existing .approval-box-select or select styles */
-.approval-box-select, .approval-box select {
+.approval-box-select,
+.approval-box select {
   background: var(--surface);
   color: var(--text);
   border: 1.5px solid var(--border);
@@ -1573,14 +1649,16 @@ html.dark .sidebar-box.elevated {
   transition: border 0.2s, background 0.2s, color 0.2s;
 }
 
-html.dark .approval-box-select, html.dark .approval-box select {
+html.dark .approval-box-select,
+html.dark .approval-box select {
   background: var(--surface);
   color: var(--text);
   border: 1.5px solid var(--border);
 }
 
 /* Option styling for better contrast in dark mode */
-html.dark .approval-box-select option, html.dark .approval-box select option {
+html.dark .approval-box-select option,
+html.dark .approval-box select option {
   background: var(--surface);
   color: var(--text);
 }
@@ -1590,6 +1668,7 @@ html.dark .approval-box-select option, html.dark .approval-box select option {
     opacity: 0;
     transform: translate(-50%, -60%) scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
@@ -1792,9 +1871,11 @@ input[type="range"].settings-input {
   box-shadow: none;
   transition: background 0.2s;
 }
+
 input[type="range"].settings-input:focus {
   background: var(--primary-light);
 }
+
 input[type="range"].settings-input::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
@@ -1802,24 +1883,28 @@ input[type="range"].settings-input::-webkit-slider-thumb {
   height: 22px;
   border-radius: 50%;
   background: var(--primary);
-  box-shadow: 0 2px 6px rgba(99,102,241,0.15);
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.15);
   cursor: pointer;
   border: 2px solid var(--surface);
   margin-top: -8px;
   transition: background 0.2s, border 0.2s;
 }
+
 input[type="range"].settings-input:focus::-webkit-slider-thumb {
   background: var(--primary-dark);
   border: 2px solid var(--primary-light);
 }
+
 input[type="range"].settings-input::-ms-fill-lower {
   background: var(--primary-light);
   border-radius: 6px;
 }
+
 input[type="range"].settings-input::-ms-fill-upper {
   background: var(--border);
   border-radius: 6px;
 }
+
 input[type="range"].settings-input::-moz-range-thumb {
   width: 22px;
   height: 22px;
@@ -1827,13 +1912,15 @@ input[type="range"].settings-input::-moz-range-thumb {
   background: var(--primary);
   border: 2px solid var(--surface);
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(99,102,241,0.15);
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.15);
   transition: background 0.2s, border 0.2s;
 }
+
 input[type="range"].settings-input:focus::-moz-range-thumb {
   background: var(--primary-dark);
   border: 2px solid var(--primary-light);
 }
+
 input[type="range"].settings-input::-ms-thumb {
   width: 22px;
   height: 22px;
@@ -1841,46 +1928,57 @@ input[type="range"].settings-input::-ms-thumb {
   background: var(--primary);
   border: 2px solid var(--surface);
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(99,102,241,0.15);
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.15);
   transition: background 0.2s, border 0.2s;
 }
+
 input[type="range"].settings-input:focus::-ms-thumb {
   background: var(--primary-dark);
   border: 2px solid var(--primary-light);
 }
+
 input[type="range"].settings-input::-webkit-slider-runnable-track {
   height: 6px;
   background: var(--border);
   border-radius: 6px;
 }
+
 input[type="range"].settings-input::-moz-range-track {
   height: 6px;
   background: var(--border);
   border-radius: 6px;
 }
+
 input[type="range"].settings-input::-ms-fill-lower {
   background: var(--primary-light);
   border-radius: 6px;
 }
+
 input[type="range"].settings-input::-ms-fill-upper {
   background: var(--border);
   border-radius: 6px;
 }
+
 input[type="range"].settings-input:focus::-webkit-slider-runnable-track {
   background: var(--primary-light);
 }
+
 input[type="range"].settings-input:focus::-moz-range-track {
   background: var(--primary-light);
 }
+
 input[type="range"].settings-input:focus::-ms-fill-lower {
   background: var(--primary-light);
 }
+
 input[type="range"].settings-input:focus::-ms-fill-upper {
   background: var(--primary-light);
 }
+
 input[type="range"].settings-input::-ms-tooltip {
   display: none;
 }
+
 input[type="range"].settings-input:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -1890,25 +1988,31 @@ input[type="range"].settings-input:disabled {
 html.dark input[type="range"].settings-input {
   background: var(--border);
 }
+
 html.dark input[type="range"].settings-input::-webkit-slider-thumb {
   background: var(--primary-light);
   border: 2px solid var(--surface-elevated);
 }
+
 html.dark input[type="range"].settings-input:focus::-webkit-slider-thumb {
   background: var(--primary);
   border: 2px solid var(--primary-dark);
 }
+
 html.dark input[type="range"].settings-input::-webkit-slider-runnable-track {
   background: var(--border);
 }
+
 html.dark input[type="range"].settings-input::-moz-range-thumb {
   background: var(--primary-light);
   border: 2px solid var(--surface-elevated);
 }
+
 html.dark input[type="range"].settings-input:focus::-moz-range-thumb {
   background: var(--primary);
   border: 2px solid var(--primary-dark);
 }
+
 html.dark input[type="range"].settings-input::-moz-range-track {
   background: var(--border);
 }
@@ -1923,7 +2027,7 @@ html.dark input[type="range"].settings-input::-moz-range-track {
   color: white;
   padding: 10px;
   border-radius: 50%;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   width: 40px;
   height: 40px;
   display: flex;
@@ -1931,7 +2035,7 @@ html.dark input[type="range"].settings-input::-moz-range-track {
   justify-content: center;
   font-size: 1.2em;
   user-select: none;
-  transition: left 0.3s cubic-bezier(0.4,0,0.2,1), right 0.3s cubic-bezier(0.4,0,0.2,1);
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Language selector abbreviation style - match theme toggle button */
@@ -1947,7 +2051,7 @@ html.dark input[type="range"].settings-input::-moz-range-track {
   margin-right: 8px;
   cursor: pointer;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   outline: none;
   height: 32px;
   min-width: 40px;
@@ -1956,14 +2060,17 @@ html.dark input[type="range"].settings-input::-moz-range-track {
   align-items: center;
   justify-content: center;
 }
-.language-selector-abbr:hover, .language-selector-abbr:focus {
+
+.language-selector-abbr:hover,
+.language-selector-abbr:focus {
   background: var(--primary-hover, #f3f4f6);
   color: var(--accent, #e53e3e);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
 }
 
 /* Match theme toggle button style */
-#theme-toggle, .language-selector-abbr {
+#theme-toggle,
+.language-selector-abbr {
   background: var(--primary, #fff);
   color: var(--text, #222);
   border: none;
@@ -1979,25 +2086,36 @@ html.dark input[type="range"].settings-input::-moz-range-track {
   cursor: pointer;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
-#theme-toggle:hover, #theme-toggle:focus, .language-selector-abbr:hover, .language-selector-abbr:focus {
+
+#theme-toggle:hover,
+#theme-toggle:focus,
+.language-selector-abbr:hover,
+.language-selector-abbr:focus {
   background: var(--primary-hover, #f3f4f6);
   color: var(--accent, #e53e3e);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
 }
 
 /* Dark mode for both */
-html.dark #theme-toggle, html.dark .language-selector-abbr {
+html.dark #theme-toggle,
+html.dark .language-selector-abbr {
   background: var(--primary-dark, #222);
   color: var(--text-dark, #fff);
 }
-html.dark #theme-toggle:hover, html.dark #theme-toggle:focus, html.dark .language-selector-abbr:hover, html.dark .language-selector-abbr:focus {
+
+html.dark #theme-toggle:hover,
+html.dark #theme-toggle:focus,
+html.dark .language-selector-abbr:hover,
+html.dark .language-selector-abbr:focus {
   background: var(--primary-hover-dark, #333);
   color: var(--accent-dark, #f87171);
 }
+
 html.dark .language-selector-abbr option {
   color: #222;
   background: #fff;
 }
+
 .language-selector-abbr option {
   color: #222;
   background: #fff;
@@ -2008,14 +2126,18 @@ html.dark .language-selector-abbr option {
   background: #fff;
   color: #222;
 }
+
 .dark .language-selector-abbr {
   background: #222;
   color: #fff;
 }
-.dark .language-selector-abbr:hover, .dark .language-selector-abbr:focus {
+
+.dark .language-selector-abbr:hover,
+.dark .language-selector-abbr:focus {
   background: #333;
   color: #fbbf24;
 }
+
 .dark .language-selector-abbr option {
   background: #222;
   color: #fff;

@@ -1,0 +1,34 @@
+{
+    "witty": {
+        "label": "Witty",
+        "instruction": "Be clever, use wordplay, and make them laugh with smart humor."
+    },
+    "friendly": {
+        "label": "Friendly",
+        "instruction": "Be warm, approachable, and genuinely interested in getting to know them."
+    },
+    "romantic": {
+        "label": "Romantic",
+        "instruction": "Be sweet, thoughtful, and express genuine admiration."
+    },
+    "casual": {
+        "label": "Casual",
+        "instruction": "Keep it relaxed and easy-going, like talking to a friend."
+    },
+    "playful": {
+        "label": "Playful",
+        "instruction": "Be fun, teasing (in a nice way), and keep the energy light."
+    },
+    "flirty": {
+        "label": "Flirty",
+        "instruction": "Be confident with subtle compliments and playful suggestions."
+    },
+    "confident": {
+        "label": "Confident",
+        "instruction": "Be self-assured without being arrogant, show you know what you want."
+    },
+    "humorous": {
+        "label": "Humorous",
+        "instruction": "Focus on making them laugh with jokes and funny observations."
+    }
+}

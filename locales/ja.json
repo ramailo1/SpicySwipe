@@ -160,6 +160,20 @@
     "changeTone": "メッセージトーンを変更",
     "loading": "読み込み中..."
   },
+  "errors": {
+    "title": "AI生成に失敗しました",
+    "forMatch": "対象",
+    "rateLimitTitle": "⏳ 使用制限に達しました",
+    "rateLimitMessage": "AIプロバイダーの使用制限に達しました。30-60秒待ってから再試行するか、設定で別のAIモデルに切り替えてください。",
+    "missingKeyTitle": "🔑 APIキーがありません",
+    "missingKeyMessage": "選択したAIモデルのAPIキーが見つかりません。設定のAIタブに移動し、APIキーを入力してください。",
+    "extensionErrorTitle": "🔄 拡張機能エラー",
+    "extensionErrorMessage": "拡張機能をリロードする必要があります。このページを更新してください。",
+    "networkErrorTitle": "🌐 ネットワークエラー",
+    "networkErrorMessage": "AIサービスに接続できませんでした。インターネット接続を確認して、もう一度お試しください。",
+    "retryButton": "🔄 再試行",
+    "settingsButton": "⚙️ 設定"
+  },
   "consent": {
     "title": "同意管理",
     "description": "データ処理とストレージに関する同意を管理します",

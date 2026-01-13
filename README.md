@@ -7,10 +7,16 @@
 👉 **[View Full Changelog](CHANGELOG.md)**
 
 ## �Current version�
-## [1.2.5] - 2026-01-12
+## [1.3.0] - 2026-01-13
 ### 🚀 Features & Updates
-- **Next-Gen AI**: Now powered by **GPT-5.1** and **Claude 4.5 Sonnet**.
-- **Gemini 2.0**: Defaulted to `gemini-2.0-flash` for the free tier.
+- **Optimized AI Models**:
+  - **OpenAI**: Upgraded to **GPT-4o-mini** for faster, cost-effective responses.
+  - **Anthropic**: Switched to **Claude Haiku 4.5** (4x faster, 3x cheaper).
+  - **DeepSeek**: Verified support for **DeepSeek V3** (`deepseek-chat`).
+- **🎨 UI/UX Redesign**:
+  - **Spicy Mode 🌶️**: New native Tinder-themed gradient option.
+  - **Glassmorphism**: Modern, translucent sidebar design.
+  - **Enhanced Toggle**: Smooth animated sidebar toggle with SVG icon.
 - **Store Localization**: Added `_locales` support for accurate multilingual store listings.
 
 ## [1.2.4] - 2025-06-28
@@ -175,10 +181,10 @@ SpicySwipe is a sophisticated Chrome extension that revolutionizes your Tinder e
 
 | AI Provider | Model | API Key Location | Pricing | Testing Status |
 |-------------|-------|------------------|---------|----------------|
-| **OpenAI** | gpt-4o | [OpenAI Platform](https://platform.openai.com/api-keys) | Pay-per-use | ⚠️ Not tested (requires paid API) |
-| **Google** | gemini-2.0-flash | [Google AI Studio](https://makersuite.google.com/app/apikey) | Free tier available | ✅ Tested with free tier |
-| **DeepSeek** | deepseek-chat | [DeepSeek Platform](https://platform.deepseek.com/) | Pay-per-use | ⚠️ Not tested (requires paid API) |
-| **Anthropic** | claude-3-opus-20240229 | [Anthropic Console](https://console.anthropic.com/) | Pay-per-use | ⚠️ Not tested (requires paid API) |
+| **OpenAI** | gpt-4o-mini | [OpenAI Platform](https://platform.openai.com/api-keys) | Pay-per-use | ✅ Verified |
+| **Google** | gemini-2.0-flash | [Google AI Studio](https://makersuite.google.com/app/apikey) | Free tier available | ✅ Verified |
+| **DeepSeek** | deepseek-chat | [DeepSeek Platform](https://platform.deepseek.com/) | Pay-per-use | ✅ Verified |
+| **Anthropic** | claude-haiku-4-5 | [Anthropic Console](https://console.anthropic.com/) | Pay-per-use | ✅ Verified |
 
 ### ⚠️ Testing Status Note
 

@@ -160,6 +160,20 @@
     "changeTone": "Nachrichtenton ändern",
     "loading": "Laden..."
   },
+  "errors": {
+    "title": "KI-Generierung fehlgeschlagen",
+    "forMatch": "für",
+    "rateLimitTitle": "⏳ API-Limit erreicht",
+    "rateLimitMessage": "Ihr KI-Anbieter hat sein Nutzungslimit erreicht. Bitte warten Sie 30-60 Sekunden und versuchen Sie es erneut, oder wechseln Sie zu einem anderen KI-Modell in den Einstellungen.",
+    "missingKeyTitle": "🔑 API-Schlüssel fehlt",
+    "missingKeyMessage": "Kein API-Schlüssel für das ausgewählte KI-Modell gefunden. Gehen Sie zur KI-Registerkarte in den Einstellungen und geben Sie Ihren API-Schlüssel ein.",
+    "extensionErrorTitle": "🔄 Erweiterungsfehler",
+    "extensionErrorMessage": "Die Erweiterung muss neu geladen werden. Bitte aktualisieren Sie diese Seite.",
+    "networkErrorTitle": "🌐 Netzwerkfehler",
+    "networkErrorMessage": "Verbindung zum KI-Dienst konnte nicht hergestellt werden. Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+    "retryButton": "🔄 Wiederholen",
+    "settingsButton": "⚙️ Einstellungen"
+  },
   "consentOverlay": {
     "title": "Willkommen bei SpicySwipe",
     "description": "Um die Funktionen von SpicySwipe nutzen zu können, benötigen wir Ihre Zustimmung, um Ihr Tinder-Erlebnis mit KI-gestützten Funktionen zu verbessern.",

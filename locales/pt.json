@@ -160,6 +160,20 @@
     "changeTone": "Alterar tom da mensagem",
     "loading": "Carregando..."
   },
+  "errors": {
+    "title": "Falha na geração de IA",
+    "forMatch": "para",
+    "rateLimitTitle": "⏳ Limite de uso atingido",
+    "rateLimitMessage": "Seu provedor de IA atingiu o limite. Aguarde 30-60 segundos e tente novamente, ou mude para outro modelo de IA nas configurações.",
+    "missingKeyTitle": "🔑 Chave API ausente",
+    "missingKeyMessage": "Nenhuma chave API encontrada para o modelo de IA selecionado. Vá para a aba IA nas configurações e insira sua chave API.",
+    "extensionErrorTitle": "🔄 Erro da extensão",
+    "extensionErrorMessage": "A extensão precisa ser recarregada. Atualize esta página.",
+    "networkErrorTitle": "🌐 Erro de rede",
+    "networkErrorMessage": "Não foi possível conectar ao serviço de IA. Verifique sua conexão com a internet e tente novamente.",
+    "retryButton": "🔄 Tentar novamente",
+    "settingsButton": "⚙️ Configurações"
+  },
   "consentOverlay": {
     "title": "Bem-vindo ao SpicySwipe",
     "description": "Para usar os recursos do SpicySwipe, precisamos do seu consentimento para aprimorar sua experiência no Tinder com recursos alimentados por IA.",
