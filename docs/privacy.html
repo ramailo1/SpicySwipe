@@ -1,76 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <title>SpicySwipe Privacy Policy</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Policy | SpicySwipe</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="../assets/icon48.png">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #1A1F2B;
-      color: #f0f0f0;
-      line-height: 1.6;
-      padding: 40px;
-      max-width: 800px;
-      margin: auto;
+    .privacy-content {
+      margin-top: 2rem;
+      padding: 3rem;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
     }
-    h1, h2 {
-      color: #FF3366;
+
+    .privacy-content h1 {
+      margin-bottom: 2rem;
     }
-    a {
-      color: #FF3366;
+
+    .privacy-content h2 {
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      color: var(--accent);
     }
-    footer {
-      margin-top: 40px;
-      font-size: 0.9em;
-      color: #888;
+
+    .privacy-content p {
+      margin-bottom: 1rem;
+      color: var(--text-muted);
+    }
+
+    .privacy-content code {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--text-main);
     }
   </style>
 </head>
+
 <body>
-  <h1>SpicySwipe Privacy Policy</h1>
-  <p><strong>Effective Date:</strong> [Replace with actual date]</p>
 
-  <h2>1. Information We Access</h2>
-  <p>
-    SpicySwipe accesses Tinder profile information (such as name, age, bio, interests) and chat history directly from pages you visit on <code>tinder.com</code>. This data is used solely to provide the extension's core features including smart messaging, analytics, and profile analysis.
-  </p>
+  <header class="navbar container">
+    <a href="index.html" class="logo" style="text-decoration: none;">🔥 SpicySwipe</a>
+    <nav>
+      <a href="index.html" class="nav-link">🏠 Back to Home</a>
+    </nav>
+  </header>
 
-  <h2>2. Data Storage</h2>
-  <p>
-    All collected data is stored locally on your device using browser storage. API keys and sensitive settings are encrypted before being stored and are never transmitted elsewhere.
-  </p>
+  <main class="container">
+    <div class="privacy-content glass-effect">
+      <h1>Privacy Policy</h1>
+      <p><strong>Effective Date:</strong> January 15, 2026</p>
 
-  <h2>3. Data Transmission</h2>
-  <p>
-    SpicySwipe does not transmit personal data to the developer or any third party. If you choose to enable external AI services (e.g., OpenAI, Gemini, Claude, DeepSeek), limited relevant data (like profile text or chat snippets) may be sent to their APIs strictly for the purpose of message generation.
-  </p>
-  <p>
-    SpicySwipe does not sell, share, or use any data for advertising purposes.
-  </p>
+      <h2>1. Information We Access</h2>
+      <p>
+        SpicySwipe is designed with a core principle of data minimization. We access public profile information (name,
+        age, bio, interests) and active chat history only when the extension is active on <code>tinder.com</code>. This
+        information is used strictly to power features like AI-suggested messages and conversation analytics.
+      </p>
 
-  <h2>4. User Control</h2>
-  <p>
-    You can delete your data anytime by removing the extension or clearing your browser storage. You have full control over which AI providers are used and whether features requiring external data processing are enabled.
-  </p>
+      <h2>2. Data Storage & Local Processing</h2>
+      <p>
+        <strong>Your data never leaves your device.</strong> All extracted profile details, chat logs, and extension
+        settings are stored locally in your browser's private storage. We do not maintain any central database of user
+        conversations.
+      </p>
 
-  <h2>5. Security</h2>
-  <p>
-    All processing happens locally except for explicitly enabled API interactions. API keys are encrypted on-device and are never shared with the developer or third parties.
-  </p>
+      <h2>3. Third-Party AI Services</h2>
+      <p>
+        If you choose to use features powered by third-party AI (OpenAI, Google Gemini, Anthropic, or DeepSeek),
+        snippets of conversation context are sent directly to their respective APIs via secure HTTPS connections. Your
+        data is governed by the privacy policies of those providers. SpicySwipe itself does not collect or monetize this
+        data.
+      </p>
 
-  <h2>6. Contact</h2>
-  <p>
-    For questions or concerns, please contact: <a href="mailto:ramailorakou@gmail.com">ramailorakou@gmail.com</a>
-  </p>
+      <h2>4. Anti-Detection & Interaction</h2>
+      <p>
+        The extension simulates mouse movements and keystrokes to provide a better user experience. These interactions
+        are processed locally and are intended to provide natural human-like behavior within the Tinder interface.
+      </p>
 
-  <h2>7. Changes</h2>
-  <p>
-    This privacy policy may be updated. Any changes will be posted on this page with an updated effective date.
-  </p>
+      <h2>5. Your Rights</h2>
+      <p>
+        You have complete control over your data. You can clear all extension data, reset your AI settings, or revoke
+        consent at any time through the extension sidebar or by uninstalling the extension.
+      </p>
+
+      <h2>6. Security</h2>
+      <p>
+        API keys are stored using industry-standard browser encryption. We recommend users manage their independent AI
+        service API keys securely and rotate them periodically.
+      </p>
+
+      <h2>7. Contact</h2>
+      <p>
+        For any inquiries regarding this policy or technical support, please reach out to us at <a
+          href="mailto:ramailorakou@gmail.com">ramailorakou@gmail.com</a>.
+      </p>
+    </div>
+  </main>
 
   <footer>
-    © 2025 SpicySwipe by Soufienne Rahali
+    <div class="container">
+      <p>&copy; 2026 SpicySwipe by Soufienne Rahali. All rights reserved.</p>
+    </div>
   </footer>
+
 </body>
-</html> 
+
+</html>
