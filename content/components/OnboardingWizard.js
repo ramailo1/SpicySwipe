@@ -152,13 +152,22 @@
                         </select>
                     </div>
                 </div>
-                <div class="spicyswipe-row" style="margin-bottom: 12px;">
+                <div class="spicyswipe-row" id="wizard-api-key-row" style="margin-bottom: 12px;">
                     <div class="spicyswipe-col" style="width: 100%;">
                         <label class="spicyswipe-label" style="color: #e2e8f0 !important; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: block;">API Key</label>
                         <input type="password" id="wizard-api-key" class="spicyswipe-select" placeholder="Enter your API Key here" style="width: 100%; padding: 12px 16px; border-radius: 12px; background: rgba(15, 23, 42, 0.85) !important; color: #ffffff !important; border: 1px solid rgba(255,255,255,0.2) !important; font-size: 14px; outline: none;">
                         <input type="text" style="display:none;"> <!-- Prevent autofill messing up colors -->
                         <div style="font-size: 12px; color: #94a3b8 !important; margin-top: 8px;">
                             Gemini keys are free. <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #ff7854; font-weight: 600; text-decoration: underline;">Get one here</a>.
+                        </div>
+                    </div>
+                </div>
+                <div class="spicyswipe-row" id="wizard-ollama-model-row" style="margin-bottom: 12px; display: none;">
+                    <div class="spicyswipe-col" style="width: 100%;">
+                        <label class="spicyswipe-label" style="color: #e2e8f0 !important; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: block;">Ollama Model Name</label>
+                        <input type="text" id="wizard-ollama-model" class="spicyswipe-select" placeholder="llama3.2" value="llama3.2" style="width: 100%; padding: 12px 16px; border-radius: 12px; background: rgba(15, 23, 42, 0.85) !important; color: #ffffff !important; border: 1px solid rgba(255,255,255,0.2) !important; font-size: 14px; outline: none;">
+                        <div style="font-size: 12px; color: #94a3b8 !important; margin-top: 8px;">
+                            Enter model installed in Ollama (e.g. <b>llama3.2</b>, <b>mistral</b>, <b>gemma</b>). No API key needed.
                         </div>
                     </div>
                 </div>
@@ -173,15 +182,25 @@
                 const skipBtn = container.querySelector('#wizard-skip-btn');
                 const modelSelect = container.querySelector('#wizard-ai-model');
                 const keyInput = container.querySelector('#wizard-api-key');
+                const apiKeyRow = container.querySelector('#wizard-api-key-row');
+                const ollamaModelRow = container.querySelector('#wizard-ollama-model-row');
+                const ollamaModelInput = container.querySelector('#wizard-ollama-model');
+
+                // Load existing ollamaModel if saved
+                const storedOllama = await chrome.storage.local.get(['ollamaModel', 'ollamaUrl']);
+                if (storedOllama.ollamaModel) {
+                    ollamaModelInput.value = storedOllama.ollamaModel;
+                }
 
                 // Function to check and mask existing key
                 const checkExistingKey = async (model) => {
                     if (model === 'ollama') {
-                        keyInput.value = '';
-                        keyInput.placeholder = 'No API key needed for local Ollama';
-                        keyInput.disabled = true;
+                        apiKeyRow.style.display = 'none';
+                        ollamaModelRow.style.display = 'block';
                         return;
                     }
+                    apiKeyRow.style.display = 'block';
+                    ollamaModelRow.style.display = 'none';
                     keyInput.disabled = false;
                     keyInput.placeholder = 'Enter your API Key here';
 
@@ -192,7 +211,6 @@
 
                     if (storeKey) {
                         const data = await chrome.storage.local.get(storeKey);
-                        // Also check legacy/fallback for gemini
                         let val = data[storeKey];
                         if (model === 'gemini' && !val) {
                             const legacy = await chrome.storage.local.get(['geminiFreeApiKey', 'geminiProApiKey']);
@@ -200,7 +218,7 @@
                         }
 
                         if (val) {
-                            keyInput.value = val; // Store actual value (will be masked by password type)
+                            keyInput.value = val;
                             keyInput.setAttribute('data-masked', 'true');
                         } else {
                             keyInput.value = '';
@@ -219,7 +237,11 @@
                     const model = modelSelect.value;
                     const key = keyInput.value.trim();
                     const storeObj = { activeAI: model };
-                    if (key && model !== 'ollama') {
+
+                    if (model === 'ollama') {
+                        storeObj.ollamaModel = ollamaModelInput.value.trim() || 'llama3.2';
+                        storeObj.ollamaUrl = storedOllama.ollamaUrl || 'http://localhost:11434';
+                    } else if (key) {
                         if (model === 'gemini') storeObj.geminiApiKey = key;
                         else if (model === 'chatgpt') storeObj.openaiApiKey = key;
                         else if (model === 'deepseek') storeObj.deepseekApiKey = key;
@@ -280,14 +302,12 @@
 
                 container.querySelector('#wizard-next-btn').onclick = async () => {
                     const tone = selectedTone.toLowerCase();
-                    // Sync with StateStore schema (chrome.storage.local -> messagingConfig.tone)
                     const { messagingConfig } = await chrome.storage.local.get('messagingConfig');
                     const newConfig = { ...(messagingConfig || {}), tone };
 
                     await chrome.storage.local.set({ messagingConfig: newConfig });
                     console.log(`[Tinder AI] Saved tone '${tone}' to messagingConfig.`);
 
-                    // Update global StateStore if available to ensure immediate reflection
                     if (window.stateStore) {
                         await window.stateStore.set({ messagingConfig: newConfig });
                     }
@@ -313,11 +333,9 @@
                 const btn = container.querySelector('#wizard-finish-btn');
                 btn.onclick = async () => {
                     await chrome.storage.local.set({ hasCompletedOnboarding: true });
-                    // Fade out
                     this.overlay.style.opacity = '0';
                     setTimeout(() => {
                         this.overlay.remove();
-                        // Open main sidebar as a hint
                         const sidebarToggle = document.querySelector('.tinder-ai-sidebar-toggle');
                         if (sidebarToggle && !sidebarToggle.classList.contains('open')) {
                             sidebarToggle.click();
