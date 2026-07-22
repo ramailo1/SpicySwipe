@@ -2,7 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.2.5] - 2026-01-12
+## [1.4.1] - 2026-07-22
+### 🚀 Features, Security Hardening & UI Contrast Fixes
+
+#### 🦙 **Local Ollama AI Integration**
+- **Ollama Model Option**: Added **Ollama (Local AI)** option to the model selection dropdown in both AI Settings and the Onboarding Wizard.
+- **Customizable Endpoints**: Added dedicated UI controls for configuring `Ollama Base URL` (defaults to `http://localhost:11434`) and `Ollama Model` (defaults to `llama3.2`).
+- **No-Key Setup**: Integrated local Ollama execution without requiring external API keys.
+
+#### 🛡️ **Cybersecurity Hardening & Vulnerability Remediation**
+- **XSS Prevention**: Added global `escapeHTML()` sanitization across content scripts and wrapped all dynamic profile interpolations (`name`, `interests`, `age`) in `Sidebar.js` and `ApprovalUI.js`.
+- **Sender Verification**: Implemented strict `sender.id === chrome.runtime.id` verification in `background.js` to block unauthorized runtime messaging.
+- **Header Key Transport**: Updated Gemini API requests to pass credentials via `x-goog-api-key` HTTP headers instead of URL query parameters.
+
+#### 🤖 **Dynamic AI Auto-Detect & Fallback Fixes**
+- **Key Storage Alignment**: Unified Gemini API key verification to check `geminiApiKey` across all storage operations.
+- **Promise Callback Fix**: Resolved missing response promise resolution in the Claude API integration handler.
+
+#### 🎨 **UI Contrast & Onboarding Enhancements**
+- **Dark Glassmorphism Card**: Redesigned `.spicyswipe-wizard-box` with dark glass styling (`rgba(18, 18, 26, 0.96)`), glowing borders, and crisp white typography.
+- **Form Controls & Buttons**: Applied dark slate containers to form controls (`#wizard-ai-model`, `#wizard-api-key`) and gradient styling to action buttons and tone selection chips.
+
+## [1.4.0] - 2026-01-15
+### 🚀 Major Feature Release: Dynamic Themes & Human-Like Stealth
+
+#### 🎨 **Dynamic Theme Engine**
+- **Seasonal Themes**: Automatically detects seasons and applies immersive themes:
+  - ❄️ **Winter Wonderland** (Dec-Jan)
+  - 💘 **Cupid's Choice** (Feb)
+  - ☀️ **Summer Vibes** (Jun-Aug)
+  - 🎃 **Spooky Season** (Oct)
+- **Manual Cycle**: New Sidebar header button to cycle through all themes, including **Dark**, **Light**, and **Spicy**.
+- **Auto-Detection Notification**: Toast notification alerts when a seasonal theme is auto-activated.
+
+#### 🕵️‍♂️ **Advanced Anti-Detection**
+- **Human-Like Mouse Movement**: Implemented **Bezier Curve** algorithms to simulate natural, non-linear cursor paths.
+- **Natural Timing**: Replaced random delays with **Gaussian (Bell Curve) Distribution** for realistic reaction times.
+- **Typing Simulation**: Text inputs now mimic human typing speeds, including "flight time" between keys and occasional "thinking" pauses.
+
+#### 🏗️ **Architecture**
+- **Modular Refactor**: Confirmed robust separation of concerns with `ThemeManager.js` and component isolation.
+
+## [1.3.0] - 2026-01-13
 ### 🚀 Features & Updates
 
 #### 🤖 **AI & API Updates**

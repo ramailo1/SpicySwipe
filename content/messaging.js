@@ -53,7 +53,7 @@ const MESSAGING = {
         try {
             // Check if extension context is still valid
             if (!chrome.runtime?.id) {
-                console.warn('[Tinder AI] Extension context invalidated, skipping checkNewMatches');
+                // Silently return if context is invalidated
                 return;
             }
 
@@ -95,10 +95,10 @@ const MESSAGING = {
             await this.saveConversations();
         } catch (error) {
             if (error.message && error.message.includes('Extension context invalidated')) {
-                console.warn('[Tinder AI] Extension context invalidated during checkNewMatches');
-            } else {
-                console.error('[Tinder AI] Error in checkNewMatches:', error);
+                // Ignore context invalidation errors during reload
+                return;
             }
+            console.error('[Tinder AI] Error in checkNewMatches:', error);
         }
     },
 
@@ -303,7 +303,12 @@ const MESSAGING = {
             this.messagingStats.messagesSent++;
             this.saveMessagingStats();
 
-            await this.simulateTyping(input, text);
+            // Use advanced anti-detection typing if available
+            if (typeof ANTI_DETECTION !== 'undefined' && typeof ANTI_DETECTION.simulateTyping === 'function') {
+                await ANTI_DETECTION.simulateTyping(input, text);
+            } else {
+                await this.simulateTyping(input, text);
+            }
 
             const sendBtn = await waitForElement('button[aria-label*="send"], button[aria-label*="Send"], button[type="submit"]');
             if (sendBtn) {

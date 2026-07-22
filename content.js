@@ -3,18 +3,14 @@
 // All logic functions are in content/*.js modules
 
 // --- Config & Global State ---
-let SWIPE_DELAY_RANGE = [2000, 4000];
-let MAX_SESSION_SWIPES = 30;
-const SKIP_CHANCE = 0.1;
-let swipeCount = 0;
-let sessionActive = false;
-let swipingGloballyStopped = true;
-const currentFilters = {};
-let analytics = { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0 };
-let isStopping = false;
+// --- Config & Global State ---
+// Migrated to StateStore (content/state.js)
+// Keeping core runtime flags
+// Migrated to StateStore (content/state.js)
+// Keeping core runtime flags (Mapped to stateStore)
 let sidebarActiveTab = 'status';
 let sidebarConsentGiven = false;
-const getTodayDateString = () => new Date().toISOString().slice(0, 10);
+
 
 // Add at the top of the file, after other global variables:
 let statusPanelState = { stats: true, stealth: true, settings: true };
@@ -78,8 +74,8 @@ async function initializeI18n() {
 // Global flag to track i18n initialization
 let i18nInitialized = false;
 
-// Initialize i18n immediately
-initializeI18n().then((success) => {
+// Initialize i18n promise to be awaited
+const i18nInitPromise = initializeI18n().then((success) => {
   i18nInitialized = success;
   console.log('[Tinder AI] I18n initialization complete:', success);
 
@@ -102,10 +98,8 @@ initializeI18n().then((success) => {
 // - content/ui-render.js: All sidebar UI rendering functions
 
 // --- Initialization ---
-// Initialize i18n first
-initializeI18n().then(() => {
-  console.log('[Tinder AI] I18n initialized successfully');
-}).catch(error => {
+// Initialize i18n via promise defined above
+i18nInitPromise.catch(error => {
   console.error('[Tinder AI] Error initializing i18n:', error);
 });
 
@@ -127,70 +121,7 @@ if (window.location.hostname.includes('tinder.com')) {
 }
 
 // Load initial settings
-function loadSwipingSettings() {
-  return new Promise((resolve) => {
-    chrome.storage.local.get(['swipeDelay', 'maxSwipes', 'likeRatio', 'swipeConfig'], (data) => {
-      if (data.swipeConfig) {
-        if (data.swipeConfig.swipeDelayMin && data.swipeConfig.swipeDelayMax) {
-          SWIPE_DELAY_RANGE = [data.swipeConfig.swipeDelayMin, data.swipeConfig.swipeDelayMax];
-        }
-        if (data.swipeConfig.maxSwipes) {
-          MAX_SESSION_SWIPES = data.swipeConfig.maxSwipes;
-        }
-        if (data.swipeConfig.likeRatio !== undefined) {
-          currentFilters.likeRatio = data.swipeConfig.likeRatio;
-        }
-      } else {
-        if (data.swipeDelay) {
-          SWIPE_DELAY_RANGE = [data.swipeDelay, data.swipeDelay + 2000];
-        }
-        if (data.maxSwipes) {
-          MAX_SESSION_SWIPES = data.maxSwipes;
-        }
-        if (data.likeRatio !== undefined) {
-          currentFilters.likeRatio = data.likeRatio;
-        }
-      }
-      console.log('[Tinder AI] Settings loaded:', { SWIPE_DELAY_RANGE, MAX_SESSION_SWIPES, likeRatio: currentFilters.likeRatio });
-      resolve();
-    });
-  });
-}
-
-// Load initial settings
-loadSwipingSettings();
-
-// Update settings and apply them
-function updateSettings(newSettings) {
-  return new Promise((resolve) => {
-    chrome.storage.local.get(['swipeConfig'], (data) => {
-      const currentConfig = data.swipeConfig || {
-        swipeDelayMin: SWIPE_DELAY_RANGE[0],
-        swipeDelayMax: SWIPE_DELAY_RANGE[1],
-        maxSwipes: MAX_SESSION_SWIPES,
-        likeRatio: currentFilters.likeRatio || 0.7
-      };
-
-      const updatedConfig = { ...currentConfig, ...newSettings };
-
-      chrome.storage.local.set({ swipeConfig: updatedConfig }, () => {
-        // Apply settings
-        if (updatedConfig.swipeDelayMin && updatedConfig.swipeDelayMax) {
-          SWIPE_DELAY_RANGE = [updatedConfig.swipeDelayMin, updatedConfig.swipeDelayMax];
-        }
-        if (updatedConfig.maxSwipes) {
-          MAX_SESSION_SWIPES = updatedConfig.maxSwipes;
-        }
-        if (updatedConfig.likeRatio !== undefined) {
-          currentFilters.likeRatio = updatedConfig.likeRatio;
-        }
-
-        console.log('[Tinder AI] Settings updated:', { SWIPE_DELAY_RANGE, MAX_SESSION_SWIPES, likeRatio: currentFilters.likeRatio });
-        resolve();
-      });
-    });
-  });
-}
+// Legacy settings functions removed. Use stateStore.get('swipeConfig') instead.
 
 // --- Messaging Automation ---
 // NOTE: MESSAGING is defined in content/messaging.js
@@ -208,9 +139,15 @@ setupManualMessageTracking();
     return;
   }
 
-  // Check for consent
-  const data = await chrome.storage.local.get(['sidebarConsentGiven']);
-  sidebarConsentGiven = data.sidebarConsentGiven === true;
+  // Initialize State Store first!
+  await stateStore.init();
+  console.log('[Tinder AI] State Store initialized');
+
+  // Wait for i18n to be ready before showing any UI
+  await i18nInitPromise;
+
+  // Check for consent from StateStore
+  sidebarConsentGiven = stateStore.get('sidebarConsentGiven') === true;
 
   if (!sidebarConsentGiven) {
     console.log('[Tinder AI] Consent not given, showing consent overlay');
@@ -228,6 +165,10 @@ setupManualMessageTracking();
   if (sidebarConsentGiven) {
     console.log('[Tinder AI][DEBUG] Calling createPersistentAIIcon() during initialization (consent given)');
     createPersistentAIIcon();
+    // Launch Wizard if needed
+    if (typeof SpicySwipeWizard !== 'undefined') {
+      SpicySwipeWizard.init();
+    }
   } else {
     console.log('[Tinder AI][DEBUG] Consent not given, AI icon not shown');
   }
@@ -249,12 +190,28 @@ setupManualMessageTracking();
 
     // NOTE: Status tab updates are handled separately to prevent re-render loops
     // The status tab will update on tab click or after specific actions (swipe, message, etc.)
+    // With idempotent rendering in Sidebar.js, we can now safely update Status tab to detect new profiles
+    if (typeof window.sidebarActiveTab !== 'undefined' && window.sidebarActiveTab === 'status' && sidebarConsentGiven) {
+      if (typeof renderSidebarActiveTab === 'function') {
+        renderSidebarActiveTab();
+      }
+    }
 
     // Update AI icon visibility based on consent
     if (typeof createPersistentAIIcon === 'function') {
       if (sidebarConsentGiven) {
         createPersistentAIIcon();
       }
+    }
+
+    // Attach Voice Input if consent given and function exists
+    if (sidebarConsentGiven && typeof attachVoiceInput === 'function') {
+      attachVoiceInput();
+    }
+
+    // Auto-attach Smart Match Scores (now independent of Sidebar state)
+    if (sidebarConsentGiven && typeof window.scanAndAttachScores === 'function') {
+      window.scanAndAttachScores();
     }
   }
 
@@ -285,8 +242,11 @@ setupManualMessageTracking();
 
   // Add global function to reset consent for testing
   window.resetSpicySwipeConsent = function () {
-    chrome.storage.local.set({ sidebarConsentGiven: false }, () => {
-      console.log('[Tinder AI] Consent reset. Refresh the page to see the consent overlay.');
+    chrome.storage.local.set({
+      sidebarConsentGiven: false,
+      hasCompletedOnboarding: false
+    }, () => {
+      console.log('[Tinder AI] Consent and Onboarding status reset (Atomic). Refresh the page to see the consent overlay.');
       sidebarConsentGiven = false;
       // Remove AI icon
       const aiIcon = document.getElementById('ai-persistent-icon');
@@ -337,3 +297,14 @@ function getToneDropdownOptions(selectedTone) {
 
 // Load tone instructions on startup
 loadToneInstructions();
+
+// --- Background Service Worker Heartbeat Keep-Alive ---
+setInterval(() => {
+  if (chrome.runtime && chrome.runtime.id) {
+    chrome.runtime.sendMessage({ type: 'heartbeat' }, response => {
+      if (chrome.runtime.lastError) {
+        // Silently handle sw reconnects
+      }
+    });
+  }
+}, 25000);

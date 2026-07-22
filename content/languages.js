@@ -94,12 +94,6 @@ function getSelectedLanguages() {
     });
 }
 
-function getLanguageOptions(selectedLanguages) {
-    return selectedLanguages.map(code => ({
-        value: code,
-        text: `${WORLDWIDE_LANGUAGES[code]?.name} (${WORLDWIDE_LANGUAGES[code]?.native})`
-    }));
-}
 
 function getAllLanguageOptions() {
     return Object.entries(WORLDWIDE_LANGUAGES).map(([code, lang]) => ({

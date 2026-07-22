@@ -47,7 +47,10 @@
     "error": "Error",
     "success": "Success",
     "warning": "Warning",
-    "info": "Info"
+    "info": "Info",
+    "idle": "Idle",
+    "swiping": "Swiping",
+    "currentAction": "Current Action"
   },
   "ai": {
     "title": "AI Settings",
@@ -129,7 +132,8 @@
     "success": "Success",
     "warning": "Warning",
     "info": "Information",
-    "languageChanged": "Language changed successfully!"
+    "languageChanged": "Language changed successfully!",
+    "saved": "Settings saved successfully!"
   },
   "buttons": {
     "save": "Save",
@@ -141,7 +145,8 @@
     "approve": "Approve",
     "reject": "Reject",
     "like": "Like",
-    "nope": "Nope"
+    "nope": "Nope",
+    "exportData": "Export Data"
   },
   "messages": {
     "loading": "Loading...",

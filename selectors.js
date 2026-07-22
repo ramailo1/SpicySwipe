@@ -23,40 +23,45 @@ window.SELECTORS = {
     'img[class*="photo"]'
   ],
 
-  // Button selectors - Updated to be more specific and exclude super likes
+  // Button selectors - Unified and prioritized with ARIA & data-testid fallbacks
   LIKE_BUTTON: [
     'button[class*="gamepad-button"][class*="Bgc($c-ds-background-gamepad-sparks-like-default)"]:not([class*="super"]):not([class*="Bgc($c-ds-background-gamepad-sparks-super-like-default)"])',
     'button[class*="gamepad-button"][class*="like"]:not([class*="super"]):not([class*="Bgc($c-ds-background-gamepad-sparks-super-like-default)"])',
-    'button[class*="Bgc($c-ds-background-gamepad-sparks-like-default)"]:not([class*="super"]):not([class*="Bgc($c-ds-background-gamepad-sparks-super-like-default)"])'
+    'button[class*="Bgc($c-ds-background-gamepad-sparks-like-default)"]:not([class*="super"]):not([class*="Bgc($c-ds-background-gamepad-sparks-super-like-default)"])',
+    'button[aria-label*="Like" i]:not([aria-label*="Super" i])',
+    'button[data-testid*="gamepad-like"]',
+    'button[data-testid*="like"]'
   ],
 
   NOPE_BUTTON: [
     'button[class*="gamepad-button"][class*="nope"]',
     'button[class*="gamepad-button-wrapper"] button[class*="nope"]',
     'button[class*="nope"]',
-    'button[class*="Bgc($c-ds-background-gamepad-sparks-nope-default)"]'
+    'button[class*="Bgc($c-ds-background-gamepad-sparks-nope-default)"]',
+    'button[aria-label*="Nope" i]',
+    'button[aria-label*="Pass" i]',
+    'button[aria-label*="Dislike" i]',
+    'button[data-testid*="gamepad-nope"]',
+    'button[data-testid*="nope"]'
   ],
 
-  // Match list selectors
+  // Match list and message selectors
   MATCH_LIST: 'div[class*="matchList"]',
-  matchListItemSelector: 'a[href*="/app/messages/"]',
+  MATCH_LIST_ITEM: 'a[href*="/app/messages/"]',
+  MESSAGE_INPUT: 'textarea[id="chat-text-area"], textarea[placeholder*="message"], textarea[placeholder*="Type"]',
 
-  // Message input selectors
-  MESSAGE_INPUT: 'textarea[class*="messageInput"]',
-
-  // Tinder-specific selectors
+  // Tinder-specific grouped selectors (for backward compat)
   tinder: {
     likeButton: [
       'button[class*="gamepad-button"][class*="like"]:not([class*="super"]):not([class*="Bgc($c-ds-background-gamepad-sparks-super-like-default)"])',
       'button[class*="gamepad-button-wrapper"] button:not([class*="super"]):not([class*="Bgc($c-ds-background-gamepad-sparks-super-like-default)"])',
-      'button[class*="like"]:not([class*="super"]):not([class*="Bgc($c-ds-background-gamepad-sparks-super-like-default)"])',
-      'button[class*="Bgc($c-ds-background-gamepad-sparks-like-default)"]:not([class*="super"]):not([class*="Bgc($c-ds-background-gamepad-sparks-super-like-default)"])'
+      'button[aria-label*="Like" i]:not([aria-label*="Super" i])'
     ],
     nopeButton: [
       'button[class*="gamepad-button"][class*="nope"]',
       'button[class*="gamepad-button-wrapper"] button[class*="nope"]',
-      'button[class*="nope"]',
-      'button[class*="Bgc($c-ds-background-gamepad-sparks-nope-default)"]'
+      'button[aria-label*="Nope" i]',
+      'button[aria-label*="Pass" i]'
     ],
     matchList: [
       'div[class*="matchList"]',
@@ -65,53 +70,61 @@ window.SELECTORS = {
     ]
   },
 
-  // AI interface selectors
-  chatgpt: {
+  // AI interface generic selectors
+  ai: {
     input: [
       'textarea[class*="chat"]',
       'textarea[class*="message"]',
-      'div[class*="input"][contenteditable="true"]'
+      'div[contenteditable="true"]'
     ],
     sendButton: 'button[class*="sendButton"]',
     output: [
       'div[class*="response"]',
       'div[class*="message"]',
       'div[class*="content"]'
-    ],
-    messageInput: 'textarea[class*="messageInput"]'
-  },
-
-  gemini: {
-    input: [
-      'textarea[class*="chat"]',
-      'textarea[class*="message"]',
-      'div[class*="input"][contenteditable="true"]'
-    ],
-    sendButton: 'button[class*="sendButton"]',
-    output: [
-      'div[class*="response"]',
-      'div[class*="message"]',
-      'div[class*="content"]'
-    ],
-    messageInput: 'textarea[class*="messageInput"]'
-  },
-
-  grok: {
-    input: [
-      'textarea[class*="chat"]',
-      'textarea[class*="message"]',
-      'div[class*="input"][contenteditable="true"]'
-    ],
-    sendButton: 'button[class*="sendButton"]',
-    output: [
-      'div[class*="response"]',
-      'div[class*="message"]',
-      'div[class*="content"]'
-    ],
-    messageInput: 'textarea[class*="messageInput"]'
+    ]
   },
 
   // Messaging selectors
   MESSAGE_CONTAINER: 'div[class*="messageContainer"]',
   MESSAGE_BUBBLE: 'div[class*="messageBubble"]'
-}; 
+};
+
+// Resilient element finder helper
+window.findTinderButton = function (action) {
+  if (!window.SELECTORS) return null;
+  const isLike = action === 'like';
+  const selectors = isLike ? window.SELECTORS.LIKE_BUTTON : window.SELECTORS.NOPE_BUTTON;
+
+  // 1. Try CSS Selectors
+  for (const selector of selectors) {
+    try {
+      const buttons = document.querySelectorAll(selector);
+      for (const btn of buttons) {
+        if (!btn.disabled && btn.offsetParent !== null) {
+          if (isLike && (btn.className.includes('super') || (btn.getAttribute('aria-label') || '').toLowerCase().includes('super'))) {
+            continue;
+          }
+          return btn;
+        }
+      }
+    } catch (e) {
+      // Ignore invalid selector syntax if any
+    }
+  }
+
+  // 2. Fallback: Search all interactive buttons by ARIA label
+  const allButtons = document.querySelectorAll('button[aria-label]');
+  for (const btn of allButtons) {
+    if (btn.disabled || btn.offsetParent === null) continue;
+    const label = (btn.getAttribute('aria-label') || '').toLowerCase();
+    if (isLike) {
+      if (label.includes('like') && !label.includes('super')) return btn;
+    } else {
+      if (label.includes('nope') || label.includes('pass') || label.includes('dislike')) return btn;
+    }
+  }
+
+  return null;
+};
+

@@ -14,7 +14,7 @@ async function getAIResponse(prompt) {
 
     return new Promise(resolve => {
         try {
-            chrome.storage.local.get(['activeAI', 'geminiFreeApiKey', 'geminiProApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey'], ({ activeAI, geminiFreeApiKey, geminiProApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey }) => {
+            chrome.storage.local.get(['activeAI', 'geminiApiKey', 'geminiFreeApiKey', 'geminiProApiKey', 'openaiApiKey', 'deepseekApiKey', 'anthropicApiKey'], ({ activeAI, geminiApiKey, geminiFreeApiKey, geminiProApiKey, openaiApiKey, deepseekApiKey, anthropicApiKey }) => {
                 let model = activeAI || 'gemini';
 
                 // Helper to check if an API key is valid
@@ -22,13 +22,16 @@ async function getAIResponse(prompt) {
                     return key && key.trim() !== '';
                 }
 
+                const effectiveGeminiKey = geminiApiKey || geminiFreeApiKey || geminiProApiKey;
+
                 // Build a map of available models with their API keys
                 const availableModels = {
-                    'gemini': hasValidKey(geminiFreeApiKey),
-                    'gemini-pro': hasValidKey(geminiProApiKey) || hasValidKey(geminiFreeApiKey),
+                    'gemini': hasValidKey(effectiveGeminiKey),
+                    'gemini-pro': hasValidKey(effectiveGeminiKey),
                     'chatgpt': hasValidKey(openaiApiKey),
                     'deepseek': hasValidKey(deepseekApiKey),
-                    'claude': hasValidKey(anthropicApiKey)
+                    'claude': hasValidKey(anthropicApiKey),
+                    'ollama': true // Local Ollama does not require an API key
                 };
 
                 console.log('[Tinder AI] Available models with keys:', availableModels);
@@ -40,7 +43,7 @@ async function getAIResponse(prompt) {
                     }
 
                     // Find first available model with a key
-                    const fallbackOrder = ['gemini', 'chatgpt', 'deepseek', 'claude', 'gemini-pro'];
+                    const fallbackOrder = ['gemini', 'ollama', 'chatgpt', 'deepseek', 'claude', 'gemini-pro'];
                     for (const fallbackModel of fallbackOrder) {
                         if (availableModels[fallbackModel]) {
                             console.log(`[Tinder AI] Fallback: ${selectedModel} has no API key, using ${fallbackModel} instead`);
@@ -92,7 +95,7 @@ async function getAIResponse(prompt) {
 
                 // --- Gemini (Flash/Pro) ---
                 if (model === 'gemini' || model === 'gemini-pro') {
-                    if (!geminiFreeApiKey || geminiFreeApiKey.trim() === '') {
+                    if (!effectiveGeminiKey || effectiveGeminiKey.trim() === '') {
                         showError('No Gemini API key found. Please add your key in Settings.');
                         resolve({ error: 'No Gemini API key found.' });
                         return;
@@ -232,7 +235,7 @@ async function getAIResponse(prompt) {
                     const messages = [
                         { role: 'user', content: prompt }
                     ];
-                    chrome.runtime.sendMessage({ type: 'getAnthropicAPIResponse', model: 'claude-haiku-4-5', messages }, response => {
+                    chrome.runtime.sendMessage({ type: 'getAnthropicAPIResponse', model: 'claude-3-5-haiku-latest', messages }, response => {
                         if (chrome.runtime.lastError) {
                             if (chrome.runtime.lastError.message.includes('Extension context invalidated')) {
                                 if (handleContextInvalidation()) {
@@ -240,7 +243,7 @@ async function getAIResponse(prompt) {
                                     return;
                                 }
                                 // Retry the request
-                                chrome.runtime.sendMessage({ type: 'getAnthropicAPIResponse', model: 'claude-haiku-4-5', messages }, retryResponse => {
+                                chrome.runtime.sendMessage({ type: 'getAnthropicAPIResponse', model: 'claude-3-5-haiku-latest', messages }, retryResponse => {
                                     if (chrome.runtime.lastError) {
                                         showError('Error communicating with background script: ' + chrome.runtime.lastError.message);
                                         resolve({ error: chrome.runtime.lastError.message });
@@ -252,6 +255,26 @@ async function getAIResponse(prompt) {
                                 showError('Error communicating with background script: ' + chrome.runtime.lastError.message);
                                 resolve({ error: chrome.runtime.lastError.message });
                             }
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                    return;
+                }
+                // --- Ollama (Local AI) ---
+                if (model === 'ollama') {
+                    console.log('[Tinder AI] Using local Ollama model');
+                    const messages = [
+                        { role: 'system', content: 'You are a witty, charming AI assistant generating clever Tinder opening lines.' },
+                        { role: 'user', content: prompt }
+                    ];
+                    chrome.runtime.sendMessage({ type: 'getOllamaAPIResponse', messages }, response => {
+                        if (chrome.runtime.lastError) {
+                            showError('Error communicating with Ollama: ' + chrome.runtime.lastError.message);
+                            resolve({ error: chrome.runtime.lastError.message });
+                        } else if (response && response.error) {
+                            showError('Ollama error: ' + response.error);
+                            resolve({ error: response.error });
                         } else {
                             resolve(response);
                         }

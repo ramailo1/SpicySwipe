@@ -151,19 +151,75 @@ function attemptContextRecovery() {
   }
 }
 
-// --- Unified Message Listener ---
+// --- Dynamic Gemini Model Auto-Detection ---
+let cachedGeminiModels = null;
+let lastGeminiFetchTime = 0;
+
+async function fetchDynamicGeminiModels(apiKey) {
+  // Return cached list if fetched within the last 1 hour
+  if (cachedGeminiModels && (Date.now() - lastGeminiFetchTime < 3600000)) {
+    return cachedGeminiModels;
+  }
+
+  try {
+    console.log('[Tinder AI][BG] 🔍 Auto-detecting active Gemini models via ListModels API...');
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models`, {
+      headers: { 'x-goog-api-key': apiKey }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.models && Array.isArray(data.models)) {
+        // Filter for generateContent support
+        const validModels = data.models
+          .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
+          .map(m => m.name.replace(/^models\//, ''));
+
+        // Prioritize 'flash' models (fastest & free tier), followed by others
+        const flashModels = validModels.filter(name => name.toLowerCase().includes('flash'));
+        const otherModels = validModels.filter(name => !name.toLowerCase().includes('flash'));
+
+        const sortedModels = [...flashModels, ...otherModels];
+        if (sortedModels.length > 0) {
+          console.log('[Tinder AI][BG] ✨ Auto-detected Gemini models:', sortedModels);
+          cachedGeminiModels = sortedModels;
+          lastGeminiFetchTime = Date.now();
+          return sortedModels;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[Tinder AI][BG] ListModels auto-detection failed, using standard fallback list:', err);
+  }
+
+  // Fallback if ListModels fails
+  return ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-lite"];
+}
+
+// Unified Message Listener
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  // Security Hardening: Sender origin validation
+  if (sender && sender.id && sender.id !== chrome.runtime.id) {
+    console.warn('[Tinder AI][BG] 🛡️ Rejected message from unauthorized sender:', sender.id);
+    sendResponse({ error: 'Unauthorized sender' });
+    return false;
+  }
+
   // Check if extension context is valid
   if (!chrome.runtime?.id) {
     console.warn('[Tinder AI][BG] Extension context invalidated, attempting recovery...');
     if (attemptContextRecovery()) {
-      // Context recovered, continue with message processing
       console.log('[Tinder AI][BG] Context recovered, processing message');
     } else {
       console.error('[Tinder AI][BG] Context recovery failed, cannot process message');
       sendResponse({ error: 'Extension context invalidated' });
       return true;
     }
+  }
+
+  // --- Heartbeat Keep-Alive ---
+  if (msg.type === 'heartbeat') {
+    sendResponse({ status: 'alive', timestamp: Date.now() });
+    return true;
   }
 
   // --- Window Size Management ---
@@ -179,16 +235,15 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     const { tabId, failureType } = msg;
     SESSION_MANAGER.recordFailure(tabId, failureType);
 
-    // Check failure count and suggest actions
     const failureCount = SESSION_MANAGER.getFailureCount(tabId);
     let action = '';
 
     if (failureCount >= 5) {
-      action = 'stop'; // Too many failures, stop automation
+      action = 'stop';
     } else if (failureCount >= 3) {
-      action = 'stealth'; // Enable stealth mode
+      action = 'stealth';
     } else {
-      action = 'pause'; // Short pause
+      action = 'pause';
     }
 
     sendResponse({ action, failureCount });
@@ -209,7 +264,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       chrome.storage.local.set({ activeAI: nextAI });
       sendResponse({ success: true, nextAI });
     });
-    return true; // Required for async response
+    return true;
   }
 
   // --- Analytics Update ---
@@ -228,104 +283,126 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse({ allowed: isSwipingAllowedNow(swipeSchedule) });
       }
     });
-    return true; // Required for async response
+    return true;
   }
 
   if (msg.type === 'getGeminiAPIResponse') {
     (async () => {
       try {
-        // Determine which key to use based on the model
-        let model = msg.model || 'gemini-2.0-flash';
-        let apiKeyKey = 'geminiFreeApiKey';
-        if (model === 'gemini-1.5-pro' || model === 'gemini-1.5-pro-latest') {
-          apiKeyKey = 'geminiProApiKey';
-          model = 'gemini-1.5-pro';
-        } else if (model === 'gemini-2.0-flash-exp') {
-          apiKeyKey = 'geminiFreeApiKey'; // Uses same key structure usually
-        } else {
-          apiKeyKey = 'geminiFreeApiKey';
-          model = 'gemini-2.0-flash';
-        }
-        const storageResult = await new Promise(resolve => chrome.storage.local.get(apiKeyKey, resolve));
-        const geminiApiKey = storageResult[apiKeyKey];
+        const storageData = await new Promise(resolve => chrome.storage.local.get(['geminiApiKey', 'geminiFreeApiKey'], resolve));
+        const apiKey = storageData.geminiApiKey || storageData.geminiFreeApiKey;
 
-        if (!geminiApiKey) {
-          sendResponse({ error: `Gemini API key (${apiKeyKey}) not set in settings.` });
+        if (!apiKey) {
+          sendResponse({ error: 'Google Gemini API key not found. Please set it in the AI Settings.' });
           return;
         }
 
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
+        // Dynamically auto-detect active models from Google API
+        const modelHierarchy = await fetchDynamicGeminiModels(apiKey);
 
-        console.log('[Tinder AI][BG] Calling Gemini API...');
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: msg.prompt
-              }]
-            }]
-          })
-        });
-        const data = await response.json();
 
-        if (data.error) {
-          console.error('[Tinder AI][BG] Gemini API Error:', data.error.message);
-          sendResponse({ error: `API Error: ${data.error.message}` });
-        } else {
-          const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          console.log('[Tinder AI][BG] Gemini API Response:', responseText);
-          sendResponse({ response: responseText });
+        let lastError = null;
+        for (const modelId of modelHierarchy) {
+          try {
+            console.log(`[Tinder AI][BG] 📡 Requesting Gemini Model: ${modelId}`);
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent`;
+
+            const response = await fetch(API_URL, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': apiKey
+              },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: msg.prompt }] }]
+              })
+            });
+
+            if (response.status === 429) {
+              console.warn(`[Tinder AI][BG] ⚠️ ${modelId} rate limit reached (429). Falling back...`);
+              lastError = "Rate limit reached";
+              continue;
+            }
+
+            if (!response.ok) {
+              console.error(`[Tinder AI][BG] ❌ ${modelId} returned error ${response.status}`);
+              lastError = `Error ${response.status}`;
+              continue;
+            }
+
+            const data = await response.json();
+
+            if (!data.candidates || !data.candidates[0]?.content) {
+              console.warn(`[Tinder AI][BG] 🛡️ ${modelId} returned no content. Trying next...`);
+              lastError = "Empty content response";
+              continue;
+            }
+
+            const responseText = data.candidates[0].content.parts[0].text;
+            console.log(`[Tinder AI][BG] ✅ Success with ${modelId}`);
+            sendResponse({ response: responseText, modelUsed: modelId });
+            return;
+
+          } catch (err) {
+            console.error(`[Tinder AI][BG] Critical error with ${modelId}:`, err);
+            lastError = err.message;
+          }
         }
+
+        sendResponse({ error: `All Gemini models failed. Last error: ${lastError}` });
       } catch (error) {
-        console.error('[Tinder AI][BG] Gemini Fetch Error:', error);
-        sendResponse({ error: `Fetch Error: ${error.message}` });
+        console.error('[Tinder AI][BG] Top-level Gemini Error:', error);
+        sendResponse({ error: `Extension Error: ${error.message}` });
       }
     })();
-    return true; // Indicates an async response.
+    return true;
   }
 
   if (msg.type === 'getOpenAIAPIResponse') {
     (async () => {
       try {
-        console.log('[Tinder AI][BG] OpenAI API request received:', msg);
         const { openaiApiKey } = await new Promise(resolve => chrome.storage.local.get('openaiApiKey', resolve));
         if (!openaiApiKey) {
-          console.error('[Tinder AI][BG] No OpenAI API key found in storage');
           sendResponse({ error: 'OpenAI API key not set in settings.' });
           return;
         }
-        console.log('[Tinder AI][BG] OpenAI API key found, making request');
-        const API_URL = 'https://api.openai.com/v1/chat/completions';
-        const requestBody = {
-          model: msg.model || 'gpt-4o-mini',
-          messages: msg.messages,
-          temperature: msg.temperature || 0.9
-        };
-        console.log('[Tinder AI][BG] Request body:', requestBody);
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${openaiApiKey}`
-          },
-          body: JSON.stringify(requestBody)
-        });
-        console.log('[Tinder AI][BG] Response status:', response.status);
-        const data = await response.json();
-        console.log('[Tinder AI][BG] Response data:', data);
-        if (data.error) {
-          console.error('[Tinder AI][BG] OpenAI API error:', data.error);
-          sendResponse({ error: data.error.message });
-        } else {
-          console.log('[Tinder AI][BG] OpenAI API success, sending response');
-          sendResponse({ response: data.choices?.[0]?.message?.content });
+
+        const modelHierarchy = [msg.model || 'gpt-4o-mini', 'gpt-4o', 'gpt-3.5-turbo'];
+        let lastError = null;
+
+        for (const modelId of modelHierarchy) {
+          try {
+            const API_URL = 'https://api.openai.com/v1/chat/completions';
+            const response = await fetch(API_URL, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${openaiApiKey}`
+              },
+              body: JSON.stringify({
+                model: modelId,
+                messages: msg.messages,
+                temperature: msg.temperature || 0.9
+              })
+            });
+
+            const data = await response.json();
+            if (data.error) {
+              lastError = data.error.message;
+              continue;
+            }
+
+            if (data.choices?.[0]?.message?.content) {
+              sendResponse({ response: data.choices[0].message.content, modelUsed: modelId });
+              return;
+            }
+          } catch (err) {
+            lastError = err.message;
+          }
         }
+
+        sendResponse({ error: `OpenAI API failed. ${lastError || ''}` });
       } catch (error) {
-        console.error('[Tinder AI][BG] OpenAI API exception:', error);
         sendResponse({ error: error.message });
       }
     })();
@@ -340,25 +417,45 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           sendResponse({ error: 'DeepSeek API key not set in settings.' });
           return;
         }
-        const API_URL = 'https://api.deepseek.com/v1/chat/completions';
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${deepseekApiKey}`
-          },
-          body: JSON.stringify({
-            model: msg.model || 'deepseek-chat',
-            messages: msg.messages,
-            temperature: msg.temperature || 0.9
-          })
-        });
-        const data = await response.json();
-        if (data.error) {
-          sendResponse({ error: data.error.message });
-        } else {
-          sendResponse({ response: data.choices?.[0]?.message?.content });
+
+        // Official DeepSeek base endpoints
+        const endpoints = [
+          'https://api.deepseek.com/chat/completions',
+          'https://api.deepseek.com/v1/chat/completions'
+        ];
+
+        let lastError = null;
+        for (const API_URL of endpoints) {
+          try {
+            const response = await fetch(API_URL, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${deepseekApiKey}`
+              },
+              body: JSON.stringify({
+                model: msg.model || 'deepseek-chat',
+                messages: msg.messages,
+                temperature: msg.temperature || 0.9
+              })
+            });
+
+            const data = await response.json();
+            if (data.error) {
+              lastError = data.error.message;
+              continue;
+            }
+
+            if (data.choices?.[0]?.message?.content) {
+              sendResponse({ response: data.choices[0].message.content });
+              return;
+            }
+          } catch (err) {
+            lastError = err.message;
+          }
         }
+
+        sendResponse({ error: `DeepSeek API failed. ${lastError || ''}` });
       } catch (error) {
         sendResponse({ error: error.message });
       }
@@ -374,29 +471,92 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           sendResponse({ error: 'Anthropic API key not set in settings.' });
           return;
         }
-        const API_URL = 'https://api.anthropic.com/v1/messages';
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': anthropicApiKey,
-            'anthropic-version': '2023-06-01'
-          },
-          body: JSON.stringify({
-            model: msg.model || 'claude-haiku-4-5',
-            max_tokens: msg.max_tokens || 100,
-            temperature: msg.temperature || 0.9,
-            messages: msg.messages
-          })
-        });
-        const data = await response.json();
-        if (data.error) {
-          sendResponse({ error: data.error.message });
-        } else {
-          sendResponse({ response: data.content?.[0]?.text });
+
+        const modelHierarchy = [
+          msg.model || 'claude-3-5-haiku-latest',
+          'claude-3-5-haiku-20241022',
+          'claude-3-5-sonnet-latest',
+          'claude-3-haiku-20240307'
+        ];
+
+        let lastError = null;
+        for (const modelId of modelHierarchy) {
+          try {
+            const API_URL = 'https://api.anthropic.com/v1/messages';
+            const response = await fetch(API_URL, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': anthropicApiKey,
+                'anthropic-version': '2023-06-01'
+              },
+              body: JSON.stringify({
+                model: modelId,
+                max_tokens: msg.max_tokens || 100,
+                temperature: msg.temperature || 0.9,
+                messages: msg.messages
+              })
+            });
+
+            const data = await response.json();
+            if (data.error) {
+              lastError = data.error.message;
+              continue;
+            }
+
+            if (data.content?.[0]?.text) {
+              sendResponse({ response: data.content[0].text, modelUsed: modelId });
+              return;
+            }
+          } catch (err) {
+            lastError = err.message;
+          }
         }
+
+        sendResponse({ error: `Anthropic API failed. ${lastError || ''}` });
       } catch (error) {
         sendResponse({ error: error.message });
+      }
+    })();
+    return true;
+  }
+
+  // --- Local Ollama Integration ---
+  if (msg.type === 'getOllamaAPIResponse') {
+    (async () => {
+      try {
+        const { ollamaUrl, ollamaModel } = await new Promise(resolve => chrome.storage.local.get(['ollamaUrl', 'ollamaModel'], resolve));
+        const baseUrl = (ollamaUrl && ollamaUrl.trim() !== '') ? ollamaUrl.trim().replace(/\/+$/, '') : 'http://localhost:11434';
+        const model = (ollamaModel && ollamaModel.trim() !== '') ? ollamaModel.trim() : 'llama3.2';
+
+        console.log(`[Tinder AI][BG] 🦙 Calling local Ollama model '${model}' at ${baseUrl}...`);
+        const API_URL = `${baseUrl}/api/chat`;
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: model,
+            messages: msg.messages,
+            stream: false
+          })
+        });
+
+        if (!response.ok) {
+          console.error(`[Tinder AI][BG] Ollama return status ${response.status}`);
+          sendResponse({ error: `Ollama error (${response.status}). Ensure Ollama is running on ${baseUrl}` });
+          return;
+        }
+
+        const data = await response.json();
+        if (data.message && data.message.content) {
+          console.log(`[Tinder AI][BG] ✅ Ollama success with model ${model}`);
+          sendResponse({ response: data.message.content, modelUsed: model });
+        } else {
+          sendResponse({ error: 'Empty or invalid response from local Ollama model.' });
+        }
+      } catch (error) {
+        console.error('[Tinder AI][BG] Ollama connection error:', error);
+        sendResponse({ error: `Could not connect to Ollama (${error.message}). Is Ollama running on localhost:11434?` });
       }
     })();
     return true;

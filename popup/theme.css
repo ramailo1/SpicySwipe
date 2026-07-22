@@ -1,0 +1,84 @@
+/* Shared Theme Variables - Single Source of Truth */
+
+:root {
+    /* Primary Brand Colors (Tinder-Aligned) */
+    --primary: #fd267a;
+    --primary-light: #ff7854;
+    --primary-dark: #e11d64;
+    --primary-darker: #c21554;
+
+    /* Accent & Status Colors */
+    --accent: #f59e0b;
+    --accent-light: #fbbf24;
+    --success: #10b981;
+    --success-light: #34d399;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --danger-light: #f87171;
+
+    /* Neutral Colors */
+    --bg: #fafbfc;
+    --bg-secondary: #f1f5f9;
+    --surface: #ffffff;
+    --surface-elevated: #ffffff;
+    --text: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --text-light: #ffffff;
+
+    /* Borders & Shadows */
+    --border: #e2e8f0;
+    --border-light: #f1f5f9;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-primary: 0 10px 15px -3px rgba(253, 38, 122, 0.15), 0 4px 6px -2px rgba(253, 38, 122, 0.1);
+    --shadow-accent: 0 10px 15px -3px rgba(245, 158, 11, 0.1), 0 4px 6px -2px rgba(245, 158, 11, 0.05);
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, #fd267a 0%, #ff7854 100%);
+    --gradient-accent: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+    --gradient-success: linear-gradient(135deg, var(--success) 0%, var(--success-light) 100%);
+    --gradient-bg: linear-gradient(135deg, #fafbfc 0%, #f1f5f9 100%);
+    --gradient-surface: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+
+    /* Animations */
+    --transition-fast: 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
+    --transition-normal: 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    --transition-slow: 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* Dark Mode */
+html.dark {
+    --bg: #0f172a;
+    --bg-secondary: #1e293b;
+    --surface: #1e293b;
+    --surface-elevated: #334155;
+    --text: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --border-light: #475569;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+    --gradient-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    --gradient-surface: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+
+/* Spicy Mode (Tinder Brand Colors) */
+html.spicy-theme {
+    --primary: #fd297b;
+    --primary-light: #ff655b;
+    --primary-dark: #e11d64;
+    --primary-darker: #c21554;
+    --gradient-primary: linear-gradient(135deg, #fd297b 0%, #ff655b 100%);
+    --shadow-primary: 0 10px 15px -3px rgba(253, 41, 123, 0.2), 0 4px 6px -2px rgba(253, 41, 123, 0.1);
+
+    /* Keep background light/clean for contrast */
+    --bg: #fff0f5;
+    /* Very subtle pink tint */
+    --bg-secondary: #fff5f8;
+}

@@ -6,7 +6,28 @@
 
 👉 **[View Full Changelog](CHANGELOG.md)**
 
-## �Current version�
+## Current version
+## [1.4.1] - 2026-07-22
+### 🚀 Local Ollama AI, Cybersecurity Hardening & UI Contrast
+- **Local Ollama AI 🦙**:
+  - Run AI locally without cloud keys (`http://localhost:11434` / `llama3.2`).
+  - Customizable Ollama Base URL and Model options in Settings and Onboarding.
+- **Cybersecurity Hardening 🛡️**:
+  - DOM XSS Prevention (`escapeHTML` sanitization).
+  - Runtime Sender Authorization (`sender.id === chrome.runtime.id`).
+  - Secure Header Key Transport (`x-goog-api-key`).
+- **UI Contrast & Onboarding 🎨**:
+  - Dark glassmorphism onboarding card with high-contrast text and dark slate inputs.
+
+## [1.4.0] - 2026-01-15
+### 🚀 Major Feature Release: Dynamic Themes & Human-Like Stealth
+- **Dynamic Themes 🎨**:
+  - **Seasonal Engine**: Auto-switches to Winter, Valentine, Summer, or Spooky themes based on date.
+  - **Manual Control**: Cycle through themes instantly via the Sidebar.
+- **Stealth 2.0 🕵️‍♂️**:
+  - **Bezier Mouse**: Human-like curved cursor movements.
+  - **Gaussian Timing**: Natural, non-robotic delay patterns.
+
 ## [1.3.0] - 2026-01-13
 ### 🚀 Features & Updates
 - **Optimized AI Models**:
@@ -46,9 +67,6 @@
 
 
 
-### How to use the new tones
-You can now select a message tone (e.g., Extra Naughty, Meme Lord, Super Romantic, etc.) in the AI tab, Settings, or when approving/translating a message. The AI will generate messages in the selected style, making your conversations more personalized and engaging.
-
 ## Overview
 
 SpicySwipe is a sophisticated Chrome extension that revolutionizes your Tinder experience through advanced AI-powered automation. Built with cutting-edge artificial intelligence, it provides intelligent messaging, comprehensive profile analysis, and seamless conversation management using multiple state-of-the-art AI models.
@@ -56,8 +74,9 @@ SpicySwipe is a sophisticated Chrome extension that revolutionizes your Tinder e
 ## ✨ Key Features
 
 ### 🤖 Multi-AI Model Integration
+- **Local Ollama AI** - Privacy-first, zero-cloud local LLM execution (`http://localhost:11434`)
+- **Google Gemini** - Fast, reliable responses with real-time processing and free tier support
 - **OpenAI ChatGPT** - Advanced conversational AI with context awareness
-- **Google Gemini** - Fast, reliable responses with real-time processing free Geminie api version works with this extension 
 - **DeepSeek** - Specialized creative content generation
 - **Anthropic Claude** - Sophisticated reasoning and analysis
 
@@ -80,11 +99,11 @@ SpicySwipe is a sophisticated Chrome extension that revolutionizes your Tinder e
 - **Historical Data Analysis** - Long-term performance trends and patterns
 
 ### 🛡️ **Enterprise-Grade Security**
-- **Privacy-First Design** - No data collection, local processing only
-- **Secure Storage** - All data stored locally in your browser
-- **No External APIs** - Zero external dependencies or data sharing
-- **User Control** - Complete transparency and user autonomy
-- **Consent Management** - One-click consent reset and privacy control
+- **XSS-Safe Rendering** - Full input sanitization across content scripts and UI elements
+- **Sender Verification** - Extension message listeners verify runtime origin (`sender.id`)
+- **Header-Based Credentials** - Secure HTTP header key transport (`x-goog-api-key`)
+- **Privacy-First Design** - No remote data tracking, local storage only
+- **User Control** - Complete transparency and one-click consent reset
 
 ## 🚀 Quick Start
 

@@ -12,3 +12,10 @@ logs.txt
 # OS generated files
 .DS_Store
 Thumbs.db
+node_modules
+SpicySwipe_Desktop/
+
+# Zip packages & temporary tests
+*.zip
+testsprite_tests/
+

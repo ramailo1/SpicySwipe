@@ -1,147 +1,257 @@
-/* SpicySwipe Styles */
+/* SpicySwipe Premium Styles - Glassmorphism Edition */
+/* Professional & Eye-Catching Design System */
 
-/* General Styles */
+/* ============================================
+   CSS VARIABLES (Fallback for Content Scripts)
+   ============================================ */
+:root {
+    --tinder-pink: #fd267a;
+    --tinder-orange: #ff7854;
+    --tinder-gradient: linear-gradient(135deg, #fd267a 0%, #ff7854 100%);
+
+    /* Glassmorphism Variables */
+    --glass-bg-light: rgba(255, 255, 255, 0.7);
+    --glass-bg-dark: rgba(20, 20, 30, 0.65);
+
+    --glass-border-light: rgba(255, 255, 255, 0.4);
+    --glass-border-dark: rgba(255, 255, 255, 0.08);
+
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    --glass-blur: blur(20px);
+
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --shadow-medium: 0 8px 32px rgba(0, 0, 0, 0.12);
+    --shadow-strong: 0 12px 48px rgba(0, 0, 0, 0.18);
+    --shadow-glow: 0 0 40px rgba(253, 38, 122, 0.3);
+
+    --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --radius-lg: 24px;
+    --radius-md: 16px;
+    --radius-sm: 12px;
+}
+
+/* ============================================
+   GENERAL STYLES
+   ============================================ */
 .spicyswipe-btn {
     cursor: pointer;
     border: none;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'SF Pro Display', sans-serif;
+    letter-spacing: -0.01em;
+    font-weight: 600;
 }
 
-/* Sidebar Toggle Button */
-/* Sidebar Toggle Button */
+/* ============================================
+   SIDEBAR TOGGLE BUTTON (Premium Glass)
+   ============================================ */
 .tinder-ai-sidebar-toggle {
     position: fixed;
     top: 50%;
     transform: translateY(-50%);
     z-index: 10001;
     cursor: pointer;
-    background: var(--primary);
+
+    /* Glass Effect */
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+
+    /* Gradient Border */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+
     color: white;
+    /* Icon color */
+
+    width: 56px;
+    height: 56px;
     padding: 0;
     border-radius: 50%;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    width: 48px;
-    height: 48px;
+
+    /* Premium Shadow Stack */
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+
+    /* Smooth Transitions */
+    transition:
+        transform 0.4s var(--transition-bounce),
+        background 0.3s ease,
+        box-shadow 0.3s var(--transition-smooth);
+
     display: flex;
     align-items: center;
     justify-content: center;
     user-select: none;
-    border: 2px solid white;
 }
 
-.tinder-ai-sidebar-toggle svg {
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.tinder-ai-sidebar-toggle.open {
-    background: white;
-    color: var(--primary);
-    border-color: var(--primary);
-}
-
-.tinder-ai-sidebar-toggle.open svg {
-    transform: rotate(180deg);
+/* Inner Gradient Circle for Icon Background */
+.tinder-ai-sidebar-toggle::before {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    right: 4px;
+    bottom: 4px;
+    background: var(--tinder-gradient);
+    border-radius: 50%;
+    z-index: -1;
+    opacity: 0.9;
+    box-shadow: 0 4px 10px rgba(253, 38, 122, 0.4);
+    transition: all 0.3s ease;
 }
 
 .tinder-ai-sidebar-toggle:hover {
     transform: translateY(-50%) scale(1.1);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* Pulse animation for when closed */
-@keyframes pulse-glow {
-    0% {
-        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
-    }
-
-    70% {
-        box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
-    }
-
-    100% {
-        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
-    }
+.tinder-ai-sidebar-toggle:hover::before {
+    opacity: 1;
+    box-shadow: 0 6px 15px rgba(253, 38, 122, 0.6);
 }
 
-.tinder-ai-sidebar-toggle:not(.open) {
-    animation: pulse-glow 2s infinite;
+.tinder-ai-sidebar-toggle.open {
+    background: rgba(255, 255, 255, 0.8);
+    /* Light mode active */
+    border-color: rgba(253, 38, 122, 0.3);
 }
 
-/* Approval Box & Error Box Shared Styles */
+.tinder-ai-sidebar-toggle.open::before {
+    opacity: 0;
+    /* Hide gradient when open */
+    transform: scale(0.8);
+}
+
+.tinder-ai-sidebar-toggle.open svg {
+    transform: rotate(180deg);
+    stroke: #fd267a;
+    /* Change icon to pink */
+}
+
+/* ============================================
+   CONTENT BOX (Ultra Glassmorphism)
+   ============================================ */
 .spicyswipe-box {
     position: fixed;
-    width: 360px;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    width: 380px;
+
+    /* Glassmorphism Effect */
+    background: var(--glass-bg-light);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+
+    /* Premium Border & Radius */
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-border-light);
+
+    /* Floating Shadow */
+    box-shadow: var(--glass-shadow), 0 10px 40px rgba(0, 0, 0, 0.1);
+
     z-index: 10001;
     overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+    /* Smooth Entry Animation */
+    animation: slideInUp 0.5s var(--transition-bounce);
 }
 
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Header Integration */
 .spicyswipe-box-header {
-    padding: 12px 16px;
+    padding: 20px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
+
+    /* Subtle gradient overlay */
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 100%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .spicyswipe-box-header-purple {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.spicyswipe-box-header-red {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    color: white;
+    background: linear-gradient(135deg, rgba(253, 38, 122, 0.1) 0%, rgba(255, 120, 84, 0.1) 100%);
 }
 
 .spicyswipe-box-title {
-    font-weight: 600;
-    font-size: 14px;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.02em;
+    background: var(--tinder-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .spicyswipe-box-subtitle {
-    font-size: 11px;
-    opacity: 0.9;
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+    margin-top: 2px;
 }
 
 .spicyswipe-box-content {
-    padding: 16px;
+    padding: 24px;
 }
 
+/* Premium Close Button */
 .spicyswipe-close-btn {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.05);
     border: none;
-    color: white;
-    width: 28px;
-    height: 28px;
+    color: #666;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     cursor: pointer;
-    font-size: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s ease;
 }
 
+.spicyswipe-close-btn:hover {
+    background: rgba(253, 38, 122, 0.1);
+    color: #fd267a;
+    transform: rotate(90deg);
+}
+
+/* Premium Textarea (Floating) */
 .spicyswipe-textarea {
     width: 100%;
-    min-height: 80px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 12px;
-    font-size: 14px;
-    resize: vertical;
-    box-sizing: border-box;
-    margin-bottom: 12px;
+    min-height: 120px;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 16px;
+    font-size: 15px;
+    line-height: 1.6;
+    resize: none;
+    margin-bottom: 20px;
     font-family: inherit;
+    background: rgba(255, 255, 255, 0.6);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.spicyswipe-textarea:focus {
+    outline: none;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08), inset 0 0 0 2px rgba(253, 38, 122, 0.2);
 }
 
 .spicyswipe-row {
     display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: 16px;
+    margin-bottom: 20px;
 }
 
 .spicyswipe-col {
@@ -150,82 +260,1088 @@
 
 .spicyswipe-label {
     font-size: 11px;
-    color: #666;
+    font-weight: 700;
+    color: #888;
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
 }
 
+/* Premium Select Dropdown */
 .spicyswipe-select {
     width: 100%;
-    padding: 8px;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    font-size: 13px;
-    background: white;
+    padding: 12px 16px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    background: rgba(255, 255, 255, 0.6);
     cursor: pointer;
     font-family: inherit;
+    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23fd267a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-/* Action Buttons */
+.spicyswipe-select:hover {
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.spicyswipe-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(253, 38, 122, 0.2);
+}
+
+/* ============================================
+   ACTION BUTTONS (Vibrant & Floating)
+   ============================================ */
 .spicyswipe-btn-group {
     display: flex;
-    gap: 8px;
+    gap: 12px;
 }
 
 .spicyswipe-btn-primary {
     flex: 2;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--tinder-gradient);
     color: white;
-    padding: 10px;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: opacity 0.2s;
+    padding: 14px 20px;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    box-shadow: 0 8px 20px rgba(253, 38, 122, 0.4);
+    transition: all 0.3s var(--transition-bounce);
+    position: relative;
+    overflow: hidden;
 }
 
-/* For full width error box buttons */
+.spicyswipe-btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(253, 38, 122, 0.5);
+}
+
+.spicyswipe-btn-primary:active {
+    transform: translateY(-1px);
+}
+
+.spicyswipe-btn-secondary {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.8);
+    color: #555;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.spicyswipe-btn-secondary:hover {
+    background: white;
+    color: #111;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   DARK MODE OVERRIDES (True Dark Glass)
+   ============================================ */
+.spicy-theme .spicyswipe-box,
+.dark .spicyswipe-box {
+    background: var(--glass-bg-dark);
+    border-color: var(--glass-border-dark);
+    box-shadow: var(--glass-shadow), 0 20px 60px rgba(0, 0, 0, 0.6);
+    /* Deeper shadow */
+}
+
+.spicy-theme .spicyswipe-box-title,
+.dark .spicyswipe-box-title {
+    /* Gradient text persists, but subtitle changes */
+}
+
+.spicy-theme .spicyswipe-box-subtitle,
+.dark .spicyswipe-box-subtitle {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.spicy-theme .spicyswipe-box-header,
+.dark .spicyswipe-box-header {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(0, 0, 0, 0) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.spicy-theme .spicyswipe-textarea,
+.dark .spicyswipe-textarea,
+.spicy-theme .spicyswipe-select,
+.dark .spicyswipe-select {
+    background: rgba(0, 0, 0, 0.3);
+    color: #eee;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.spicy-theme .spicyswipe-textarea:focus,
+.dark .spicyswipe-textarea:focus,
+.spicy-theme .spicyswipe-select:focus,
+.dark .spicyswipe-select:focus {
+    background: rgba(0, 0, 0, 0.5);
+    border-color: #fd267a;
+}
+
+.spicy-theme .spicyswipe-close-btn,
+.dark .spicyswipe-close-btn {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.spicy-theme .spicyswipe-close-btn:hover,
+.dark .spicyswipe-close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* ============================================
+   MAGIC WAND & ICONS (Retained)
+   ============================================ */
+.ai-wand-btn,
+.tinder-ai-wand-btn {
+    /* (Styles retained from previous, they were already good) */
+    position: absolute !important;
+    top: 8px !important;
+    right: 8px !important;
+    width: 36px !important;
+    height: 36px !important;
+    background: var(--tinder-gradient) !important;
+    border: none !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    font-size: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 12px rgba(253, 38, 122, 0.4) !important;
+    transition: all 0.3s var(--transition-bounce) !important;
+    z-index: 100 !important;
+}
+
+.ai-wand-btn:hover {
+    transform: scale(1.15) rotate(10deg) !important;
+    box-shadow: 0 0 25px rgba(253, 38, 122, 0.6) !important;
+}
+
+/* Sidebar Stats Row (Premium) */
+.sidebar-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-stat-label {
+    color: #666;
+    font-weight: 600;
+}
+
+.sidebar-stat-value {
+    color: #222;
+    font-weight: 800;
+}
+
+/* Dark Mode Stats */
+.spicy-theme .sidebar-stat-row,
+.dark .sidebar-stat-row {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.spicy-theme .sidebar-stat-label,
+.dark .sidebar-stat-label {
+    color: #aaa;
+}
+
+.spicy-theme .sidebar-stat-value,
+.dark .sidebar-stat-value {
+    color: white;
+}
+
+:root {
+    --tinder-pink: #fd267a;
+    --tinder-orange: #ff7854;
+    --tinder-gradient: linear-gradient(135deg, #fd267a 0%, #ff7854 100%);
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --shadow-medium: 0 8px 32px rgba(0, 0, 0, 0.12);
+    --shadow-strong: 0 12px 48px rgba(0, 0, 0, 0.18);
+    --shadow-glow: 0 0 40px rgba(253, 38, 122, 0.3);
+    --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   GENERAL STYLES
+   ============================================ */
+.spicyswipe-btn {
+    cursor: pointer;
+    border: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'SF Pro Display', sans-serif;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+}
+
+/* ============================================
+   SIDEBAR TOGGLE BUTTON (Premium)
+   ============================================ */
+.tinder-ai-sidebar-toggle {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10001;
+    cursor: pointer;
+
+    /* Premium Gradient Background */
+    background: var(--tinder-gradient);
+    color: white;
+
+    /* Refined Shape */
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border-radius: 50%;
+
+    /* Premium Shadow Stack */
+    box-shadow:
+        0 2px 8px rgba(253, 38, 122, 0.25),
+        0 8px 24px rgba(253, 38, 122, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+
+    /* Smooth Transitions */
+    transition:
+        transform 0.4s var(--transition-bounce),
+        box-shadow 0.3s var(--transition-smooth);
+
+    /* Layout */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+
+    /* Premium Border */
+    border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.tinder-ai-sidebar-toggle svg {
+    transition: transform 0.4s var(--transition-bounce);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.tinder-ai-sidebar-toggle.open {
+    background: white;
+    color: #fd267a;
+    border-color: #fd267a;
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(253, 38, 122, 0.1) inset;
+}
+
+.tinder-ai-sidebar-toggle.open svg {
+    transform: rotate(180deg);
+}
+
+.tinder-ai-sidebar-toggle:hover {
+    transform: translateY(-50%) scale(1.12);
+    box-shadow:
+        0 4px 12px rgba(253, 38, 122, 0.3),
+        0 12px 32px rgba(253, 38, 122, 0.25),
+        var(--shadow-glow);
+}
+
+.tinder-ai-sidebar-toggle:active {
+    transform: translateY(-50%) scale(1.05);
+}
+
+/* Premium Pulse Animation */
+@keyframes pulse-glow {
+    0% {
+        box-shadow:
+            0 2px 8px rgba(253, 38, 122, 0.25),
+            0 8px 24px rgba(253, 38, 122, 0.2),
+            0 0 0 0 rgba(253, 38, 122, 0.6);
+    }
+
+    50% {
+        box-shadow:
+            0 2px 8px rgba(253, 38, 122, 0.25),
+            0 8px 24px rgba(253, 38, 122, 0.2),
+            0 0 0 12px rgba(253, 38, 122, 0);
+    }
+
+    100% {
+        box-shadow:
+            0 2px 8px rgba(253, 38, 122, 0.25),
+            0 8px 24px rgba(253, 38, 122, 0.2),
+            0 0 0 0 rgba(253, 38, 122, 0);
+    }
+}
+
+.tinder-ai-sidebar-toggle:not(.open) {
+    animation: pulse-glow 2.5s infinite;
+}
+
+/* ============================================
+   APPROVAL & ERROR BOXES (Glassmorphism)
+   ============================================ */
+.spicyswipe-box {
+    position: fixed;
+    width: 380px;
+
+    /* Glassmorphism Effect */
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+
+    /* Premium Border & Radius */
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+
+    /* Layered Shadow */
+    box-shadow:
+        0 4px 24px rgba(0, 0, 0, 0.08),
+        0 12px 48px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+
+    z-index: 10001;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'SF Pro Display', sans-serif;
+
+    /* Smooth Entry Animation */
+    animation: slideInUp 0.4s var(--transition-bounce);
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.spicyswipe-box-header {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.spicyswipe-box-header-purple {
+    background: var(--tinder-gradient) !important;
+    color: white !important;
+    box-shadow: 0 4px 16px rgba(253, 38, 122, 0.25) !important;
+}
+
+.spicyswipe-box-header-red {
+    background: linear-gradient(135deg, #ef4444 0%, #f87171 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.25) !important;
+}
+
+.spicyswipe-box-header-blue {
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25) !important;
+}
+
+.spicyswipe-box-header-pink {
+    background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 16px rgba(236, 72, 153, 0.25) !important;
+}
+
+.spicyswipe-box-header-dark {
+    background: linear-gradient(135deg, #1f2937 0%, #374151 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 16px rgba(31, 41, 55, 0.25) !important;
+}
+
+.spicyswipe-box-header-orange {
+    background: linear-gradient(135deg, #f97316 0%, #fb923c 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 16px rgba(249, 115, 22, 0.25) !important;
+}
+
+.spicyswipe-box-header-teal {
+    background: linear-gradient(135deg, #14b8a6 0%, #2dd4bf 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 16px rgba(20, 184, 166, 0.25) !important;
+}
+
+/* Force Spicy Theme Header */
+.spicy-theme .spicyswipe-box-header {
+    background: linear-gradient(135deg, #ef4444 0%, #f87171 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.25) !important;
+}
+
+.spicyswipe-box-title {
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.02em;
+}
+
+.spicyswipe-box-subtitle {
+    font-size: 12px;
+    opacity: 0.85;
+    font-weight: 500;
+}
+
+.spicyswipe-box-content {
+    padding: 20px;
+}
+
+/* Premium Close Button */
+.spicyswipe-close-btn {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s var(--transition-smooth);
+}
+
+.spicyswipe-close-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
+}
+
+/* Premium Textarea */
+.spicyswipe-textarea {
+    width: 100%;
+    min-height: 100px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+    box-sizing: border-box;
+    margin-bottom: 16px;
+    font-family: inherit;
+    background: #fafafa;
+    transition: all 0.2s var(--transition-smooth);
+}
+
+.spicyswipe-textarea:focus {
+    outline: none;
+    border-color: #fd267a;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(253, 38, 122, 0.1);
+}
+
+.spicyswipe-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.spicyswipe-col {
+    flex: 1;
+}
+
+.spicyswipe-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    display: block;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Premium Select Dropdown */
+.spicyswipe-select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    background: white;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s var(--transition-smooth);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+.spicyswipe-select:hover {
+    border-color: #d1d5db;
+}
+
+.spicyswipe-select:focus {
+    outline: none;
+    border-color: #fd267a;
+    box-shadow: 0 0 0 4px rgba(253, 38, 122, 0.1);
+}
+
+/* ============================================
+   ACTION BUTTONS (Premium)
+   ============================================ */
+.spicyswipe-btn-group {
+    display: flex;
+    gap: 10px;
+}
+
+.spicyswipe-btn-primary {
+    flex: 2;
+    background: var(--tinder-gradient);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: -0.01em;
+    box-shadow:
+        0 2px 8px rgba(253, 38, 122, 0.25),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    transition: all 0.2s var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+.spicyswipe-btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s var(--transition-smooth);
+}
+
+.spicyswipe-btn-primary:hover::before {
+    left: 100%;
+}
+
+.spicyswipe-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 4px 16px rgba(253, 38, 122, 0.35),
+        0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+}
+
+.spicyswipe-btn-primary:active {
+    transform: translateY(0);
+}
+
 .spicyswipe-btn-primary.full {
     flex: 1;
 }
 
 .spicyswipe-btn-secondary {
     flex: 1;
-    background: #f0f0f0;
-    color: #333;
-    padding: 10px;
-    border-radius: 8px;
+    background: #f3f4f6;
+    color: #374151;
+    padding: 12px 16px;
+    border-radius: 12px;
     font-weight: 600;
-    transition: background 0.2s;
+    font-size: 14px;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s var(--transition-smooth);
+}
+
+.spicyswipe-btn-secondary:hover {
+    background: #e5e7eb;
+    border-color: #d1d5db;
+    transform: translateY(-1px);
 }
 
 .spicyswipe-btn-danger {
     background: #6b7280;
-    /* Close button default */
     color: white;
-    padding: 10px 16px;
-    border-radius: 8px;
+    padding: 12px 20px;
+    border-radius: 12px;
     font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s var(--transition-smooth);
+}
+
+.spicyswipe-btn-danger:hover {
+    background: #4b5563;
+    transform: translateY(-1px);
 }
 
 .spicyswipe-btn:hover {
-    opacity: 0.9;
+    opacity: 1;
+    /* Override old opacity rule */
 }
 
-/* Error specific */
+/* ============================================
+   ERROR ALERT (Premium)
+   ============================================ */
 .spicyswipe-error-alert {
-    background: #fef2f2;
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
     border: 1px solid #fecaca;
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 12px;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.spicyswipe-error-alert::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, #ef4444 0%, #f87171 100%);
+    border-radius: 4px 0 0 4px;
 }
 
 .spicyswipe-error-title {
-    font-weight: 600;
+    font-weight: 700;
     color: #dc2626;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
+    font-size: 14px;
+    padding-left: 8px;
 }
 
 .spicyswipe-error-message {
     font-size: 13px;
     color: #7f1d1d;
+    line-height: 1.5;
+    padding-left: 8px;
+}
+
+/* ============================================
+   AI ICON STYLES (Premium)
+   ============================================ */
+.sidebar-ai-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #fd267a 0%, #ff7854 100%);
+    border-radius: 12px;
+    font-size: 20px;
+    margin-right: 12px;
+    box-shadow:
+        0 4px 12px rgba(253, 38, 122, 0.3),
+        0 2px 4px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-ai-icon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.sidebar-ai-icon:hover::before {
+    left: 100%;
+}
+
+.sidebar-ai-icon:hover {
+    transform: scale(1.1) rotate(-5deg);
+    box-shadow:
+        0 6px 20px rgba(253, 38, 122, 0.4),
+        0 4px 8px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================
+   MAGIC WAND BUTTON STYLES (Premium)
+   ============================================ */
+.ai-wand-btn,
+.tinder-ai-wand-btn {
+    position: absolute !important;
+    top: 8px !important;
+    right: 8px !important;
+    width: 36px !important;
+    height: 36px !important;
+    background: linear-gradient(135deg, #fd267a 0%, #ff7854 100%) !important;
+    border: none !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    font-size: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow:
+        0 4px 12px rgba(253, 38, 122, 0.4),
+        0 2px 4px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    z-index: 100 !important;
+    opacity: 0.9 !important;
+}
+
+.ai-wand-btn:hover,
+.tinder-ai-wand-btn:hover {
+    opacity: 1 !important;
+    transform: scale(1.15) !important;
+    box-shadow:
+        0 6px 20px rgba(253, 38, 122, 0.5),
+        0 4px 8px rgba(0, 0, 0, 0.15),
+        0 0 20px rgba(253, 38, 122, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+.ai-wand-btn:active,
+.tinder-ai-wand-btn:active {
+    transform: scale(1.05) !important;
+}
+
+/* Pulse animation for wand button */
+@keyframes wand-pulse {
+
+    0%,
+    100% {
+        box-shadow:
+            0 4px 12px rgba(253, 38, 122, 0.4),
+            0 0 0 0 rgba(253, 38, 122, 0.4);
+    }
+
+    50% {
+        box-shadow:
+            0 4px 12px rgba(253, 38, 122, 0.4),
+            0 0 0 8px rgba(253, 38, 122, 0);
+    }
+}
+
+.ai-wand-btn:not(:hover),
+.tinder-ai-wand-btn:not(:hover) {
+    animation: wand-pulse 2s ease-in-out infinite;
+}
+
+/* Sparkle effect on the wand */
+.ai-wand-btn::after,
+.tinder-ai-wand-btn::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.8);
+    animation: sparkle 1.5s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(0.8);
+    }
+}
+
+/* Sidebar Stats Row (Premium) */
+.sidebar-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    font-size: 13px;
+    font-family: inherit;
+}
+
+.sidebar-stat-row:last-child {
+    border-bottom: none;
+}
+
+.sidebar-stat-label {
+    color: #4b5563;
+    /* Gray-600 */
+    font-weight: 500;
+}
+
+.sidebar-stat-value {
+    color: #111827;
+    /* Gray-900 */
+    font-weight: 700;
+}
+
+/* Enhancing the Status Box specific styling */
+#status-settings-body .sidebar-stat-value {
+    color: #fd267a;
+    /* Tinder Pink */
+}
+
+/* ============================================
+   DARK MODE OVERRIDES (Premium)
+   ============================================ */
+.spicy-theme .spicyswipe-box,
+.dark .spicyswipe-box {
+    background: #1f2937;
+    /* Gray-800 */
+    border-color: #374151;
+    /* Gray-700 */
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+}
+
+.spicy-theme .spicyswipe-box-title,
+.dark .spicyswipe-box-title {
+    color: #f3f4f6;
+    /* Gray-100 */
+}
+
+.spicy-theme .spicyswipe-box-subtitle,
+.dark .spicyswipe-box-subtitle {
+    color: #9ca3af;
+    /* Gray-400 */
+}
+
+.spicy-theme .spicyswipe-label,
+.dark .spicyswipe-label {
+    color: #d1d5db;
+    /* Gray-300 */
+}
+
+.spicy-theme .spicyswipe-textarea,
+.dark .spicyswipe-textarea,
+.spicy-theme .spicyswipe-select,
+.dark .spicyswipe-select {
+    background: #111827;
+    /* Gray-900 */
+    border-color: #374151;
+    /* Gray-700 */
+    color: #e5e7eb;
+    /* Gray-200 */
+}
+
+.spicy-theme .spicyswipe-textarea:focus,
+.dark .spicyswipe-textarea:focus,
+.spicy-theme .spicyswipe-select:focus,
+.dark .spicyswipe-select:focus {
+    border-color: #fd267a;
+    background: #000000;
+}
+
+.spicy-theme .spicyswipe-close-btn,
+.dark .spicyswipe-close-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e5e7eb;
+}
+
+.spicy-theme .spicyswipe-close-btn:hover,
+.dark .spicyswipe-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+/* Dark Mode for Sidebar Stats */
+.spicy-theme .sidebar-stat-row,
+.dark .sidebar-stat-row {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.spicy-theme .sidebar-stat-label,
+.dark .sidebar-stat-label {
+    color: #9ca3af;
+    /* Gray-400 */
+}
+
+.spicy-theme .sidebar-stat-value,
+.dark .sidebar-stat-value {
+    color: #f3f4f6;
+    /* Gray-100 */
+}
+
+/* ============================================
+   SEASONAL THEMES SUPPORT
+   ============================================ */
+
+/* Winter Theme */
+.winter .spicyswipe-box,
+.winter-theme .spicyswipe-box {
+    background: rgba(240, 248, 255, 0.95);
+    border-color: rgba(161, 196, 253, 0.4);
+}
+
+.winter .sidebar-stat-label,
+.winter-theme .sidebar-stat-label {
+    color: #1e3a8a;
+}
+
+.winter .sidebar-stat-value,
+.winter-theme .sidebar-stat-value {
+    color: #60a5fa;
+}
+
+.winter .spicyswipe-textarea,
+.winter-theme .spicyswipe-textarea,
+.winter .spicyswipe-select,
+.winter-theme .spicyswipe-select {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(161, 196, 253, 0.4);
+    color: #1e3a8a;
+}
+
+/* Valentine Theme */
+.valentine .spicyswipe-box,
+.valentine-theme .spicyswipe-box {
+    background: rgba(255, 240, 245, 0.95);
+    border-color: rgba(255, 182, 193, 0.4);
+}
+
+.valentine .sidebar-stat-label,
+.valentine-theme .sidebar-stat-label {
+    color: #db2777;
+}
+
+.valentine .sidebar-stat-value,
+.valentine-theme .sidebar-stat-value {
+    color: #ec4899;
+}
+
+.valentine .spicyswipe-textarea,
+.valentine-theme .spicyswipe-textarea,
+.valentine .spicyswipe-select,
+.valentine-theme .spicyswipe-select {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(255, 182, 193, 0.4);
+    color: #db2777;
+}
+
+/* Summer Theme */
+.summer .spicyswipe-box,
+.summer-theme .spicyswipe-box {
+    background: rgba(255, 250, 240, 0.95);
+    border-color: rgba(253, 160, 133, 0.3);
+}
+
+.summer .sidebar-stat-label,
+.summer-theme .sidebar-stat-label {
+    color: #c05621;
+}
+
+.summer .sidebar-stat-value,
+.summer-theme .sidebar-stat-value {
+    color: #ed8936;
+}
+
+.summer .spicyswipe-textarea,
+.summer-theme .spicyswipe-textarea,
+.summer .spicyswipe-select,
+.summer-theme .spicyswipe-select {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(253, 160, 133, 0.3);
+    color: #c05621;
+}
+
+/* Spooky Theme (Dark) */
+.spooky .spicyswipe-box,
+.spooky-theme .spicyswipe-box {
+    background: rgba(20, 0, 10, 0.95);
+    border-color: rgba(255, 100, 0, 0.3);
+}
+
+.spooky .sidebar-stat-label,
+.spooky-theme .sidebar-stat-label {
+    color: #fdba74;
+}
+
+.spooky .sidebar-stat-value,
+.spooky-theme .sidebar-stat-value {
+    color: #ffedd5;
+}
+
+.spooky .spicyswipe-textarea,
+.spooky-theme .spicyswipe-textarea,
+.spooky .spicyswipe-select,
+.spooky-theme .spicyswipe-select {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 100, 0, 0.3);
+    color: #ffedd5;
+}
+
+.spooky .spicyswipe-box-subtitle,
+.spooky-theme .spicyswipe-box-subtitle {
+    color: #fdba74;
+}
+
+/* Spicy Theme (Deep Red) */
+.spicy .spicyswipe-box,
+.spicy-theme .spicyswipe-box {
+    background: rgba(40, 0, 0, 0.95);
+    border-color: rgba(255, 50, 50, 0.2);
+}
+
+.spicy .sidebar-stat-label,
+.spicy-theme .sidebar-stat-label {
+    color: #ffb3b3;
+}
+
+.spicy .sidebar-stat-value,
+.spicy-theme .sidebar-stat-value {
+    color: #ffebeb;
+}
+
+.spicy .spicyswipe-textarea,
+.spicy-theme .spicyswipe-textarea,
+.spicy .spicyswipe-select,
+.spicy-theme .spicyswipe-select {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 50, 50, 0.2);
+    color: #ffebeb;
+}
+
+/* Onboarding Wizard Dark Glassmorphism Styling */
+.spicyswipe-wizard-box {
+    background: linear-gradient(135deg, rgba(18, 18, 26, 0.96) 0%, rgba(30, 30, 45, 0.98) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(253, 38, 122, 0.25) !important;
+    border-radius: 24px !important;
+    color: #ffffff !important;
+}
+
+.spicyswipe-wizard-box .spicyswipe-box-header {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.spicyswipe-wizard-box .spicyswipe-box-title {
+    background: linear-gradient(90deg, #fd267a, #ff7854) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
 }

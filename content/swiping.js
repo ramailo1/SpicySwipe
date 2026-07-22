@@ -4,23 +4,23 @@
 
 // --- Swiping Logic ---
 function makeDecision(profile) {
-    // Use the currentFilters which are updated from storage
-    const likeRatio = currentFilters.likeRatio || 0.7;
+    // Use the currentFilters which are updated from stateStore
+    const swipeConfig = stateStore.get('swipeConfig') || APP_CONSTANTS.DEFAULT_CONFIG.swiping;
+    const likeRatio = swipeConfig.likeRatio !== undefined ? swipeConfig.likeRatio : 0.7;
 
     // Keyword filter
-    if (currentFilters.keywords && currentFilters.keywords.length > 0) {
-        const bio = profile.bio || '';
-        if (currentFilters.keywords.some(keyword => bio.toLowerCase().includes(keyword.toLowerCase()))) {
-            // If keyword found, it's a potential like, otherwise nope
-        } else {
-            return 'nope';
-        }
+    /* Future implementation:
+    if (swipeConfig.keywords && swipeConfig.keywords.length > 0) {
+        ...
     }
+    */
 
-    // Photo filter
-    if (profile.photos && profile.photos.length < (currentFilters.minPhotos || 1)) {
+    // Photo filter (future)
+    /*
+    if (profile.photos && profile.photos.length < (swipeConfig.minPhotos || 1)) {
         return 'nope';
     }
+    */
 
     return Math.random() < likeRatio ? 'like' : 'nope';
 }
@@ -41,6 +41,7 @@ async function handleSwipeError(error, retryCount, backoff, isFatal = false) {
             showErrorNotification('Swiping paused due to repeated errors. Please refresh or check your connection.');
         }
         if (typeof renderSidebarActiveTab === 'function') {
+            stateStore.set({ currentAction: 'Error' });
             renderSidebarActiveTab();
         }
     } else {
@@ -75,56 +76,74 @@ async function performSwipe() {
     let button = null;
     retries = 0;
     backoff = 1000;
-    // Try to find the button with retries
+    
+    // Try to find the button with retries using window.findTinderButton
     while (!button && retries < maxRetries) {
         try {
-            if (decision === 'like') {
-                for (const selector of window.SELECTORS.LIKE_BUTTON) {
-                    const buttons = document.querySelectorAll(selector);
-                    for (const btn of buttons) {
-                        if (!btn.disabled &&
-                            btn.offsetParent !== null &&
-                            !btn.className.includes('super') &&
-                            !btn.className.includes('Bgc($c-ds-background-gamepad-sparks-super-like-default)') &&
-                            btn.className.includes('Bgc($c-ds-background-gamepad-sparks-like-default)') &&
-                            btn.querySelector('.gamepad-icon-wrapper') &&
-                            !btn.querySelector('.gamepad-icon-wrapper svg path[d*="M11.27.948"]')) {
-                            button = btn;
-                            break;
+            if (typeof window.findTinderButton === 'function') {
+                button = window.findTinderButton(decision);
+            }
+            
+            // Legacy DOM selector fallback if window.findTinderButton returns null
+            if (!button) {
+                if (decision === 'like') {
+                    for (const selector of window.SELECTORS.LIKE_BUTTON) {
+                        const buttons = document.querySelectorAll(selector);
+                        for (const btn of buttons) {
+                            if (!btn.disabled && btn.offsetParent !== null && !btn.className.includes('super')) {
+                                button = btn;
+                                break;
+                            }
                         }
+                        if (button) break;
                     }
-                    if (button) break;
-                }
-            } else if (decision === 'nope') {
-                for (const selector of window.SELECTORS.NOPE_BUTTON) {
-                    const buttons = document.querySelectorAll(selector);
-                    for (const btn of buttons) {
-                        if (!btn.disabled &&
-                            btn.offsetParent !== null &&
-                            (btn.className.includes('nope') || btn.className.includes('Bgc($c-ds-background-gamepad-sparks-nope-default)'))) {
-                            button = btn;
-                            break;
+                } else if (decision === 'nope') {
+                    for (const selector of window.SELECTORS.NOPE_BUTTON) {
+                        const buttons = document.querySelectorAll(selector);
+                        for (const btn of buttons) {
+                            if (!btn.disabled && btn.offsetParent !== null) {
+                                button = btn;
+                                break;
+                            }
                         }
+                        if (button) break;
                     }
-                    if (button) break;
                 }
             }
+
             if (!button) throw new Error('Swipe button not found');
         } catch (err) {
-            await handleSwipeError(err, retries, backoff);
             retries++;
-            backoff *= 2;
+            if (retries < maxRetries) {
+                await new Promise(r => setTimeout(r, backoff));
+                backoff *= 1.5;
+            }
         }
     }
 
+    // Keyboard Fallback: If DOM button element is not found, dispatch native Tinder keyboard shortcuts!
+    let usedKeyboardFallback = false;
     if (!button) {
+        console.warn(`[Tinder AI] DOM button for '${decision}' not found. Using native Keyboard Shortcut fallback...`);
+        const key = decision === 'like' ? 'ArrowRight' : 'ArrowLeft';
+        const keyCode = decision === 'like' ? 39 : 37;
+        
+        document.dispatchEvent(new KeyboardEvent('keydown', { key, code: key, keyCode, which: keyCode, bubbles: true }));
+        await new Promise(r => setTimeout(r, 100));
+        document.dispatchEvent(new KeyboardEvent('keyup', { key, code: key, keyCode, which: keyCode, bubbles: true }));
+        
+        usedKeyboardFallback = true;
+    }
+
+    if (!button && !usedKeyboardFallback) {
         // Out of likes or empty page detected
         handleStopSwiping();
         if (typeof showStatusMessage === 'function') {
-            showStatusMessage('You are out of likes. Auto-swiping stopped.');
+            showStatusMessage('You are out of likes or button not found. Auto-swiping stopped.');
         }
         return false;
     }
+
 
     try {
         if (typeof ANTI_DETECTION !== 'undefined') {
@@ -135,18 +154,16 @@ async function performSwipe() {
         swipeCount++;
         let delta = { swipes: 1 };
         if (decision === 'like') {
-            analytics.likes = (analytics.likes || 0) + 1;
             delta.likes = 1;
         } else {
-            analytics.nopes = (analytics.nopes || 0) + 1;
             delta.nopes = 1;
         }
-        analytics.swipes = (analytics.swipes || 0) + 1;
-        await chrome.storage.local.set({ analytics });
-        // Update all-time and session analytics for auto swipes
+
+        // Update all analytics centrally (handles both session and all-time)
         if (typeof updateAllTimeAnalytics === 'function') {
             await updateAllTimeAnalytics(delta);
         }
+
         // Update sidebar stats live
         if (typeof renderSidebarActiveTab === 'function') {
             renderSidebarActiveTab();
@@ -164,10 +181,15 @@ async function performSwipe() {
 }
 
 function getDynamicSwipeDelay() {
+    const swipeConfig = stateStore.get('swipeConfig') || APP_CONSTANTS.DEFAULT_CONFIG.swiping;
+    const maxSwipes = swipeConfig.maxSwipes || 30;
+
     // Start with the configured range
-    let [min, max] = SWIPE_DELAY_RANGE;
+    let min = swipeConfig.swipeDelayMin || 2000;
+    let max = swipeConfig.swipeDelayMax || 4000;
+
     // As swipeCount increases, slow down swipes
-    const progress = swipeCount / MAX_SESSION_SWIPES;
+    const progress = swipeCount / maxSwipes;
     // Increase delay by up to 2x as session progresses
     min = min * (1 + progress);
     max = max * (1 + progress * 1.5);
@@ -179,19 +201,26 @@ function getDynamicSwipeDelay() {
 }
 
 function automateSwiping() {
-    if (!sessionActive || swipeCount >= MAX_SESSION_SWIPES || swipingGloballyStopped || isStopping) {
+    const swipeConfig = stateStore.get('swipeConfig') || APP_CONSTANTS.DEFAULT_CONFIG.swiping;
+    const maxSwipes = swipeConfig.maxSwipes || 30;
+
+    if (!sessionActive || swipeCount >= maxSwipes || swipingGloballyStopped || isStopping) {
         sessionActive = false;
         swipingGloballyStopped = true;
-        console.log(`[Tinder AI] Swipe session ended. Completed ${swipeCount} swipes out of ${MAX_SESSION_SWIPES} maximum.`);
+        console.log(`[Tinder AI] Swipe session ended. Completed ${swipeCount} swipes out of ${maxSwipes} maximum.`);
         try {
             if (chrome.runtime?.id) {
+                const analytics = stateStore.get('sessionAnalytics') || { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0 };
                 chrome.runtime.sendMessage({ type: 'swipeSessionComplete', analytics });
             }
         } catch (e) {
             console.warn('[Tinder AI] Could not send swipe session completion message. Context likely invalidated.');
         }
         swipeCount = 0;
-        analytics = { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0 };
+        stateStore.set({
+            sessionAnalytics: { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0, date: new Date().toLocaleDateString() },
+            currentAction: 'Idle'
+        });
         if (typeof renderSidebarActiveTab === 'function') {
             renderSidebarActiveTab();
         }
@@ -214,12 +243,13 @@ function automateSwiping() {
         sessionActive = false;
         swipingGloballyStopped = true;
         if (typeof renderSidebarActiveTab === 'function') {
+            stateStore.set({ currentAction: 'Idle' });
             renderSidebarActiveTab();
         }
         return;
     }
 
-    console.log(`[Tinder AI] Performing swipe ${swipeCount + 1} of ${MAX_SESSION_SWIPES}...`);
+    console.log(`[Tinder AI] Performing swipe ${swipeCount + 1} of ${maxSwipes}...`);
 
     performSwipe().then(() => {
         if (sessionActive && !swipingGloballyStopped && !isStopping) {
@@ -227,6 +257,8 @@ function automateSwiping() {
         } else {
             sessionActive = false;
             swipingGloballyStopped = true;
+            swipingGloballyStopped = true;
+            stateStore.set({ currentAction: 'Idle' });
             if (typeof renderSidebarActiveTab === 'function') {
                 renderSidebarActiveTab();
             }
@@ -285,6 +317,7 @@ async function handleStartSwiping() {
     sessionActive = true;
     swipingGloballyStopped = false;
     isStopping = false;
+    stateStore.set({ currentAction: 'Swiping' });
 
     console.log('[Tinder AI] Session variables set, waiting 2 seconds...');
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -305,6 +338,7 @@ function handleStopSwiping() {
     }
 
     if (typeof renderSidebarActiveTab === 'function') {
+        stateStore.set({ currentAction: 'Idle' });
         renderSidebarActiveTab();
     }
 
@@ -320,10 +354,15 @@ async function handleManualLike() {
         if (btn) break;
     }
     if (btn) {
-        btn.click();
-        analytics.likes = (analytics.likes || 0) + 1;
-        analytics.swipes = (analytics.swipes || 0) + 1;
-        await chrome.storage.local.set({ analytics });
+        if (typeof ANTI_DETECTION !== 'undefined') {
+            await ANTI_DETECTION.simulateHumanBehavior(btn, 'click');
+        } else {
+            btn.click();
+        }
+        const sessionStats = stateStore.get('sessionAnalytics') || { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0 };
+        sessionStats.likes++;
+        sessionStats.swipes++;
+        stateStore.set({ sessionAnalytics: sessionStats });
         if (typeof updateAllTimeAnalytics === 'function') {
             await updateAllTimeAnalytics({ likes: 1, swipes: 1 });
         }
@@ -340,10 +379,15 @@ async function handleManualNope() {
         if (btn) break;
     }
     if (btn) {
-        btn.click();
-        analytics.nopes = (analytics.nopes || 0) + 1;
-        analytics.swipes = (analytics.swipes || 0) + 1;
-        await chrome.storage.local.set({ analytics });
+        if (typeof ANTI_DETECTION !== 'undefined') {
+            await ANTI_DETECTION.simulateHumanBehavior(btn, 'click');
+        } else {
+            btn.click();
+        }
+        const sessionStats = stateStore.get('sessionAnalytics') || { swipes: 0, likes: 0, nopes: 0, skips: 0, matches: 0, messages: 0 };
+        sessionStats.nopes++;
+        sessionStats.swipes++;
+        stateStore.set({ sessionAnalytics: sessionStats });
         if (typeof updateAllTimeAnalytics === 'function') {
             await updateAllTimeAnalytics({ nopes: 1, swipes: 1 });
         }

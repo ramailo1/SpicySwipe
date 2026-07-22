@@ -5,88 +5,7 @@
 
 /* Removed external Google Fonts import to comply with extension CSP */
 
-:root {
-  /* Primary Brand Colors */
-  --primary: #6366f1;
-  --primary-light: #818cf8;
-  --primary-dark: #4f46e5;
-  --primary-darker: #3730a3;
-
-  /* Accent & Status Colors */
-  --accent: #f59e0b;
-  --accent-light: #fbbf24;
-  --success: #10b981;
-  --success-light: #34d399;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --danger-light: #f87171;
-
-  /* Neutral Colors */
-  --bg: #fafbfc;
-  --bg-secondary: #f1f5f9;
-  --surface: #ffffff;
-  --surface-elevated: #ffffff;
-  --text: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-  --text-light: #ffffff;
-
-  /* Borders & Shadows */
-  --border: #e2e8f0;
-  --border-light: #f1f5f9;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-primary: 0 10px 15px -3px rgba(99, 102, 241, 0.1), 0 4px 6px -2px rgba(99, 102, 241, 0.05);
-  --shadow-accent: 0 10px 15px -3px rgba(245, 158, 11, 0.1), 0 4px 6px -2px rgba(245, 158, 11, 0.05);
-
-  /* Gradients */
-  --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-  --gradient-accent: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
-  --gradient-success: linear-gradient(135deg, var(--success) 0%, var(--success-light) 100%);
-  --gradient-bg: linear-gradient(135deg, #fafbfc 0%, #f1f5f9 100%);
-  --gradient-surface: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
-
-  /* Animations */
-  --transition-fast: 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
-  --transition-normal: 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-  --transition-slow: 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
-}
-
-/* Dark Mode */
-html.dark {
-  --bg: #0f172a;
-  --bg-secondary: #1e293b;
-  --surface: #1e293b;
-  --surface-elevated: #334155;
-  --text: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --border: #334155;
-  --border-light: #475569;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
-  --gradient-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  --gradient-surface: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-}
-
-/* Spicy Mode (Tinder Brand Colors) */
-html.spicy-theme {
-  --primary: #fd297b;
-  --primary-light: #ff655b;
-  --primary-dark: #e11d64;
-  --primary-darker: #c21554;
-  --gradient-primary: linear-gradient(135deg, #fd297b 0%, #ff655b 100%);
-  --shadow-primary: 0 10px 15px -3px rgba(253, 41, 123, 0.2), 0 4px 6px -2px rgba(253, 41, 123, 0.1);
-
-  /* Keep background light/clean for contrast */
-  --bg: #fff0f5;
-  /* Very subtle pink tint */
-  --bg-secondary: #fff5f8;
-}
+/* Theme variables moved to theme.css */
 
 /* Consent Overlay Styles */
 .tinder-ai-consent-overlay {
@@ -283,10 +202,12 @@ body,
 }
 
 /* Main Sidebar */
+/* Main Sidebar */
 .tinder-ai-sidebar-debug {
   position: fixed;
   top: 0;
-  right: 0;
+  right: -380px;
+  /* Closed by default */
   height: 100vh;
   width: 380px;
   z-index: 9999;
@@ -300,8 +221,51 @@ body,
   -webkit-backdrop-filter: blur(20px);
 }
 
-.tinder-ai-sidebar-debug.hidden {
-  right: -380px;
+.tinder-ai-sidebar-debug.active {
+  right: 0;
+}
+
+/* Sidebar Toggle Button */
+.tinder-ai-sidebar-toggle {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 48px;
+  background: var(--gradient-primary);
+  border-radius: 8px 0 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  z-index: 10000;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
+  transition: all var(--transition-normal);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: none;
+}
+
+.tinder-ai-sidebar-toggle:hover {
+  width: 40px;
+  background: var(--gradient-primary);
+  /* Keep consistent */
+  box-shadow: -4px 0 12px rgba(253, 38, 122, 0.4);
+}
+
+.tinder-ai-sidebar-toggle svg {
+  transition: transform var(--transition-normal);
+  width: 20px;
+  height: 20px;
+}
+
+.tinder-ai-sidebar-toggle.active {
+  right: 380px;
+}
+
+.tinder-ai-sidebar-toggle.active svg {
+  transform: rotate(180deg);
 }
 
 /* Header */
@@ -425,7 +389,7 @@ body,
 .sidebar-tab-btn.active,
 .sidebar-tab-btn:focus {
   color: var(--primary);
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(99, 102, 241, 0.02));
+  background: linear-gradient(135deg, rgba(253, 38, 122, 0.08), rgba(253, 38, 122, 0.03));
   outline: none;
 }
 
@@ -736,7 +700,7 @@ body,
 .settings-input:focus {
   border-color: var(--primary);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 3px rgba(253, 38, 122, 0.1);
 }
 
 .settings-row {
@@ -1296,7 +1260,7 @@ html.dark .sidebar-box.elevated {
 
 .fab:hover {
   transform: scale(1.1) translateY(-2px);
-  box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 20px 40px rgba(253, 38, 122, 0.3);
 }
 
 .fab:active {
@@ -1415,7 +1379,7 @@ html.dark .sidebar-box.elevated {
 
 /* Neon glow effects for special states */
 .glow-primary {
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+  box-shadow: 0 0 20px rgba(253, 38, 122, 0.5);
   animation: glow 2s ease-in-out infinite alternate;
 }
 
@@ -1431,29 +1395,62 @@ html.dark .sidebar-box.elevated {
 
 @keyframes glow {
   from {
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 0 20px rgba(253, 38, 122, 0.3);
   }
 
   to {
-    box-shadow: 0 0 30px rgba(99, 102, 241, 0.7);
+    box-shadow: 0 0 30px rgba(253, 38, 122, 0.7);
   }
 }
 
-/* Skeleton loading states */
+/* Skeleton loading states - Premium Shimmer */
 .skeleton {
-  background: linear-gradient(90deg, var(--border) 25%, var(--bg-secondary) 50%, var(--border) 75%);
-  background-size: 200% 100%;
-  animation: skeleton 2s infinite;
-  border-radius: 8px;
+  background: linear-gradient(90deg,
+      var(--border) 0%,
+      rgba(253, 38, 122, 0.08) 20%,
+      var(--bg-secondary) 40%,
+      rgba(253, 38, 122, 0.08) 60%,
+      var(--border) 100%);
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 2s ease-in-out infinite;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
 }
 
-@keyframes skeleton {
+.skeleton::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent);
+  transform: translateX(-100%);
+  animation: skeleton-sweep 2s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
   0% {
-    background-position: 200% 0;
+    background-position: 100% 0;
   }
 
   100% {
-    background-position: -200% 0;
+    background-position: -100% 0;
+  }
+}
+
+@keyframes skeleton-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  50%,
+  100% {
+    transform: translateX(100%);
   }
 }
 
@@ -1570,9 +1567,10 @@ html.dark .sidebar-box.elevated {
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--border);
-  transition: var(--transition-fast);
+  background: linear-gradient(135deg, #d1d5db 0%, #e5e7eb 100%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 24px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .switch-slider:before {
@@ -1582,18 +1580,33 @@ html.dark .sidebar-box.elevated {
   width: 20px;
   left: 2px;
   bottom: 2px;
-  background: var(--surface);
-  transition: var(--transition-fast);
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   border-radius: 50%;
-  box-shadow: var(--shadow-sm);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.15),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.switch:hover .switch-slider:before {
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.2),
+    0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .switch input:checked+.switch-slider {
   background: var(--gradient-primary);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.1),
+    0 0 12px rgba(253, 38, 122, 0.3);
 }
 
 .switch input:checked+.switch-slider:before {
   transform: translateX(24px);
+  background: linear-gradient(135deg, #ffffff 0%, #fff5f8 100%);
+  box-shadow:
+    0 2px 8px rgba(253, 38, 122, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* Premium notification styles */
@@ -1803,13 +1816,26 @@ html.dark .approval-box select option {
 }
 
 #language-selection-container {
-  max-height: 200px;
+  max-height: 220px;
   overflow-y: auto;
-  margin-bottom: 12px;
-  padding: 8px;
-  background: var(--bg-secondary);
-  border-radius: 6px;
-  border: 1px solid var(--border-light);
+  margin-bottom: 16px;
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 251, 252, 0.95) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 14px;
+  border: 1px solid rgba(253, 38, 122, 0.1);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+}
+
+#language-selection-container:hover {
+  border-color: rgba(253, 38, 122, 0.2);
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 #language-selection-container::-webkit-scrollbar {
@@ -1817,17 +1843,19 @@ html.dark .approval-box select option {
 }
 
 #language-selection-container::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+  background: transparent;
   border-radius: 3px;
+  margin: 4px 0;
 }
 
 #language-selection-container::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: linear-gradient(135deg, rgba(253, 38, 122, 0.3) 0%, rgba(255, 120, 84, 0.3) 100%);
   border-radius: 3px;
+  transition: background 0.2s;
 }
 
 #language-selection-container::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: linear-gradient(135deg, rgba(253, 38, 122, 0.5) 0%, rgba(255, 120, 84, 0.5) 100%);
 }
 
 .sidebar-btn-full {
@@ -1857,42 +1885,69 @@ html.dark .approval-box select option {
   background: var(--success);
 }
 
-/* --- Custom Range Slider Styles for Swiping Behavior --- */
+/* --- Custom Range Slider Styles for Swiping Behavior (Premium) --- */
 input[type="range"].settings-input {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 6px;
-  background: var(--border);
-  border-radius: 6px;
+  height: 8px;
+  background: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 100%);
+  border-radius: 8px;
   outline: none;
   margin: 0;
   padding: 0;
-  box-shadow: none;
-  transition: background 0.2s;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+input[type="range"].settings-input:hover {
+  background: linear-gradient(90deg, #d1d5db 0%, #e5e7eb 100%);
 }
 
 input[type="range"].settings-input:focus {
-  background: var(--primary-light);
+  background: linear-gradient(90deg, rgba(253, 38, 122, 0.2) 0%, rgba(255, 120, 84, 0.15) 100%);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.1),
+    0 0 0 3px rgba(253, 38, 122, 0.1);
 }
 
 input[type="range"].settings-input::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background: var(--primary);
-  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.15);
-  cursor: pointer;
-  border: 2px solid var(--surface);
+  background: linear-gradient(135deg, #fd267a 0%, #ff7854 100%);
+  box-shadow:
+    0 4px 10px rgba(253, 38, 122, 0.35),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  cursor: grab;
+  border: 3px solid white;
   margin-top: -8px;
-  transition: background 0.2s, border 0.2s;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+input[type="range"].settings-input::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow:
+    0 6px 16px rgba(253, 38, 122, 0.4),
+    0 3px 6px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+input[type="range"].settings-input::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.05);
 }
 
 input[type="range"].settings-input:focus::-webkit-slider-thumb {
-  background: var(--primary-dark);
-  border: 2px solid var(--primary-light);
+  box-shadow:
+    0 4px 10px rgba(253, 38, 122, 0.35),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 0 0 4px rgba(253, 38, 122, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 input[type="range"].settings-input::-ms-fill-lower {
@@ -1912,7 +1967,7 @@ input[type="range"].settings-input::-moz-range-thumb {
   background: var(--primary);
   border: 2px solid var(--surface);
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 2px 6px rgba(253, 38, 122, 0.15);
   transition: background 0.2s, border 0.2s;
 }
 
@@ -1928,7 +1983,7 @@ input[type="range"].settings-input::-ms-thumb {
   background: var(--primary);
   border: 2px solid var(--surface);
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 2px 6px rgba(253, 38, 122, 0.15);
   transition: background 0.2s, border 0.2s;
 }
 
@@ -2148,4 +2203,306 @@ html.dark .language-selector-abbr option {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* ============================================
+   CUSTOM CHECKBOX STYLES (Premium)
+   ============================================ */
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d1d5db;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0;
+  margin-right: 10px;
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+input[type="checkbox"]:hover {
+  border-color: #fd267a;
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.05),
+    0 0 0 3px rgba(253, 38, 122, 0.1);
+}
+
+input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, #fd267a 0%, #ff7854 100%);
+  border-color: #fd267a;
+  box-shadow:
+    0 2px 8px rgba(253, 38, 122, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 6px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+  animation: checkmark-pop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes checkmark-pop {
+  0% {
+    transform: rotate(45deg) scale(0);
+    opacity: 0;
+  }
+
+  50% {
+    transform: rotate(45deg) scale(1.2);
+  }
+
+  100% {
+    transform: rotate(45deg) scale(1);
+    opacity: 1;
+  }
+}
+
+input[type="checkbox"]:focus {
+  outline: none;
+  border-color: #fd267a;
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.05),
+    0 0 0 3px rgba(253, 38, 122, 0.15);
+}
+
+/* Dark mode checkbox adjustments */
+html.dark input[type="checkbox"] {
+  background: linear-gradient(135deg, #334155 0%, #475569 100%);
+  border-color: #475569;
+}
+
+html.dark input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, #fd267a 0%, #ff7854 100%);
+  border-color: #fd267a;
+}
+
+/* Settings row checkbox alignment */
+.settings-row label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.settings-row input[type="checkbox"] {
+  margin-right: 12px;
+}
+
+/* Language preference checkbox list */
+#language-selection-container input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+}
+
+#language-selection-container label {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-size: 14px;
+  color: var(--text);
+}
+
+#language-selection-container label:hover {
+  background: rgba(253, 38, 122, 0.05);
+}
+
+/* ============================================
+   TOGGLE SWITCH STYLES (Slider)
+   ============================================ */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #e2e8f0;
+  /* var(--border) */
+  transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  border-radius: 24px;
+  border: 1px solid #cbd5e1;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+input:checked+.slider {
+  background: var(--gradient-primary);
+  /* Use theme gradient */
+  border-color: transparent;
+}
+
+input:focus+.slider {
+  box-shadow: 0 0 1px var(--primary);
+}
+
+input:checked+.slider:before {
+  transform: translateX(20px);
+}
+
+/* Dark Mode Switches */
+html.dark .slider {
+  background-color: #334155;
+  /* var(--surface-elevated) */
+  border-color: #475569;
+  /* var(--border-light) */
+}
+
+html.dark .slider:before {
+  background-color: #f8fafc;
+  /* var(--text) */
+}
+
+/* Hover effects */
+.switch:hover .slider:before {
+  transform: scale(1.1);
+}
+
+input:checked:hover+.slider:before {
+  transform: translateX(20px) scale(1.1);
+}
+
+select,
+.settings-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 100%;
+  padding: 12px 40px 12px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text, #0f172a);
+  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+
+  /* Custom Arrow */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23fd267a' d='M4.5 6L8 9.5 11.5 6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+select:hover,
+.settings-select:hover {
+  border-color: #fd267a;
+  box-shadow:
+    0 2px 8px rgba(253, 38, 122, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+select:focus,
+.settings-select:focus {
+  outline: none;
+  border-color: #fd267a;
+  box-shadow:
+    0 0 0 3px rgba(253, 38, 122, 0.15),
+    0 2px 8px rgba(253, 38, 122, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Option styling (limited browser support) */
+select option,
+.settings-select option {
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+select option:hover,
+.settings-select option:hover,
+select option:focus,
+.settings-select option:focus {
+  background: linear-gradient(135deg, rgba(253, 38, 122, 0.1) 0%, rgba(255, 120, 84, 0.1) 100%);
+  color: #fd267a;
+}
+
+select option:checked,
+.settings-select option:checked {
+  background: linear-gradient(135deg, #fd267a 0%, #ff7854 100%);
+  color: white;
+  font-weight: 600;
+}
+
+/* Dark mode select */
+html.dark select,
+html.dark .settings-select {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border-color: #475569;
+  color: #f8fafc;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23ff7854' d='M4.5 6L8 9.5 11.5 6z'/%3E%3C/svg%3E");
+}
+
+html.dark select:hover,
+html.dark .settings-select:hover {
+  border-color: #fd267a;
+}
+
+html.dark select option,
+html.dark .settings-select option {
+  background: #1e293b;
+  color: #f8fafc;
+}
+
+html.dark select option:checked,
+html.dark .settings-select option:checked {
+  background: linear-gradient(135deg, #fd267a 0%, #ff7854 100%);
+  color: white;
+}
+
+/* Small variant for inline selects */
+select.select-sm,
+.settings-select.select-sm {
+  padding: 8px 32px 8px 12px;
+  font-size: 13px;
+  border-radius: 8px;
 }

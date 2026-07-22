@@ -2,6 +2,78 @@
 // Profile Extraction Module for SpicySwipe
 // Handles extracting profile information and chat history from Tinder pages
 
+// --- Helper Functions ---
+function waitForElement(selector, timeout = 10000) {
+    return new Promise((resolve) => {
+        if (document.querySelector(selector)) {
+            return resolve(document.querySelector(selector));
+        }
+
+        const observer = new MutationObserver(() => {
+            if (document.querySelector(selector)) {
+                observer.disconnect();
+                resolve(document.querySelector(selector));
+            }
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+
+        setTimeout(() => {
+            observer.disconnect();
+            resolve(null);
+        }, timeout);
+    });
+}
+
+// --- Card Profile Extraction (for swiping) ---
+function extractProfileInfo() {
+    const stack = document.querySelector('.recsCardboard__cardsContainer, .recsCardboard__cards');
+    if (!stack) return null;
+
+    const allCards = Array.from(stack.querySelectorAll('div[data-keyboard-gamepad]'));
+    let card = allCards.slice().reverse().find(card =>
+        !card.hasAttribute('inert') && card.getAttribute('aria-hidden') !== 'true'
+    );
+
+    if (!card) card = allCards[allCards.length - 1];
+    if (!card) return null;
+
+    try {
+        let name = 'Unknown';
+        let age = null;
+        const nameSpan = card.querySelector('span[itemprop="name"]');
+        const ageSpan = card.querySelector('span[itemprop="age"]');
+
+        if (nameSpan) name = nameSpan.textContent.trim();
+        if (ageSpan) age = parseInt(ageSpan.textContent.trim());
+
+        // Main photo
+        let photo = '';
+        const bgDiv = card.querySelector('div[style*="background-image"]');
+        if (bgDiv) {
+            const bg = bgDiv.style.backgroundImage;
+            const urlMatch = bg.match(/url\(["']?(.*?)["']?\)/);
+            if (urlMatch && urlMatch[1]) photo = urlMatch[1];
+        }
+
+        // Tags/interests
+        const interests = [];
+        const tagElements = card.querySelectorAll('div[class*="tag"], div[class*="badge"], div[class*="interest"]');
+        tagElements.forEach(el => {
+            const tag = el.textContent.trim();
+            if (tag && !interests.includes(tag)) interests.push(tag);
+        });
+
+        return { name, age, photo, interests, timestamp: new Date().toISOString() };
+    } catch (error) {
+        console.error('[Tinder AI] Error extracting profile info from card:', error);
+        return null;
+    }
+}
+
 // Wait for contact tab to appear and extract detailed profile information
 async function waitForContactTabAndExtractInfo(matchItem) {
     return new Promise((resolve) => {
